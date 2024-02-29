@@ -125,7 +125,7 @@ if 'compute_ibs' in masif_opts and masif_opts['compute_ibs']:
     ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
     # 2. crosscheck btw chain_id, resid_number, resname from pmp_dataset.csv and PDBParser attributes
     # if crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
-    crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix)
+    crosscheck_residue2(names1, pmp_df, ibs_res_ix)
     # # 3. match IBS res_ix to vertices index (vix) of old mesh by using chain_id, resid_id, resid_name
     #     iface_ = computeIBS(names1, ibs_res_ix)
     # # 4. assign IBS_label on vertices of regularized mesh (nearest neighbor)
