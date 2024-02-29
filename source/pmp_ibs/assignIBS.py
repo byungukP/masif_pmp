@@ -48,7 +48,8 @@ def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
 
 def crosscheck_residue2(names1, pmp_df, ibs_res_ix):
     logfile = open("logfile_names.txt", 'w')
-    logfile.write("#chain_id    res_id    resname    atomname")
+    logfile.write("#chain_id    res_id    resname    atomname\n")
+    logfile.write("total surface vertices number before mesh regularization: {:d}".format(len(names1)))
     for name in names1:
         fields = name.split('_')
         chain_id, res_id, resname, atomname = fields[0], fields[1], fields[3], fields[4]
