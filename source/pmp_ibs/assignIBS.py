@@ -20,17 +20,29 @@ def generate_IBSresix(pmp_df, pdb_id, chain_ids1):
     return ibs_res_ix
 
 
-# def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
-#     parser = PDBParser(QUIET=True)
-#     struct = parser.get_structure(pdb_filename, pdb_filename)
-#     for res in struct.get_residues():
-#         res_id = res.get_id()[1]
-#         # check in terms of chain_id (already done in previous codes),
-#         # res id, resname before taking the res_id as index for IBS label
-#         if res_id in ibs_res_ix:
-#             assert res.get_resname() == pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values[0], \
-#                                         f"Residue with res_id {res_id} from PDBParser doesn't match with residue_number used in pmp_dataset.csv"
-#     return True
+# names from msms vertices, pmp_df from dataset.csv
+
+def computeIBS(names, pmp_df, pdb_id, chain_ids1):
+    ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
+    iface = np.zeros(len(names))
+    for vix, name in enumerate(names):
+        fields = name.split('_')
+        chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
+        if res_id in ibs_res_ix:
+            if crosscheck(pmp_df, res_id, chain_ids1, resname):    # chain_ids1, resname
+                iface[vix] = 1.0
+    return iface
+
+
+def crosscheck(pmp_df, res_id, chain_ids1, resname):
+    data_chain = pmp_df[pmp_df["residue_number"] == res_id]["chain_id"].values[0]
+    data_resname = pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values[0]
+    assert data_chain == chain_ids1, \
+        f"MismatchError: chain id mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv"
+    assert data_resname == resname, \
+        f"MismatchError: residue name mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv"
+    return True
+
 
 def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
     logfile = open("logfile.txt", 'w')
@@ -49,24 +61,14 @@ def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
 def crosscheck_residue2(names1, pmp_df, ibs_res_ix):
     logfile = open("logfile_names.txt", 'w')
     logfile.write("#chain_id    res_id    resname    atomname\n")
-    logfile.write("total surface vertices number before mesh regularization: {:d}".format(len(names1)))
+    logfile.write("total surface vertices number before mesh regularization: {:d}\n".format(len(names1)))
     for name in names1:
         fields = name.split('_')
-        chain_id, res_id, resname, atomname = fields[0], fields[1], fields[3], fields[4]
+        chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
         # check in terms of chain_id (already done in previous codes),
         # res id, resname before taking the res_id as index for IBS label
         logfile.write("{}    {}    {}    {}\n".format(chain_id,res_id,resname,atomname))
     logfile.close()
-
-
-
-def computeIBS(names, ibs_res_ix):
-    iface = np.zeros(len(names))
-    for vix, name in enumerate(names):
-        res_id = name.split("_")[1]
-        if res_id in ibs_res_ix:
-            iface[vix] = 1.0
-    return iface
 
 
 # Assign IBS_label on new vertices based on IBS_label of old vertices (nearest
