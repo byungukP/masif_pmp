@@ -25,18 +25,19 @@ def generate_IBSresix(pmp_df, pdb_id, chain_ids1):
 def computeIBS(names, pmp_df, pdb_id, chain_ids1):
     ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
     iface = np.zeros(len(names))
+    pdb_df = pmp_df[pmp_df["pdb"] == pdb_id]
     for vix, name in enumerate(names):
         fields = name.split('_')
         chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
         if res_id in ibs_res_ix:
-            if crosscheck(pmp_df, res_id, chain_ids1, resname):    # chain_ids1, resname
+            if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # chain_ids1, resname
                 iface[vix] = 1.0
     return iface
 
 
-def crosscheck(pmp_df, res_id, chain_ids1, resname):
-    data_chain = pmp_df[pmp_df["residue_number"] == res_id]["chain_id"].values[0]
-    data_resname = pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values[0]
+def crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):
+    data_chain = pdb_df[pdb_df["residue_number"] == res_id]["chain_id"].values[0]
+    data_resname = pdb_df[pdb_df["residue_number"] == res_id]["residue_name"].values[0]
     assert data_chain == chain_ids1, \
         f"Mismatch Error\nchain id mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv\n \
             mesh vertices: {chain_ids1}\n \
