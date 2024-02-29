@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import numpy as np
-import pandas as pd
 import os
 import Bio
 import shutil
@@ -23,6 +22,7 @@ from triangulation.computeCharges import computeCharges, assignChargesToNewMesh
 from triangulation.computeAPBS import computeAPBS
 from triangulation.compute_normal import compute_normal
 from sklearn.neighbors import KDTree
+import pandas as pd
 from pmp_ibs.assignIBS import *
 
 """
