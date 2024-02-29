@@ -40,7 +40,7 @@ def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
         res_id = res.get_id()[1]
         # check in terms of chain_id (already done in previous codes),
         # res id, resname before taking the res_id as index for IBS label
-        logfile.write("{}   {}".format(res_id, res.get_resname))
+        logfile.write("{}   {}\n".format(res_id, res.get_resname))
     logfile.close()
 
 
