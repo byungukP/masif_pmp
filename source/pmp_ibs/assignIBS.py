@@ -38,9 +38,13 @@ def crosscheck(pmp_df, res_id, chain_ids1, resname):
     data_chain = pmp_df[pmp_df["residue_number"] == res_id]["chain_id"].values[0]
     data_resname = pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values[0]
     assert data_chain == chain_ids1, \
-        f"MismatchError: chain id mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv"
+        f"MismatchError: chain id mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv\n \
+            mesh vertices: {chain_ids1}\n \
+            pmp_dataset.csv: {data_chain}"
     assert data_resname == resname, \
-        f"MismatchError: residue name mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv"
+        f"MismatchError: residue name mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv\n \
+            mesh vertices: {resname}\n \
+            pmp_dataset.csv: {data_resname}"
     return True
 
 
