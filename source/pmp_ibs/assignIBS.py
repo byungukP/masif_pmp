@@ -48,12 +48,12 @@ def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
 
 def crosscheck_residue2(names1, pmp_df, ibs_res_ix):
     logfile = open("logfile_names.txt", 'w')
+    logfile.write("#chain_id    res_id    resname    atomname")
     for name in names1:
         fields = name.split('_')
         chain_id, res_id, resname, atomname = fields[0], fields[1], fields[3], fields[4]
         # check in terms of chain_id (already done in previous codes),
         # res id, resname before taking the res_id as index for IBS label
-        logfile.write("#chain_id    res_id    resname    atomname")
         logfile.write("{}    {}    {}    {}\n".format(chain_id,res_id,resname,atomname))
     logfile.close()
 
