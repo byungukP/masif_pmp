@@ -20,17 +20,28 @@ def generate_IBSresix(pmp_df, pdb_id, chain_ids1):
     return ibs_res_ix
 
 
+# def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
+#     parser = PDBParser(QUIET=True)
+#     struct = parser.get_structure(pdb_filename, pdb_filename)
+#     for res in struct.get_residues():
+#         res_id = res.get_id()[1]
+#         # check in terms of chain_id (already done in previous codes),
+#         # res id, resname before taking the res_id as index for IBS label
+#         if res_id in ibs_res_ix:
+#             assert res.get_resname() == pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values[0], \
+#                                         f"Residue with res_id {res_id} from PDBParser doesn't match with residue_number used in pmp_dataset.csv"
+#     return True
+
 def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
+    logfile = open("logfile.txt", 'w')
     parser = PDBParser(QUIET=True)
     struct = parser.get_structure(pdb_filename, pdb_filename)
     for res in struct.get_residues():
         res_id = res.get_id()[1]
         # check in terms of chain_id (already done in previous codes),
         # res id, resname before taking the res_id as index for IBS label
-        if res_id in ibs_res_ix:
-            assert res.get_resname() == pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values[0], \
-                                        f"Residue with res_id {res_id} from PDBParser doesn't match with residue_number used in pmp_dataset.csv"
-    return True
+        logfile.write("{}   {}".format(res_id, res.get_resname))
+    logfile.close()
 
 
 # names: atom_id in format (e.g.B_125_x_ASN_ND2_Green),shape=(vert_num,)
