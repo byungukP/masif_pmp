@@ -28,7 +28,7 @@ def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
         # check in terms of chain_id (already done in previous codes),
         # res id, resname before taking the res_id as index for IBS label
         if res_id in ibs_res_ix:
-            assert res.get_resname() == pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values, \
+            assert res.get_resname() == pmp_df[pmp_df["residue_number"] == res_id]["residue_name"].values[0], \
                                         f"Residue with res_id {res_id} from PDBParser doesn't match with residue_number used in pmp_dataset.csv"
     return True
 
