@@ -22,7 +22,7 @@ def generate_IBSresix(pmp_df, pdb_id, chain_ids1):
 
 def crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
     parser = PDBParser(QUIET=True)
-    struct = parser.get_structure(pdb_filename, pdb_filename + ".pdb")
+    struct = parser.get_structure(pdb_filename, pdb_filename)
     for res in struct.get_residues():
         res_id = res.get_id()[1]
         # check in terms of chain_id (already done in previous codes),
