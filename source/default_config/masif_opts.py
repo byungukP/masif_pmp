@@ -7,6 +7,8 @@ masif_opts["pdb_chain_dir"] = "data_preparation/01-benchmark_pdbs/"
 masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces/"
 masif_opts["tmp_dir"] = tempfile.gettempdir()
 masif_opts["ply_file_template"] = masif_opts["ply_chain_dir"] + "/{}_{}.ply"
+# Path to PMP dataset csv file
+masif_opts["pmp_dataset"] = "/masif_docker/pmp_prep/lists/S2File_pmp_dataset.csv"
 
 # Surface features
 masif_opts["use_hbond"] = True
