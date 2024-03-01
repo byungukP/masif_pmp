@@ -25,27 +25,35 @@ def generate_IBSresix(pmp_df, pdb_id, chain_ids1):
 def computeIBS(names, pmp_df, pdb_id, chain_ids1):
     ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
     iface = np.zeros(len(names))
-    pdb_df = pmp_df[pmp_df["pdb"] == pdb_id]
+    # parse data of target pdb_chain
+    pdb_id_match = pmp_df["pdb"] == pdb_id
+    chain_id_match = pmp_df["chain_id"] == chain_ids1
+    pdb_df = pmp_df[pdb_id_match & chain_id_match]
     for vix, name in enumerate(names):
         fields = name.split('_')
         chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
         if res_id in ibs_res_ix:
-            if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # chain_ids1, resname
+            if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # pdb_id, chain_ids1, resname
                 iface[vix] = 1.0
     return iface
 
 
 def crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):
+    data_pdb = pdb_df[pdb_df["residue_number"] == res_id]["pdb"].values[0]
     data_chain = pdb_df[pdb_df["residue_number"] == res_id]["chain_id"].values[0]
     data_resname = pdb_df[pdb_df["residue_number"] == res_id]["residue_name"].values[0]
+    assert data_pdb == pdb_id, \
+        f"Mismatch Error: PDB_ID mismatch\n \
+            mesh vertices: {pdb_id}_{chain_ids1} residue {resname}{res_id}\n \
+            pmp_dataset.csv: {data_pdb}_{data_chain} residue {data_resname}{res_id}"
     assert data_chain == chain_ids1, \
         f"Mismatch Error\nchain id mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv\n \
-            mesh vertices: {chain_ids1}\n \
-            pmp_dataset.csv: {data_chain}"
+            mesh vertices: {pdb_id}_{chain_ids1} residue {resname}{res_id}\n \
+            pmp_dataset.csv: {data_pdb}_{data_chain} residue {data_resname}{res_id}"
     assert data_resname == resname, \
         f"Mismatch Error\nresidue name mismatch between residues (res_id: {res_id}) from mesh vertices and pmp_dataset.csv\n \
-            mesh vertices: {resname}\n \
-            pmp_dataset.csv: {data_resname}"
+            mesh vertices: {pdb_id}_{chain_ids1} residue {resname}{res_id}\n \
+            pmp_dataset.csv: {data_pdb}_{data_chain} residue {data_resname}{res_id}"
     return True
 
 
