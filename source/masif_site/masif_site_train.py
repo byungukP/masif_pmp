@@ -12,6 +12,8 @@ masif_site_train.py: Entry function to train MaSIF-site.
 Pablo Gainza - LPDI STI EPFL 2019
 This file is part of MaSIF.
 Released under an Apache License 2.0
+
+updated by ByungUk Park - UW-Madison 2023
 """
 
 params = masif_opts["site"]
