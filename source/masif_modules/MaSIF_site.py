@@ -5,12 +5,13 @@ import numpy as np
 class MaSIF_site:
 
     """
-    The neural network model.
+    The neural network model. TF v2
+    Updated by ByungUk Park UW-Madison, 2024
     """
 
     def count_number_parameters(self):
         total_parameters = 0
-        for variable in tf.trainable_variables():
+        for variable in tf.trainable_variables():   # https://www.tensorflow.org/api_docs/python/tf/compat/v1/trainable_variables: tf.trainable_variables() --> Module.trainable_variables, after changing maisf_site class to module
             # shape is an array of tf.Dimension
             shape = variable.get_shape()
             print(variable)
@@ -28,9 +29,9 @@ class MaSIF_site:
         return frobenius_norm
 
     def build_sparse_matrix_softmax(self, idx_non_zero_values, X, dense_shape_A):
-        A = tf.SparseTensorValue(idx_non_zero_values, tf.squeeze(X), dense_shape_A)
-        A = tf.sparse_reorder(A)  # n_edges x n_edges
-        A = tf.sparse_softmax(A)
+        A = tf.SparseTensor(idx_non_zero_values, tf.squeeze(X), dense_shape_A) # SparseTensorValue (TFv1) --> SparseTensor (TFv2)
+        A = tf.sparse.reorder(A)  # n_edges x n_edges
+        A = tf.sparse.softmax(A)
 
         return A
 
