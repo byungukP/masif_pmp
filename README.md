@@ -1,3 +1,3 @@
 ### masif_pmp
 
-Contains commands to apply MaSIF to PMP & membrane IBS prediction.
+Contains commands that apply MaSIF to PMP & membrane IBS prediction.
