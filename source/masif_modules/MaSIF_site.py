@@ -11,16 +11,13 @@ class MaSIF_site:
 
     def count_number_parameters(self):
         total_parameters = 0
-        for variable in tf.trainable_variables():   # https://www.tensorflow.org/api_docs/python/tf/compat/v1/trainable_variables: tf.trainable_variables() --> Module.trainable_variables, after changing maisf_site class to module
+        for variable in self.trainable_variables:   # https://www.tensorflow.org/api_docs/python/tf/compat/v1/trainable_variables: tf.trainable_variables() --> Module.trainable_variables, after changing maisf_site class to module
             # shape is an array of tf.Dimension
-            shape = variable.get_shape()
+            shape = variable.shape
             print(variable)
-            variable_parameters = 1
-            for dim in shape:
-                variable_parameters *= dim.value
-            print(variable_parameters)
+            variable_parameters = tf.reduce_prod(shape)
             total_parameters += variable_parameters
-        print("Total number parameters: %d" % total_parameters)
+        print("Total number parameters: %d" % total_parameters.numpy())
 
     def frobenius_norm(self, tensor):
         square_tensor = tf.square(tensor)
