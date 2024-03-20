@@ -26,10 +26,9 @@ class MaSIF_site:
         return frobenius_norm
 
     def build_sparse_matrix_softmax(self, idx_non_zero_values, X, dense_shape_A):
-        A = tf.SparseTensor(idx_non_zero_values, tf.squeeze(X), dense_shape_A) # SparseTensorValue (TFv1) --> SparseTensor (TFv2)
+        A = tf.sparse.SparseTensor(idx_non_zero_values, tf.squeeze(X), dense_shape_A) # SparseTensorValue (TFv1) --> SparseTensor (TFv2)
         A = tf.sparse.reorder(A)  # n_edges x n_edges
         A = tf.sparse.softmax(A)
-
         return A
 
     def compute_initial_coordinates(self):
@@ -43,12 +42,9 @@ class MaSIF_site:
 
         # Return a list of coordinate matrices from coordinate vectors, shape = (n_theta, n_rho), ex) (16, 5)
         grid_rho_, grid_theta_ = np.meshgrid(grid_rho, grid_theta, sparse=False)
-        grid_rho_ = (
-            grid_rho_.T
-        )  # the traspose here is needed to have the same behaviour as Matlab code --> shape = (n_rho, n_theta)
-        grid_theta_ = (
-            grid_theta_.T
-        )  # the traspose here is needed to have the same behaviour as Matlab code --> shape = (n_rho, n_theta)
+        # the traspose here is needed to have the same behaviour as Matlab code --> shape = (n_rho, n_theta)
+        grid_rho_ = grid_rho_.T
+        grid_theta_ = grid_theta_.T
         grid_rho_ = grid_rho_.flatten()
         grid_theta_ = grid_theta_.flatten()
 
