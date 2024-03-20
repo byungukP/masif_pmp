@@ -74,11 +74,12 @@ class MaSIF_site:
 
         all_conv_feat = []
         for k in range(self.n_rotations):
-            rho_coords_ = tf.reshape(rho_coords, [-1, 1])  # batch_size*n_vertices
-            thetas_coords_ = tf.reshape(theta_coords, [-1, 1])  # batch_size*n_vertices
+            rho_coords_ = tf.reshape(rho_coords, [-1, 1])  # batch_size*n_vertices_in_patch (batch_size = total num of patches = total num of vertices on ptn mesh)
+            thetas_coords_ = tf.reshape(theta_coords, [-1, 1])  # batch_size*n_vertices_in_patch
 
             thetas_coords_ += k * 2 * np.pi / self.n_rotations
-            thetas_coords_ = tf.mod(thetas_coords_, 2 * np.pi)
+            thetas_coords_ = tf.math.floormod(thetas_coords_, 2 * np.pi)
+            # turning rho_, theta_coords into corresponding probabilities in gaussian distribution function
             rho_coords_ = tf.exp(
                 -tf.square(rho_coords_ - mu_rho) / (tf.square(sigma_rho) + eps)
             )
@@ -89,9 +90,10 @@ class MaSIF_site:
             self.rho_coords_debug = rho_coords_
             self.thetas_coords_debug = thetas_coords_
 
+### need more study on thie snippet: building Gaussian activations ###
             gauss_activations = tf.multiply(
                 rho_coords_, thetas_coords_
-            )  # batch_size*n_vertices, n_gauss
+            )  # batch_size*n_vertices, n_gauss (n_gauss = n_thetas*n_rhos or num_conv_layers)
             gauss_activations = tf.reshape(
                 gauss_activations, [n_samples, n_vertices, -1]
             )  # batch_size, n_vertices, n_gauss
@@ -110,18 +112,19 @@ class MaSIF_site:
                 input_feat, 3
             )  # batch_size, n_vertices, n_feat, 1
 
+            # gaussian descriptors: gaussian activation kernels w/ probability weights locally average the vertex-wise patch features (by tf.multiply(gauss_activations, input_feat_), thus acting as soft pixels)
             gauss_desc = tf.multiply(
                 gauss_activations, input_feat_
             )  # batch_size, n_vertices, n_feat, n_gauss,
-            gauss_desc = tf.reduce_sum(gauss_desc, 1)  # batch_size, n_feat, n_gauss,
+            gauss_desc = tf.reduce_sum(gauss_desc, 1)  # batch_size, n_feat, n_gauss, (=abstract out vertices factor)
             gauss_desc = tf.reshape(
                 gauss_desc, [n_samples, self.n_thetas * self.n_rhos * n_feat]
             )  # batch_size, self.n_thetas*self.n_rhos*n_feat
 
             conv_feat = tf.matmul(gauss_desc, W_conv) + b_conv  # batch_size, n_gauss
             all_conv_feat.append(conv_feat)
-        all_conv_feat = tf.stack(all_conv_feat)
-        conv_feat = tf.reduce_max(all_conv_feat, 0)
+        all_conv_feat = tf.stack(all_conv_feat)  # n_rotations, batch_size, n_gauss
+        conv_feat = tf.reduce_max(all_conv_feat, 0)  # max pooling locally averaged patch features
         conv_feat = tf.nn.relu(conv_feat)
         return conv_feat
 
