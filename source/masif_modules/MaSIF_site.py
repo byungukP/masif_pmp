@@ -56,7 +56,7 @@ class MaSIF_site:
 
         coords = np.concatenate((grid_rho_[None, :], grid_theta_[None, :]), axis=0)
         coords = coords.T  # every row contains the coordinates of a grid intersection
-        print(coords.shape)
+        print("initial_coordinates shapd:",coords.shape)
         return coords
 
     def inference(
