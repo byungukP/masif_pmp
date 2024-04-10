@@ -50,7 +50,7 @@ class MaSIF_site(tf.keras.Model):
 
         coords = np.concatenate((grid_rho_[None, :], grid_theta_[None, :]), axis=0)
         coords = coords.T  # every row contains the coordinates of a grid intersection
-        print(coords.shape)
+        print("initial polar coords shape: {}".format(coords.shape))
         return coords
 
     def inference(
