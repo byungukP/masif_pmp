@@ -415,7 +415,6 @@ class MaSIF_site(tf.keras.Model):
             self.global_desc = tf.gather(
                 self.global_desc, self.indices_tensor
             )  # batch_size, max_verts, n_feat
-            print("ConvL2 input global_desc shape: {}".format(self.global_desc.get_shape()))
 
             self.global_desc = self.inference(
                 self.global_desc,
@@ -429,7 +428,6 @@ class MaSIF_site(tf.keras.Model):
                 self.mu_theta_l2,
                 self.sigma_theta_l2,
             )  # batch_size, n_gauss*n_feat
-            print("ConvL2 output global_desc shape: {}".format(self.global_desc.get_shape()))
             batch_size = tf.shape(self.global_desc)[0]
             # Reduce the dimensionality by averaging over the last dimension
             self.global_desc = tf.reshape(
@@ -445,7 +443,6 @@ class MaSIF_site(tf.keras.Model):
             self.global_desc = tf.gather(
                 self.global_desc, self.indices_tensor
             )  # batch_size, max_verts, n_feat
-            print("ConvL3 input global_desc shape: {}".format(self.global_desc.get_shape()))
 
             self.global_desc = self.inference(
                 self.global_desc,
@@ -459,7 +456,6 @@ class MaSIF_site(tf.keras.Model):
                 self.mu_theta_l3,
                 self.sigma_theta_l3,
             )  # batch_size, n_gauss*n_feat
-            print("ConvL3 output global_desc shape: {}".format(self.global_desc.get_shape()))
             batch_size = tf.shape(self.global_desc)[0]
             self.global_desc = tf.reshape(
                 self.global_desc,
@@ -505,7 +501,18 @@ class MaSIF_site(tf.keras.Model):
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         self.logits = self.final_MLP(self.global_desc)
-        self.count_number_parameters()
+        # self.count_number_parameters()
+
+        total_parameters = 0
+        for variable in self.trainable_variables:
+            # shape is an array of tf.Dimension
+            shape = variable.shape
+            print(variable)
+            variable_parameters = tf.reduce_prod(shape)
+            total_parameters += variable_parameters
+        print(total_parameters)
+        print("Total number parameters: %d" % total_parameters.numpy())
+
         return self.logits
 
 
