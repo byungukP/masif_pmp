@@ -320,6 +320,9 @@ class MaSIF_site(tf.keras.Model):
 
         self.global_desc = []
 
+        """
+        might have to move all the tf.Variables() to __init__ if the model is not working as expected
+        """
         # Use Geometric deep learning
         b_conv = []
         for i in range(self.n_feat):

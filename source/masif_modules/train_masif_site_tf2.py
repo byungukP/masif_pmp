@@ -327,7 +327,7 @@ def train_masif_site(
             # np.save(out_dir + "test_names.npy", list_test_names)
 
     # Display the model's architecture
-    logfile.write("{}\n".format(model.summary()))
-    print("{}\n".format(model.summary()))
+    logfile.write("\nSummary of Model: trainable variables & structure\n{}\n".format(model.summary()))
+    print("\nSummary of Model: trainable variables & structure\n{}\n".format(model.summary()))
 
     logfile.close()
