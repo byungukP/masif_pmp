@@ -17,7 +17,7 @@ class MaSIF_site(tf.keras.Model):
             print(variable)
             variable_parameters = tf.reduce_prod(shape)
             total_parameters += variable_parameters
-        print("Total number parameters: %d" % total_parameters.numpy())
+        print("Total number parameters: %d" % tf.print(total_parameters))   # total_parameters.numpy() for eager execution
 
     def frobenius_norm(self, tensor):
         square_tensor = tf.square(tensor)
