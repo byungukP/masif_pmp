@@ -60,7 +60,7 @@ masif_opts["site"]["max_distance"] = 9.0  # Radius for the neural network.
 masif_opts["site"][
     "masif_precomputation_dir"
 ] = "data_preparation/04a-precomputation_9A/precomputation/"
-masif_opts["site"]["range_val_samples"] = 0.9  # 0.9 to 1.0
+masif_opts["site"]["range_val_samples"] = 0.1  # percentage of samples to use for validation among total trainset. 9:1 for training:validation when 0.1
 masif_opts["site"]["model_dir"] = "nn_models/all_feat_3l/model_data/"
 masif_opts["site"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
 masif_opts["site"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"

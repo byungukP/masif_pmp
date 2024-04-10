@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 
-class MaSIF_site:
+class MaSIF_site(tf.keras.Model):
 
     """
     The neural network model. TF v2
@@ -90,17 +90,16 @@ class MaSIF_site:
             self.rho_coords_debug = rho_coords_
             self.thetas_coords_debug = thetas_coords_
 
-### need more study on thie snippet: building Gaussian activations ###
             gauss_activations = tf.multiply(
                 rho_coords_, thetas_coords_
-            )  # batch_size*n_vertices, n_gauss (n_gauss = n_thetas*n_rhos or num_conv_layers)
+            )  # batch_size*n_vertices, n_gauss (n_gauss = n_thetas*n_rhos)
             gauss_activations = tf.reshape(
                 gauss_activations, [n_samples, n_vertices, -1]
             )  # batch_size, n_vertices, n_gauss
             gauss_activations = tf.multiply(gauss_activations, mask)
             if (
                 mean_gauss_activation
-            ):  # computes mean weights for the different gaussians
+            ):  # computes mean weights for the different gaussians (gaussian-wise averaging)
                 gauss_activations /= (
                     tf.reduce_sum(gauss_activations, 1, keep_dims=True) + eps
                 )  # batch_size, n_vertices, n_gauss
@@ -112,7 +111,7 @@ class MaSIF_site:
                 input_feat, 3
             )  # batch_size, n_vertices, n_feat, 1
 
-            # gaussian descriptors: gaussian activation kernels w/ probability weights locally average the vertex-wise patch features (by tf.multiply(gauss_activations, input_feat_), thus acting as soft pixels)
+            # gaussian descriptors: gaussian activation kernels w/ probability weights locally (=gaussian-wise) average the vertex-wise patch features (by tf.multiply(gauss_activations, input_feat_), thus acting as soft pixels)
             gauss_desc = tf.multiply(
                 gauss_activations, input_feat_
             )  # batch_size, n_vertices, n_feat, n_gauss,
@@ -121,13 +120,14 @@ class MaSIF_site:
                 gauss_desc, [n_samples, self.n_thetas * self.n_rhos * n_feat]
             )  # batch_size, self.n_thetas*self.n_rhos*n_feat
 
-            conv_feat = tf.matmul(gauss_desc, W_conv) + b_conv  # batch_size, n_gauss
+            conv_feat = tf.matmul(gauss_desc, W_conv) + b_conv  # batch_size, self.n_thetas*self.n_rhos*n_feat
             all_conv_feat.append(conv_feat)
         all_conv_feat = tf.stack(all_conv_feat)  # n_rotations, batch_size, n_gauss
-        conv_feat = tf.reduce_max(all_conv_feat, 0)  # max pooling locally averaged patch features
+        conv_feat = tf.reduce_max(all_conv_feat, 0)  # (gaussian-wise) angular max pooling locally averaged surface features, (batch_size, n_gauss)
         conv_feat = tf.nn.relu(conv_feat)
         return conv_feat
 
+    # haven't seen code using this function tho, remove later if not necessary
     def compute_data_loss(self, neg_thresh=1e1):
         pos_thresh = 4.0
         neg_thresh = 0.0
@@ -157,6 +157,23 @@ class MaSIF_site:
         n_conv_layers=1,
         optimizer_method="Adam",
     ):
+        """
+        Initialize the MaSIF_site object.
+
+        Parameters:
+        - max_rho (float): The maximum value of the radial coordinate.
+        - n_thetas (int): The number of theta values in the polar grid.
+        - n_rhos (int): The number of rho values in the polar grid.
+        - n_gamma (float): The value of gamma.
+        - learning_rate (float): The learning rate for optimization.
+        - n_rotations (int): The number of rotations for data augmentation.
+        - idx_gpu (str): The index of the GPU to use.
+        - feat_mask (list): The mask for selecting surface features.
+        - n_conv_layers (int): The number of convolutional layers.
+        - optimizer_method (str): The optimization method to use.
+
+        """
+        super().__init__()
 
         # order of the spectral filters
         self.max_rho = max_rho
@@ -170,352 +187,458 @@ class MaSIF_site:
         self.n_rotations = n_rotations
         self.n_feat = int(sum(feat_mask))
         self.n_labels = 2
+        self.n_conv_layers = n_conv_layers
 
-        with tf.Graph().as_default() as g:
-            self.graph = g
-            tf.set_random_seed(0)
-            with tf.device(idx_gpu):
+        tf.random.set_seed(0)
+        
+        initial_coords = self.compute_initial_coordinates()
+        mu_rho_initial = np.expand_dims(initial_coords[:, 0], 0).astype("float32")
+        mu_theta_initial = np.expand_dims(initial_coords[:, 1], 0).astype("float32")
 
-                initial_coords = self.compute_initial_coordinates()
-                mu_rho_initial = np.expand_dims(initial_coords[:, 0], 0).astype(
-                    "float32"
+        # Gaussian Kernels for layer 1
+        # constructing learnable Gaussian Kernels (=learned soft polar grids) defined in a local geodesic polar system
+        # separate kernels for each surface feature (e.g. 5 learnable gaussians with separate parameters for 5 surface features)
+        # the parameters of the Gaussians are learnable on their own
+        self.mu_rho = []
+        self.sigma_rho = []
+        self.mu_theta = []
+        self.sigma_theta = []
+
+        for i in range(self.n_feat):
+            self.mu_rho.append(
+                tf.Variable(mu_rho_initial, name="mu_rho_{}".format(i))
+            )  # 1, n_gauss
+            self.sigma_rho.append(
+                tf.Variable(
+                    np.ones_like(mu_rho_initial) * self.sigma_rho_init,
+                    name="sigma_rho_{}".format(i),
                 )
-                mu_theta_initial = np.expand_dims(initial_coords[:, 1], 0).astype(
-                    "float32"
+            )  # 1, n_gauss
+            self.mu_theta.append(
+                tf.Variable(mu_theta_initial, name="mu_theta_{}".format(i))
+            )  # 1, n_gauss
+            self.sigma_theta.append(
+                tf.Variable(
+                    (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
+                    name="sigma_theta_{}".format(i),
                 )
-                # Gaussian Kernel for layer 1
-                # constructing learnable Gaussian Kernels (=learned soft polar grids) defined in a local geodesic polar system
-                # separate kernels for each surface feature (e.g. 5 learnable gaussians with separate parameters for 5 surface features)
-                # the parameters of the Gaussians are learnable on their own
-                self.mu_rho = []
-                self.mu_theta = []
-                self.sigma_rho = []
-                self.sigma_theta = []
-                for i in range(self.n_feat):
-                    self.mu_rho.append(
-                        tf.Variable(mu_rho_initial, name="mu_rho_{}".format(i))
-                    )  # 1, n_gauss
-                    self.mu_theta.append(
-                        tf.Variable(mu_theta_initial, name="mu_theta_{}".format(i))
-                    )  # 1, n_gauss
-                    self.sigma_rho.append(
-                        tf.Variable(
-                            np.ones_like(mu_rho_initial) * self.sigma_rho_init,
-                            name="sigma_rho_{}".format(i),
-                        )
-                    )  # 1, n_gauss
-                    self.sigma_theta.append(
-                        tf.Variable(
-                            (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
-                            name="sigma_theta_{}".format(i),
-                        )
-                    )  # 1, n_gauss
-                # Gaussian Kernel for layer 2
-                if n_conv_layers > 1:
-                    self.mu_rho_l2 = tf.Variable(
-                        mu_rho_initial, name="mu_rho_{}".format("l2")
-                    )
-                    self.sigma_rho_l2 = tf.Variable(
-                        mu_theta_initial, name="mu_theta_{}".format("l2")
-                    )
-                    self.mu_theta_l2 = tf.Variable(
-                        np.ones_like(mu_rho_initial) * self.sigma_rho_init,
-                        name="sigma_rho_{}".format("l2"),
-                    )
-                    self.sigma_theta_l2 = tf.Variable(
-                        (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
-                        name="sigma_theta_{}".format("l2"),
-                    )
-                if n_conv_layers > 2:
-                    self.mu_rho_l3 = tf.Variable(
-                        mu_rho_initial, name="mu_rho_{}".format("l3")
-                    )
-                    self.sigma_rho_l3 = tf.Variable(
-                        mu_theta_initial, name="mu_theta_{}".format("l3")
-                    )
-                    self.mu_theta_l3 = tf.Variable(
-                        np.ones_like(mu_rho_initial) * self.sigma_rho_init,
-                        name="sigma_rho_{}".format("l3"),
-                    )
-                    self.sigma_theta_l3 = tf.Variable(
-                        (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
-                        name="sigma_theta_{}".format("l3"),
-                    )
-                if n_conv_layers > 3:
-                    self.mu_rho_l4 = tf.Variable(
-                        mu_rho_initial, name="mu_rho_{}".format("l4")
-                    )
-                    self.sigma_rho_l4 = tf.Variable(
-                        mu_theta_initial, name="mu_theta_{}".format("l4")
-                    )
-                    self.mu_theta_l4 = tf.Variable(
-                        np.ones_like(mu_rho_initial) * self.sigma_rho_init,
-                        name="sigma_rho_{}".format("l4"),
-                    )
-                    self.sigma_theta_l4 = tf.Variable(
-                        (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
-                        name="sigma_theta_{}".format("l4"),
-                    )
+            )  # 1, n_gauss
 
-                self.rho_coords = tf.placeholder(
-                    tf.float32
-                )  # batch_size, n_vertices, 1
-                self.theta_coords = tf.placeholder(
-                    tf.float32
-                )  # batch_size, n_vertices, 1
-                self.input_feat = tf.placeholder(
-                    tf.float32, shape=[None, None, self.n_feat]
-                )  # batch_size, n_vertices, n_feat
-                self.mask = tf.placeholder(tf.float32)  # batch_size, n_vertices, 1
+        # Gaussian Kernels for additional layers
+        if n_conv_layers > 1:
+            self.mu_rho_l2 = tf.Variable(
+                mu_rho_initial, name="mu_rho_{}".format("l2")
+            )
+            self.sigma_rho_l2 = tf.Variable(
+                np.ones_like(mu_rho_initial) * self.sigma_rho_init,
+                name="sigma_rho_{}".format("l2"),
+            )
+            self.mu_theta_l2 = tf.Variable(
+                mu_theta_initial, name="mu_theta_{}".format("l2")
+            )
+            self.sigma_theta_l2 = tf.Variable(
+                (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
+                name="sigma_theta_{}".format("l2"),
+            )
+        if n_conv_layers > 2:
+            self.mu_rho_l3 = tf.Variable(
+                mu_rho_initial, name="mu_rho_{}".format("l3")
+            )
+            self.sigma_rho_l3 = tf.Variable(
+                np.ones_like(mu_rho_initial) * self.sigma_rho_init,
+                name="sigma_rho_{}".format("l3"),
+            )
+            self.mu_theta_l3 = tf.Variable(
+                mu_theta_initial, name="mu_theta_{}".format("l3")
+            )
+            self.sigma_theta_l3 = tf.Variable(
+                (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
+                name="sigma_theta_{}".format("l3"),
+            )
+        if n_conv_layers > 3:
+            self.mu_rho_l4 = tf.Variable(
+                mu_rho_initial, name="mu_rho_{}".format("l4")
+            )
+            self.sigma_rho_l4 = tf.Variable(
+                np.ones_like(mu_rho_initial) * self.sigma_rho_init,
+                name="sigma_rho_{}".format("l4"),
+            )
+            self.mu_theta_l4 = tf.Variable(
+                mu_theta_initial, name="mu_theta_{}".format("l4")
+            )
+            self.sigma_theta_l4 = tf.Variable(
+                (np.ones_like(mu_theta_initial) * self.sigma_theta_init),
+                name="sigma_theta_{}".format("l4"),
+            )
 
-                self.pos_idx = tf.placeholder(tf.int32)  # batch_size/2
-                self.neg_idx = tf.placeholder(tf.int32)  # batch_size/2
-                self.labels = tf.placeholder(tf.int32)  # batch_size, n_labels
-                self.indices_tensor = tf.placeholder(
-                    tf.int32
-                )  # batch_size, max_verts (< 30)
-                self.keep_prob = tf.placeholder(tf.float32)  # scalar
 
-                self.global_desc = []
+        """
+        above: defining learnable soft grids w/ n_rho * n_theta gaussians for each surface feature
+        (single soft grid for all the surf feat in additional convolutional layers)
 
-                # Use Geometric deep learning
-                b_conv = []
-                for i in range(self.n_feat):
-                    b_conv.append(
-                        tf.Variable(
-                            tf.zeros([self.n_thetas * self.n_rhos]),
-                            name="b_conv_{}".format(i),
-                        )
-                    )
-                for i in range(self.n_feat):
-                    my_input_feat = tf.expand_dims(self.input_feat[:, :, i], 2)
+        Define GDL layers (below)
+        """
+        # 1st surf feat-wise convolutional layer
 
-                    W_conv = tf.get_variable(
-                        "W_conv_{}".format(i),
-                        shape=[
-                            self.n_thetas * self.n_rhos,
-                            self.n_thetas * self.n_rhos,
-                        ],
-                        initializer=tf.contrib.layers.xavier_initializer(),
-                    )
+        # init_MLP = FC12, FC5
+        self.init_MLP = tf.keras.models.Sequential([
+            tf.keras.layers.Dense(self.n_thetas * self.n_rhos, activation=tf.nn.relu),
+            tf.keras.layers.Dense(self.n_feat, activation=tf.nn.relu)
+        ])
 
-                    rho_coords = self.rho_coords
-                    theta_coords = self.theta_coords
-                    mask = self.mask
+        # additional convolutional layers
 
-                    self.global_desc.append(
-                        self.inference(
-                            my_input_feat,
-                            rho_coords,
-                            theta_coords,
-                            mask,
-                            W_conv,
-                            b_conv[i],
-                            self.mu_rho[i],
-                            self.sigma_rho[i],
-                            self.mu_theta[i],
-                            self.sigma_theta[i],
-                        )
-                    )  # batch_size, n_gauss*1
-                # global_desc is n_feat, batch_size, n_gauss*1
-                # They should be batch_size, n_feat*n_gauss (5 x 12)
-                self.global_desc = tf.stack(self.global_desc, axis=1)
-                self.global_desc = tf.reshape(
-                    self.global_desc, [-1, self.n_thetas * self.n_rhos * self.n_feat]
+        # final_MLP = FC4, FC2
+        self.final_MLP = tf.keras.models.Sequential([
+            tf.keras.layers.Dense(self.n_thetas, activation=tf.nn.relu),
+            tf.keras.layers.Dense(self.n_labels, activation=None)
+        ])
+
+        # metrics definition --> simplify the code if works fine, or arg name="" for explicitly naming the metrics
+        accuracy = tf.keras.metrics.BinaryAccuracy()
+        precision = tf.keras.metrics.Precision()
+        recall = tf.keras.metrics.Recall()
+        auc = tf.keras.metrics.AUC()
+
+        self.metrics_list = [accuracy, precision, recall, auc]
+
+
+    def call(self, input_dict):
+        # Define the forward pass
+        # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
+        # feed_dict as input for the model.fit()
+
+        self.rho_coords = tf.cast(input_dict["rho_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.theta_coords = tf.cast(input_dict["theta_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.input_feat = tf.cast(input_dict["input_feat"], dtype=tf.float32)  # batch_size, n_vertices, n_feat
+        self.mask = tf.cast(input_dict["mask"], dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.pos_idx = tf.cast(input_dict["pos_idx"], dtype=tf.int32)  # batch_size/2
+        self.neg_idx = tf.cast(input_dict["neg_idx"], dtype=tf.int32)  # batch_size/2
+        self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
+        self.indices_tensor = tf.cast(input_dict["indices_tensor"], dtype=tf.int32)  # batch_size, max_verts (< 30)
+        self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
+
+        self.global_desc = []
+
+        # Use Geometric deep learning
+        b_conv = []
+        for i in range(self.n_feat):
+            b_conv.append(
+                tf.Variable(
+                    tf.zeros([self.n_thetas * self.n_rhos]),
+                    name="b_conv_{}".format(i),
                 )
-                self.global_desc = tf.contrib.layers.fully_connected(
-                    self.global_desc,
+            )
+
+        # with tf.device(idx_gpu):
+        for i in range(self.n_feat):
+            my_input_feat = tf.expand_dims(self.input_feat[:, :, i], 2)
+
+            W_conv = tf.Variable(
+                tf.keras.initializers.GlorotUniform()(
+                    shape=(self.n_thetas * self.n_rhos,
+                           self.n_thetas * self.n_rhos)
+                ),
+                name="W_conv_{}".format(i),
+            )
+
+            rho_coords = self.rho_coords
+            theta_coords = self.theta_coords
+            mask = self.mask
+
+            # inference()
+            # a function that computes the output of a convolutional layer (Geometric deep learning)
+            # performing local averaging of vertex-wise patch features via Gaussian kernels,
+            # then max pooling w/ rotation_replicas, then ReLU activation
+            self.global_desc.append(
+                self.inference(
+                    my_input_feat,
+                    rho_coords,
+                    theta_coords,
+                    mask,
+                    W_conv,
+                    b_conv[i],
+                    self.mu_rho[i],
+                    self.sigma_rho[i],
+                    self.mu_theta[i],
+                    self.sigma_theta[i],
+                )
+            )  # batch_size, n_gauss*1
+        # global_desc is n_feat, batch_size, n_gauss*1
+        # They should be batch_size, n_feat*n_gauss (5 x 12)
+        self.global_desc = tf.stack(self.global_desc, axis=1)
+        self.global_desc = tf.reshape(
+            self.global_desc, [-1, self.n_thetas * self.n_rhos * self.n_feat]
+        )
+
+        # init_MLP = FC12, FC5
+        self.global_desc = self.init_MLP(self.global_desc)
+
+        # Do a second convolutional layer. input: batch_size, n_feat -- output: batch_size, n_feat
+        if self.n_conv_layers > 1:
+            # Rebuild a patch based on the output of the first layer
+            self.global_desc = tf.gather(
+                self.global_desc, self.indices_tensor
+            )  # batch_size, max_verts, n_feat
+            W_conv_l2 = tf.Variable(
+                tf.keras.initializers.GlorotUniform()(
+                    shape=(
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                    )
+                ),
+                name="W_conv_l2",
+            )
+            b_conv_l2 = tf.Variable(
+                tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
+                name="b_conv_l2",
+            )
+            self.global_desc = self.inference(
+                self.global_desc,
+                rho_coords,
+                theta_coords,
+                mask,
+                W_conv_l2,
+                b_conv_l2,
+                self.mu_rho_l2,
+                self.sigma_rho_l2,
+                self.mu_theta_l2,
+                self.sigma_theta_l2,
+            )  # batch_size, n_gauss*n_gauss
+            batch_size = tf.shape(self.global_desc)[0]
+            # Reduce the dimensionality by averaging over the last dimension
+            self.global_desc = tf.reshape(
+                self.global_desc,
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+            )
+            self.global_desc = tf.reduce_mean(self.global_desc, axis=2)
+            # self.global_desc_shape = tf.shape(self.global_desc)       # for debugging
+
+        # Do a third convolutional layer. input: batch_size, n_feat, output: batch_size, n_gauss (nope, seems like output: batch_size, n_feat based on tf.reshape & tf.reduce_mean in Ln 419~423)
+        if self.n_conv_layers > 2:
+            # Rebuild a patch based on the output of the first layer
+            self.global_desc = tf.gather(
+                self.global_desc, self.indices_tensor
+            )  # batch_size, max_verts, n_gauss
+            print("global_desc shape: {}".format(self.global_desc.get_shape()))
+            W_conv_l3 = tf.Variable(
+                tf.keras.initializers.GlorotUniform()(
+                    shape=(
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                    )
+                ),
+                name="W_conv_l3",
+            )
+            b_conv_l3 = tf.Variable(
+                tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
+                name="b_conv_l3",
+            )
+            self.global_desc = self.inference(
+                self.global_desc,
+                rho_coords,
+                theta_coords,
+                mask,
+                W_conv_l3,
+                b_conv_l3,
+                self.mu_rho_l3,
+                self.sigma_rho_l3,
+                self.mu_theta_l3,
+                self.sigma_theta_l3,
+            )  # batch_size, n_gauss, n_gauss*n_theta
+            batch_size = tf.shape(self.global_desc)[0]
+            self.global_desc = tf.reshape(
+                self.global_desc,
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+            )
+            self.global_desc = tf.reduce_mean(self.global_desc, axis=2)
+
+        # Do a fourth convolutional layer. input: batch_size, n_gauss, output: batch_size, n_gauss
+        # W_conv_l4, b_conv_l4 shape looks werid, different from prev W_conv & b_conv
+            # never used l4 though since n_conv_layers = 3
+        if self.n_conv_layers > 3:
+            # Rebuild a patch based on the output of the first layer
+            self.global_desc = tf.gather(
+                self.global_desc, self.indices_tensor
+            )  # batch_size, max_verts, n_gauss
+
+            W_conv_l4 = tf.Variable(
+                tf.keras.initializers.GlorotUniform()(
+                    shape=(
+                        self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
+                        self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
+                    )
+                ),
+                name="W_conv_l4",
+            )
+            b_conv_l4 = tf.Variable(
+                tf.zeros([self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos]),
+                name="b_conv_l4",
+            )
+            self.global_desc = self.inference(
+                self.global_desc,
+                rho_coords,
+                theta_coords,
+                mask,
+                W_conv_l4,
+                b_conv_l4,
+                self.mu_rho_l4,
+                self.sigma_rho_l4,
+                self.mu_theta_l4,
+                self.sigma_theta_l4,
+            )  # batch_size, n_gauss, n_gauss*n_theta
+            batch_size = tf.shape(self.global_desc)[0]
+            self.global_desc = tf.reshape(
+                self.global_desc,
+                [
+                    batch_size,
                     self.n_thetas * self.n_rhos,
-                    activation_fn=tf.nn.relu,
-                )
-                self.global_desc = tf.contrib.layers.fully_connected(
-                    self.global_desc, self.n_feat, activation_fn=tf.nn.relu
-                )
+                    self.n_thetas * self.n_rhos,
+                ],
+            )
+            self.global_desc = tf.reduce_max(self.global_desc, axis=2)
+            self.global_desc_shape = tf.shape(self.global_desc)
 
-                # Do a second convolutional layer. input: batch_size, n_feat -- output: batch_size, n_feat
-                if n_conv_layers > 1:
-                    # Rebuild a patch based on the output of the first layer
-                    self.global_desc = tf.gather(
-                        self.global_desc, self.indices_tensor
-                    )  # batch_size, max_verts, n_feat
-                    W_conv_l2 = tf.get_variable(
-                        "W_conv_l2",
-                        shape=[
-                            self.n_feat * self.n_thetas * self.n_rhos,
-                            self.n_thetas * self.n_rhos * self.n_feat,
-                        ],
-                        initializer=tf.contrib.layers.xavier_initializer(),
-                    )
-                    b_conv_l2 = tf.Variable(
-                        tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
-                        name="b_conv_l2",
-                    )
-                    self.global_desc = self.inference(
-                        self.global_desc,
-                        rho_coords,
-                        theta_coords,
-                        mask,
-                        W_conv_l2,
-                        b_conv_l2,
-                        self.mu_rho_l2,
-                        self.sigma_rho_l2,
-                        self.mu_theta_l2,
-                        self.sigma_theta_l2,
-                    )  # batch_size, n_gauss*n_gauss
-                    batch_size = tf.shape(self.global_desc)[0]
-                    # Reduce the dimensionality by averaging over the last dimension
-                    self.global_desc = tf.reshape(
-                        self.global_desc,
-                        [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
-                    )
-                    self.global_desc = tf.reduce_mean(self.global_desc, axis=2)
-                    self.global_desc_shape = tf.shape(self.global_desc)
+        # refine global desc with MLP
+        # final_MLP = FC4, FC2
+        self.logits = self.final_MLP(self.global_desc)
+        self.count_number_parameters()
+        return self.logits
 
-                # Do a third convolutional layer. input: batch_size, n_feat, output: batch_size, n_gauss
-                if n_conv_layers > 2:
-                    # Rebuild a patch based on the output of the first layer
-                    self.global_desc = tf.gather(
-                        self.global_desc, self.indices_tensor
-                    )  # batch_size, max_verts, n_gauss
-                    print("global_desc shape: {}".format(self.global_desc.get_shape()))
-                    W_conv_l3 = tf.get_variable(
-                        "W_conv_l3",
-                        shape=[
-                            self.n_thetas * self.n_rhos * self.n_feat,
-                            self.n_thetas * self.n_rhos * self.n_feat,
-                        ],
-                        initializer=tf.contrib.layers.xavier_initializer(),
-                    )
-                    b_conv_l3 = tf.Variable(
-                        tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
-                        name="b_conv_l3",
-                    )
-                    self.global_desc = self.inference(
-                        self.global_desc,
-                        rho_coords,
-                        theta_coords,
-                        mask,
-                        W_conv_l3,
-                        b_conv_l3,
-                        self.mu_rho_l3,
-                        self.sigma_rho_l3,
-                        self.mu_theta_l3,
-                        self.sigma_theta_l3,
-                    )  # batch_size, n_gauss, n_gauss*n_theta
-                    batch_size = tf.shape(self.global_desc)[0]
-                    self.global_desc = tf.reshape(
-                        self.global_desc,
-                        [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
-                    )
-                    self.global_desc = tf.reduce_mean(self.global_desc, axis=2)
 
-                # Do a fourth convolutional layer. input: batch_size, n_gauss, output: batch_size, n_gauss
-                if n_conv_layers > 3:
-                    # Rebuild a patch based on the output of the first layer
-                    self.global_desc = tf.gather(
-                        self.global_desc, self.indices_tensor
-                    )  # batch_size, max_verts, n_gauss
-                    W_conv_l4 = tf.get_variable(
-                        "W_conv_l4",
-                        shape=[
-                            self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
-                            self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
-                        ],
-                        initializer=tf.contrib.layers.xavier_initializer(),
-                    )
-                    b_conv_l4 = tf.Variable(
-                        tf.zeros(
-                            [self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos]
-                        ),
-                        name="b_conv_l4",
-                    )
-                    self.global_desc = self.inference(
-                        self.global_desc,
-                        rho_coords,
-                        theta_coords,
-                        mask,
-                        W_conv_l4,
-                        b_conv_l4,
-                        self.mu_rho_l4,
-                        self.sigma_rho_l4,
-                        self.mu_theta_l4,
-                        self.sigma_theta_l4,
-                    )  # batch_size, n_gauss, n_gauss*n_theta
-                    batch_size = tf.shape(self.global_desc)[0]
-                    self.global_desc = tf.reshape(
-                        self.global_desc,
-                        [
-                            batch_size,
-                            self.n_thetas * self.n_rhos,
-                            self.n_thetas * self.n_rhos,
-                        ],
-                    )
-                    self.global_desc = tf.reduce_max(self.global_desc, axis=2)
-                    self.global_desc_shape = tf.shape(self.global_desc)
-                # refine global desc with MLP
-                self.global_desc = tf.contrib.layers.fully_connected(
-                    self.global_desc, self.n_thetas, activation_fn=tf.nn.relu
-                )
 
-                # self.labels = tf.expand_dims(self.labels, axis=0)
-                self.logits = tf.contrib.layers.fully_connected(
-                    self.global_desc, self.n_labels, activation_fn=tf.identity
-                )
-                # self.logits = tf.expand_dims(self.logits, axis=0)
-                self.eval_labels = tf.concat(
-                    [
-                        tf.gather(self.labels, self.pos_idx),
-                        tf.gather(self.labels, self.neg_idx),
-                    ],
-                    axis=0,
-                )
-                self.eval_logits = tf.concat(
-                    [
-                        tf.gather(self.logits, self.pos_idx),
-                        tf.gather(self.logits, self.neg_idx),
-                    ],
-                    axis=0,
-                )
-                self.data_loss = tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.to_float(self.eval_labels), logits=self.eval_logits
-                )
+    """
+    train_step(): not used when using fit(), but used when using custom training loop
+    where you have more control over the training process and want to define the exact operations performed during each training step.
+    
+    may need to modify this function to fit the custom training loop for transfer learning
+    so let's use train_step() for now
+    """
+    @tf.function
+    def train_step(
+        self,
+        input_dict,
+        optimizer_method,
+        learning_rate=1e-3
+    ):
+        # input = input_dict
+        # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
+        with tf.GradientTape() as tape:
+            # Forward pass (self() ~ model.call())
+            self.eval_logits = self(input_dict, training=True)
+            
+            self.eval_labels = tf.concat(
+                [
+                    tf.gather(self.labels, self.pos_idx),
+                    tf.gather(self.labels, self.neg_idx),
+                ],
+                axis=0,
+            )
+            self.eval_logits = tf.concat(
+                [
+                    tf.gather(self.logits, self.pos_idx),
+                    tf.gather(self.logits, self.neg_idx),
+                ],
+                axis=0,
+            )
+            # Compute the loss
+            self.loss = tf.nn.sigmoid_cross_entropy_with_logits(
+                labels=tf.cast(self.eval_labels, tf.float32),
+                logits=self.eval_logits,
+            )
+            # eval_logits and eval_scores are reordered according to pos and neg_idx.
+            self.eval_logits = tf.nn.sigmoid(self.eval_logits)
+            self.eval_score = tf.squeeze(self.eval_logits)[:, 0]                            
 
-                # eval_logits and eval_scores are reordered according to pos and neg_idx.
-                self.eval_logits = tf.nn.sigmoid(self.eval_logits)
-                self.eval_score = tf.squeeze(self.eval_logits)[:, 0]
+            self.full_logits = tf.nn.sigmoid(self.logits)
+            self.full_score = tf.squeeze(self.full_logits)[:, 0]
 
-                self.full_logits = tf.nn.sigmoid(self.logits)
-                self.full_score = tf.squeeze(self.full_logits)[:, 0]
+        # definition of the solver
+        if optimizer_method == "AMSGrad":
+            from monet_modules import AMSGrad
 
-                # definition of the solver
-                if optimizer_method == "AMSGrad":
-                    from monet_modules import AMSGrad
+            print("Using AMSGrad as the optimizer")
+            self.optimizer = AMSGrad.AMSGrad(
+                learning_rate=0.01, beta1=0.9, beta2=0.99, epsilon=1e-8
+            )
+        else:
+            self.optimizer = tf.keras.optimizers.Adam(
+                learning_rate=learning_rate
+            )
+        # Compute gradients
+        gradients = tape.gradient(self.loss, self.trainable_variables)
+        # Update weights
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        # Log for gradients & norm of gradients
+        for k in range(len(gradients)):
+            if gradients[k] is None:
+                print(self.trainable_variables[k])
+        self.norm_grad = self.frobenius_norm(
+            tf.concat([tf.reshape(g, [-1]) for g in gradients], 0)
+        )   # a shape of [-1] flattens into 1-D.
+        
+        # Update metrics
+        for metric in self.metrics_list:
+            metric.update_state(
+                tf.cast(self.eval_labels[:, 0],tf.float32),
+                self.eval_score
+            )
+        return {
+                    "loss": self.loss,
+                    "eval_score": self.eval_score,
+                    "full_score": self.full_score,
+                    **{metric.name: metric.result() for metric in self.metrics_list}
+                }
 
-                    print("Using AMSGrad as the optimizer")
-                    self.optimizer = AMSGrad.AMSGrad(
-                        learning_rate=0.01, beta1=0.9, beta2=0.99, epsilon=1e-8
-                    ).minimize(self.data_loss)
-                else:
-                    self.optimizer = tf.train.AdamOptimizer(
-                        learning_rate=learning_rate
-                    ).minimize(self.data_loss)
+    # for manually iterating over the validation dataset using a custom validation loop
+    def test_step(
+        self,
+        input_dict
+    ):
+        # input = input_dict
+        # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
+        # Forward pass
+        self.eval_logits = self(input_dict, training=True)
+            
+        self.eval_labels = tf.concat(
+            [
+                tf.gather(self.labels, self.pos_idx),
+                tf.gather(self.labels, self.neg_idx),
+            ],
+            axis=0,
+        )
+        self.eval_logits = tf.concat(
+            [
+                tf.gather(self.logits, self.pos_idx),
+                tf.gather(self.logits, self.neg_idx),
+            ],
+            axis=0,
+        )
+        # Compute the loss
+        self.loss = tf.nn.sigmoid_cross_entropy_with_logits(
+            labels=tf.cast(self.eval_labels, tf.float32),
+            logits=self.eval_logits,
+        )
+        # eval_logits and eval_scores are reordered according to pos and neg_idx.
+        self.eval_logits = tf.nn.sigmoid(self.eval_logits)
+        self.eval_score = tf.squeeze(self.eval_logits)[:, 0]
+        
+        # Update metrics
+        for metric in self.metrics_list:
+            metric.update_state(
+                tf.cast(self.eval_labels[:, 0],tf.float32),
+                self.eval_score
+            )
+        # remove print after checking the metric.name
+        print({
+                    "loss": self.loss,
+                    **{metric.name: metric.result() for metric in self.metrics_list}
+                })
 
-                self.var_grad = tf.gradients(self.data_loss, tf.trainable_variables())
-                for k in range(len(self.var_grad)):
-                    if self.var_grad[k] is None:
-                        print(tf.trainable_variables()[k])
-                self.norm_grad = self.frobenius_norm(
-                    tf.concat([tf.reshape(g, [-1]) for g in self.var_grad], 0)
-                )
-
-                # Create a session for running Ops on the Graph.
-                config = tf.ConfigProto(allow_soft_placement=True)
-                config.gpu_options.allow_growth = True
-                self.session = tf.Session(config=config)
-                self.saver = tf.train.Saver()
-
-                # Run the Op to initialize the variables.
-                init = tf.global_variables_initializer()
-                self.session.run(init)
-                self.count_number_parameters()
+        return {
+                    "loss": self.loss,
+                    "eval_score": self.eval_score,
+                    "full_score": self.full_score,
+                    **{metric.name: metric.result() for metric in self.metrics_list}
+                }
 
