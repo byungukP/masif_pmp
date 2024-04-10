@@ -501,10 +501,8 @@ class MaSIF_site(tf.keras.Model):
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         self.logits = self.final_MLP(self.global_desc)
-        # self.count_number_parameters()
+        # self.count_number_parameters() --> train_masif_site_tf2.py model.summary() instead
 
-        for variable in self.trainable_variables:
-            print(variable)
 
         return self.logits
 
