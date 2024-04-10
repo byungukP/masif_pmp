@@ -509,6 +509,7 @@ class MaSIF_site(tf.keras.Model):
             shape = variable.shape
             print(variable)
             print(shape, type(shape))
+            print(tf.reduce_prod(shape), type(tf.reduce_prod(shape))
             variable_parameters = tf.reduce_prod(shape)
             print(variable_parameters)
             total_parameters += variable_parameters
