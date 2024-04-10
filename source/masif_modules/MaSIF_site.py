@@ -17,8 +17,7 @@ class MaSIF_site(tf.keras.Model):
             print(variable)
             variable_parameters = tf.reduce_prod(shape)
             total_parameters += variable_parameters
-        # print("Total number parameters: %d" % total_parameters.numpy())
-        print("Total number parameters: {}".format(total_parameters))
+        print("Total number parameters: %d" % total_parameters.numpy())
 
     def frobenius_norm(self, tensor):
         square_tensor = tf.square(tensor)
@@ -197,8 +196,8 @@ class MaSIF_site(tf.keras.Model):
         mu_theta_initial = np.expand_dims(initial_coords[:, 1], 0).astype("float32")
 
         # Gaussian Kernels for layer 1
-        # constructing learnable Gaussian Kernels (=learned soft polar grids) defined in a local geodesic polar system
-        # separate kernels for each surface feature (e.g. 5 learnable gaussians with separate parameters for 5 surface features)
+        # constructing learnable soft grids w/ n_rho * n_theta gaussians kernels defined in a local geodesic polar system
+        # separate soft grids for each surface feature (e.g. 5 learnable gaussians with separate parameters for 5 surface features)
         # the parameters of the Gaussians are learnable on their own
         self.mu_rho = []
         self.sigma_rho = []
@@ -226,6 +225,7 @@ class MaSIF_site(tf.keras.Model):
             )  # 1, n_gauss
 
         # Gaussian Kernels for additional layers
+        # single soft grid for all the surf feat in additional convolutional layers
         if n_conv_layers > 1:
             self.mu_rho_l2 = tf.Variable(
                 mu_rho_initial, name="mu_rho_{}".format("l2")
@@ -272,14 +272,24 @@ class MaSIF_site(tf.keras.Model):
                 name="sigma_theta_{}".format("l4"),
             )
 
-
         """
-        above: defining learnable soft grids w/ n_rho * n_theta gaussians for each surface feature
-        (single soft grid for all the surf feat in additional convolutional layers)
-
-        Define GDL layers (below)
+        Define GDL layers (below) --> as separate custom layers for cleaner code, variables + inference() (import)
         """
-        # 1st surf feat-wise convolutional layer
+        # 1st GDL layer: surf feat-wise convolution
+        self.W_conv = []
+        self.b_conv = []
+        for i in range(self.n_feat):
+            self.W_conv.append(tf.Variable(
+                    tf.keras.initializers.GlorotUniform()(
+                        shape=(self.n_thetas * self.n_rhos,
+                               self.n_thetas * self.n_rhos)
+                    ),
+                    name=f"W_conv_{i}",
+            ))
+            self.b_conv.append(tf.Variable(
+                tf.zeros([self.n_thetas * self.n_rhos]),
+                name=f"b_conv_{i}",
+            ))
 
         # init_MLP = FC12, FC5
         self.init_MLP = tf.keras.models.Sequential([
@@ -287,7 +297,51 @@ class MaSIF_site(tf.keras.Model):
             tf.keras.layers.Dense(self.n_feat, activation=tf.nn.relu)
         ])
 
-        # additional convolutional layers
+        # additional GDL layers: simple convolutions
+        if self.n_conv_layers > 1:
+            self.W_conv_l2 = tf.Variable(
+                tf.keras.initializers.GlorotUniform()(
+                    shape=(
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                    )
+                ),
+                name="W_conv_l2",
+            )
+            self.b_conv_l2 = tf.Variable(
+                tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
+                name="b_conv_l2",
+            )
+
+        if self.n_conv_layers > 2:
+            self.W_conv_l3 = tf.Variable(
+                tf.keras.initializers.GlorotUniform()(
+                    shape=(
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                        self.n_thetas * self.n_rhos * self.n_feat,
+                    )
+                ),
+                name="W_conv_l3",
+            )
+            self.b_conv_l3 = tf.Variable(
+                tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
+                name="b_conv_l3",
+            )
+
+        if self.n_conv_layers > 3:
+            self.W_conv_l4 = tf.Variable(
+                tf.keras.initializers.GlorotUniform()(
+                    shape=(
+                        self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
+                        self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
+                    )
+                ),
+                name="W_conv_l4",
+            )
+            self.b_conv_l4 = tf.Variable(
+                tf.zeros([self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos]),
+                name="b_conv_l4",
+            )
 
         # final_MLP = FC4, FC2
         self.final_MLP = tf.keras.models.Sequential([
@@ -307,7 +361,6 @@ class MaSIF_site(tf.keras.Model):
     def call(self, input_dict):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
-        # feed_dict as input for the model.fit()
 
         self.rho_coords = tf.cast(input_dict["rho_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
         self.theta_coords = tf.cast(input_dict["theta_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
@@ -321,31 +374,9 @@ class MaSIF_site(tf.keras.Model):
 
         self.global_desc = []
 
-        """
-        might have to move all the tf.Variables() to __init__ if the model is not working as expected
-        """
         # Use Geometric deep learning
-        b_conv = []
-        for i in range(self.n_feat):
-            b_conv.append(
-                tf.Variable(
-                    tf.zeros([self.n_thetas * self.n_rhos]),
-                    name="b_conv_{}".format(i),
-                )
-            )
-
-        # with tf.device(idx_gpu):
         for i in range(self.n_feat):
             my_input_feat = tf.expand_dims(self.input_feat[:, :, i], 2)
-
-            W_conv = tf.Variable(
-                tf.keras.initializers.GlorotUniform()(
-                    shape=(self.n_thetas * self.n_rhos,
-                           self.n_thetas * self.n_rhos)
-                ),
-                name="W_conv_{}".format(i),
-            )
-
             rho_coords = self.rho_coords
             theta_coords = self.theta_coords
             mask = self.mask
@@ -360,8 +391,8 @@ class MaSIF_site(tf.keras.Model):
                     rho_coords,
                     theta_coords,
                     mask,
-                    W_conv,
-                    b_conv[i],
+                    self.W_conv[i],
+                    self.b_conv[i],
                     self.mu_rho[i],
                     self.sigma_rho[i],
                     self.mu_theta[i],
@@ -369,46 +400,36 @@ class MaSIF_site(tf.keras.Model):
                 )
             )  # batch_size, n_gauss*1
         # global_desc is n_feat, batch_size, n_gauss*1
-        # They should be batch_size, n_feat*n_gauss (5 x 12)
+        # They should be batch_size, n_gauss*n_feat (12 x 5)
         self.global_desc = tf.stack(self.global_desc, axis=1)
         self.global_desc = tf.reshape(
             self.global_desc, [-1, self.n_thetas * self.n_rhos * self.n_feat]
         )
 
-        # init_MLP = FC12, FC5
+        # init_MLP = FC12 (n_thease * n_rhos), FC5 (n_feat)
         self.global_desc = self.init_MLP(self.global_desc)
 
-        # Do a second convolutional layer. input: batch_size, n_feat -- output: batch_size, n_feat
+        # Do a second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
         if self.n_conv_layers > 1:
             # Rebuild a patch based on the output of the first layer
             self.global_desc = tf.gather(
                 self.global_desc, self.indices_tensor
             )  # batch_size, max_verts, n_feat
-            W_conv_l2 = tf.Variable(
-                tf.keras.initializers.GlorotUniform()(
-                    shape=(
-                        self.n_thetas * self.n_rhos * self.n_feat,
-                        self.n_thetas * self.n_rhos * self.n_feat,
-                    )
-                ),
-                name="W_conv_l2",
-            )
-            b_conv_l2 = tf.Variable(
-                tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
-                name="b_conv_l2",
-            )
+            print("ConvL2 input global_desc shape: {}".format(self.global_desc.get_shape()))
+
             self.global_desc = self.inference(
                 self.global_desc,
                 rho_coords,
                 theta_coords,
                 mask,
-                W_conv_l2,
-                b_conv_l2,
+                self.W_conv_l2,
+                self.b_conv_l2,
                 self.mu_rho_l2,
                 self.sigma_rho_l2,
                 self.mu_theta_l2,
                 self.sigma_theta_l2,
-            )  # batch_size, n_gauss*n_gauss
+            )  # batch_size, n_gauss*n_feat
+            print("ConvL2 output global_desc shape: {}".format(self.global_desc.get_shape()))
             batch_size = tf.shape(self.global_desc)[0]
             # Reduce the dimensionality by averaging over the last dimension
             self.global_desc = tf.reshape(
@@ -418,38 +439,27 @@ class MaSIF_site(tf.keras.Model):
             self.global_desc = tf.reduce_mean(self.global_desc, axis=2)
             # self.global_desc_shape = tf.shape(self.global_desc)       # for debugging
 
-        # Do a third convolutional layer. input: batch_size, n_feat, output: batch_size, n_gauss (nope, seems like output: batch_size, n_feat based on tf.reshape & tf.reduce_mean in Ln 419~423)
+        # Do a third convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
         if self.n_conv_layers > 2:
             # Rebuild a patch based on the output of the first layer
             self.global_desc = tf.gather(
                 self.global_desc, self.indices_tensor
-            )  # batch_size, max_verts, n_gauss
-            print("global_desc shape: {}".format(self.global_desc.get_shape()))
-            W_conv_l3 = tf.Variable(
-                tf.keras.initializers.GlorotUniform()(
-                    shape=(
-                        self.n_thetas * self.n_rhos * self.n_feat,
-                        self.n_thetas * self.n_rhos * self.n_feat,
-                    )
-                ),
-                name="W_conv_l3",
-            )
-            b_conv_l3 = tf.Variable(
-                tf.zeros([self.n_thetas * self.n_rhos * self.n_feat]),
-                name="b_conv_l3",
-            )
+            )  # batch_size, max_verts, n_feat
+            print("ConvL3 input global_desc shape: {}".format(self.global_desc.get_shape()))
+
             self.global_desc = self.inference(
                 self.global_desc,
                 rho_coords,
                 theta_coords,
                 mask,
-                W_conv_l3,
-                b_conv_l3,
+                self.W_conv_l3,
+                self.b_conv_l3,
                 self.mu_rho_l3,
                 self.sigma_rho_l3,
                 self.mu_theta_l3,
                 self.sigma_theta_l3,
-            )  # batch_size, n_gauss, n_gauss*n_theta
+            )  # batch_size, n_gauss*n_feat
+            print("ConvL3 output global_desc shape: {}".format(self.global_desc.get_shape()))
             batch_size = tf.shape(self.global_desc)[0]
             self.global_desc = tf.reshape(
                 self.global_desc,
@@ -464,33 +474,22 @@ class MaSIF_site(tf.keras.Model):
             # Rebuild a patch based on the output of the first layer
             self.global_desc = tf.gather(
                 self.global_desc, self.indices_tensor
-            )  # batch_size, max_verts, n_gauss
+            )  # batch_size, max_verts, n_gauss (nope, n_feat)
+            print("ConvL4 input global_desc shape: {}".format(self.global_desc.get_shape()))
 
-            W_conv_l4 = tf.Variable(
-                tf.keras.initializers.GlorotUniform()(
-                    shape=(
-                        self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
-                        self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos,
-                    )
-                ),
-                name="W_conv_l4",
-            )
-            b_conv_l4 = tf.Variable(
-                tf.zeros([self.n_thetas * self.n_rhos * self.n_thetas * self.n_rhos]),
-                name="b_conv_l4",
-            )
             self.global_desc = self.inference(
                 self.global_desc,
                 rho_coords,
                 theta_coords,
                 mask,
-                W_conv_l4,
-                b_conv_l4,
+                self.W_conv_l4,
+                self.b_conv_l4,
                 self.mu_rho_l4,
                 self.sigma_rho_l4,
                 self.mu_theta_l4,
                 self.sigma_theta_l4,
             )  # batch_size, n_gauss, n_gauss*n_theta
+            print("ConvL4 output global_desc shape: {}".format(self.global_desc.get_shape()))
             batch_size = tf.shape(self.global_desc)[0]
             self.global_desc = tf.reshape(
                 self.global_desc,
