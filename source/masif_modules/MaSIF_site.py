@@ -503,17 +503,8 @@ class MaSIF_site(tf.keras.Model):
         self.logits = self.final_MLP(self.global_desc)
         # self.count_number_parameters()
 
-        total_parameters = 0
         for variable in self.trainable_variables:
-            # shape is an array of tf.Dimension
-            shape = variable.shape
             print(variable)
-            # print(shape, type(shape))
-            # print(tf.reduce_prod(shape), type(tf.reduce_prod(shape)))
-            variable_parameters = tf.reduce_prod(shape)
-            print(variable_parameters.numpy())
-            total_parameters += variable_parameters.numpy()
-        print("Total number parameters: %d" % total_parameters.numpy())
 
         return self.logits
 
