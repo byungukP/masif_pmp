@@ -517,7 +517,7 @@ class MaSIF_site(tf.keras.Model):
     may need to modify this function to fit the custom training loop for transfer learning
     so let's use train_step() for now
     """
-    @tf.function
+    # @tf.function
     def train_step(
         self,
         input_dict,
