@@ -6,7 +6,8 @@ class MaSIF_site(tf.keras.Model):
 
     """
     The neural network model. TF v2
-    Updated by ByungUk Park UW-Madison, 2024
+    ByungUk Park UW-Madison, 2024
+    
     """
 
     def count_number_parameters(self):
@@ -126,23 +127,6 @@ class MaSIF_site(tf.keras.Model):
         conv_feat = tf.reduce_max(all_conv_feat, 0)  # (gaussian-wise) angular max pooling locally averaged surface features, (batch_size, n_gauss)
         conv_feat = tf.nn.relu(conv_feat)
         return conv_feat
-
-    # haven't seen code using this function tho, remove later if not necessary
-    def compute_data_loss(self, neg_thresh=1e1):
-        pos_thresh = 4.0
-        neg_thresh = 0.0
-        pos_labels = self.labels[:, 0]
-        n_pos = tf.reduce_sum(pos_labels)
-        pos_scores = tf.multiply(self.logits[:, 0], tf.to_float(pos_labels))
-        pos_scores = tf.reduce_sum(pos_scores) / n_pos
-
-        neg_labels = self.labels[:, 1]
-        n_neg = tf.reduce_sum(neg_labels)
-        neg_scores = tf.multiply(self.logits[:, 1], tf.to_float(neg_labels))
-        neg_scores = tf.reduce_sum(neg_scores) / n_neg
-
-        data_loss = neg_scores - pos_scores
-        return data_loss
 
     def __init__(
         self,
@@ -349,13 +333,13 @@ class MaSIF_site(tf.keras.Model):
             tf.keras.layers.Dense(self.n_labels, activation=None)
         ])
 
-        # metrics definition --> simplify the code if works fine, or arg name="" for explicitly naming the metrics
-        accuracy = tf.keras.metrics.BinaryAccuracy()
-        precision = tf.keras.metrics.Precision()
-        recall = tf.keras.metrics.Recall()
-        auc = tf.keras.metrics.AUC()
-
-        self.metrics_list = [accuracy, precision, recall, auc]
+        # metrics definition: arg name='binary_accuracy', 'precision', 'recall', 'auc'
+        self.metrics_list = [
+            tf.keras.metrics.BinaryAccuracy(),
+            tf.keras.metrics.Precision(),
+            tf.keras.metrics.Recall(),
+            tf.keras.metrics.AUC()
+        ]
 
 
     def call(self, input_dict):
@@ -503,7 +487,6 @@ class MaSIF_site(tf.keras.Model):
         self.logits = self.final_MLP(self.global_desc)
         # self.count_number_parameters() --> train_masif_site_tf2.py model.summary() instead
 
-
         return self.logits
 
 
@@ -588,7 +571,7 @@ class MaSIF_site(tf.keras.Model):
                     "loss": self.loss,
                     "eval_score": self.eval_score,
                     "full_score": self.full_score,
-                    **{metric.name: metric.result() for metric in self.metrics_list}
+                    **{metric.name: metric.result().numpy() for metric in self.metrics_list}
                 }
 
     # for manually iterating over the validation dataset using a custom validation loop
@@ -630,16 +613,10 @@ class MaSIF_site(tf.keras.Model):
                 tf.cast(self.eval_labels[:, 0],tf.float32),
                 self.eval_score
             )
-        # remove print after checking the metric.name
-        print({
-                    "loss": self.loss,
-                    **{metric.name: metric.result() for metric in self.metrics_list}
-                })
-
         return {
                     "loss": self.loss,
                     "eval_score": self.eval_score,
                     "full_score": self.full_score,
-                    **{metric.name: metric.result() for metric in self.metrics_list}
+                    **{metric.name: metric.result().numpy() for metric in self.metrics_list}
                 }
 

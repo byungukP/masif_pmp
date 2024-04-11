@@ -9,11 +9,10 @@ import tensorflow as tf
 
 """
 masif_site_train.py: Entry function to train MaSIF-site.
-Pablo Gainza - LPDI STI EPFL 2019
-This file is part of MaSIF.
-Released under an Apache License 2.0
+ByungUk Park - UW-Madison 2024
+Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
+#Released under an Apache License 2.0
 
-updated by ByungUk Park - UW-Madison 2023
 """
 
 params = masif_opts["site"]
@@ -114,20 +113,3 @@ if not os.path.exists(params["out_surf_dir"]):
     os.makedirs(params["out_surf_dir"])
 
 train_masif_site(model, params, num_epochs=params['epoch_num'])
-
-
-
-
-
-
-# Now you can use this model for inference or further training in TensorFlow 2.x
-# However, it's worth noting that once you've loaded the model in TensorFlow 2.x,
-# you might want to consider converting it to a native TensorFlow 2.x format using
-
-
-
-### add more if arguments, function arugments, etc ###
-### or, define new train_masif_site.py script that take model, params, epoch_num,
-### model_dir, train & test_list, etc as arguments and run the training script.
-
-
