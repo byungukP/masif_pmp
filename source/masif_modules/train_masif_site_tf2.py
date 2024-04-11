@@ -115,6 +115,7 @@ def train_masif_site(
         """
 
         count_proteins = 0
+        skipped_pdb_list = []
 
         # list_training_loss = []     # loss shape = [batch_size, 2] --> list_loss cannot be averaged directly
         list_training_acc = []
@@ -178,7 +179,7 @@ def train_masif_site(
                     or np.sum(iface_labels) > 0.75 * len(iface_labels)
                     or np.sum(iface_labels) < 30
                 ):
-                    print(f"Skipping {ppi_pair_id} {pid} to prevent biased fitting")
+                    skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
                     continue
                 count_proteins += 1
 
@@ -272,6 +273,9 @@ def train_masif_site(
 
         # Summary of epoch
         outstr = "Epoch ran on {} proteins\n".format(count_proteins)
+        outstr += "   - {} proteins skipped to prevent biased fitting: {}\n".format(
+            len(skipped_pdb_list), skipped_pdb_list
+        )
         ## per protein metrics (training)
         outstr += "Per protein Accuracy mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_training_acc), np.median(list_training_acc), epoch +1
