@@ -16,7 +16,7 @@ class MaSIF_site(tf.keras.Model):
             # shape is an array of tf.Dimension
             shape = variable.shape
             print(
-                "<tf.Variable '{}' shape={} dtype={}>".format(
+                "<tf.Variable '{}' shape={} {}>".format(
                     variable.name, variable.shape, variable.dtype()
                 )
             )
