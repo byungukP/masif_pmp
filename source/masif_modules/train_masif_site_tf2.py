@@ -178,6 +178,7 @@ def train_masif_site(
                     or np.sum(iface_labels) > 0.75 * len(iface_labels)
                     or np.sum(iface_labels) < 30
                 ):
+                    print(f"Skipping {ppi_pair_id} {pid} to prevent biased fitting")
                     continue
                 count_proteins += 1
 
@@ -322,7 +323,7 @@ def train_masif_site(
             # np.save(out_dir + "test_names.npy", list_test_names)
 
     # Display the model's architecture: built-in model.summary() for functional API models
-    logfile.write("\nSummary of Model: trainable variables & structure\n{}\n".format(model.count_number_parameters()))
-    print("\nSummary of Model: trainable variables & structure\n{}\n".format(model.count_number_parameters()))
+    print("\nModel Summary: trainable variables & structure\n")
+    model.count_number_parameters()
 
     logfile.close()
