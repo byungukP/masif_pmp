@@ -127,8 +127,8 @@ def train_masif_site(
         list_val_recall = []
         list_val_auc = []
 
-        logfile.write("Starting epoch {}\n".format(epoch +1))
-        print("Starting epoch {}\n".format(epoch + 1))
+        logfile.write("\nStarting epoch {}\n".format(epoch +1))
+        print("\nStarting epoch {}\n".format(epoch + 1))
         tic = time.time()
         all_training_labels = []
         all_training_scores = []
@@ -321,8 +321,8 @@ def train_masif_site(
             # np.save(out_dir + "test_scores.npy", all_test_scores)
             # np.save(out_dir + "test_names.npy", list_test_names)
 
-    # Display the model's architecture
-    logfile.write("\nSummary of Model: trainable variables & structure\n{}\n".format(model.summary()))
-    print("\nSummary of Model: trainable variables & structure\n{}\n".format(model.summary()))
+    # Display the model's architecture: built-in model.summary() for functional API models
+    logfile.write("\nSummary of Model: trainable variables & structure\n{}\n".format(model.count_number_parameters()))
+    print("\nSummary of Model: trainable variables & structure\n{}\n".format(model.count_number_parameters()))
 
     logfile.close()
