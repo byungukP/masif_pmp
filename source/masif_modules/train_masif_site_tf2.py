@@ -112,13 +112,12 @@ def train_masif_site(
 
         count_proteins = 0
 
-        list_training_loss = []
+        # list_training_loss = []     # loss shape = [batch_size, 2] --> list_loss cannot be averaged directly
         list_training_acc = []
         list_training_precision = []
         list_training_recall = []
         list_training_auc = []
 
-        list_val_loss = []
         list_val_acc = []
         list_val_precision = []
         list_val_recall = []
@@ -238,8 +237,7 @@ def train_masif_site(
                     For 5-CV --> maybe write new script using KFold() from sklearn.model_selection
                     """
                     logs = model.test_step(input_dict)
-                    loss, acc, precision, recall, auc = logs["loss"], logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
-                    list_val_loss.append(loss)
+                    acc, precision, recall, auc = logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
                     list_val_acc.append(acc)
                     list_val_precision.append(precision)
                     list_val_recall.append(recall)
@@ -257,8 +255,7 @@ def train_masif_site(
                     )
 
                     # auc = metrics.roc_auc_score(eval_labels[:, 0], score)
-                    loss, acc, precision, recall, auc = logs["loss"], logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
-                    list_training_loss.append(loss)
+                    acc, precision, recall, auc = logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
                     list_training_acc.append(acc)
                     list_training_precision.append(precision)
                     list_training_recall.append(recall)
@@ -271,9 +268,6 @@ def train_masif_site(
         # Summary of epoch
         outstr = "Epoch ran on {} proteins\n".format(count_proteins)
         ## per protein metrics (training)
-        outstr += "Per protein Loss mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_training_loss), np.median(list_training_loss), epoch +1
-        )
         outstr += "Per protein Accuracy mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_training_acc), np.median(list_training_acc), epoch +1
         )
@@ -287,9 +281,6 @@ def train_masif_site(
             np.mean(list_training_auc), np.median(list_training_auc), epoch +1
         )
         ## per protein metrics (validation)
-        outstr += "Per protein Loss mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_val_loss), np.median(list_val_loss), epoch +1
-        )
         outstr += "Per protein Accuracy mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_acc), np.median(list_val_acc), epoch +1
         )
