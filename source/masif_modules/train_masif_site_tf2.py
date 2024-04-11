@@ -93,8 +93,8 @@ def train_masif_site(
     # Sets use hash lookups and hash functions, which makes searching for an item significantly faster compared to lists
     
     # for check
-    print(f"train_dirs: {len(train_dirs)}, {train_dirs}")
-    print(f"val_dirs: {len(val_dirs)}, {val_dirs}")
+    # print(f"train_dirs: {len(train_dirs)}, {train_dirs}")
+    # print(f"val_dirs: {len(val_dirs)}, {val_dirs}")
 
     # Custom training loop
     for epoch in range(num_epochs):
@@ -273,7 +273,7 @@ def train_masif_site(
 
         # Summary of epoch
         outstr = "Epoch ran on {} proteins\n".format(count_proteins)
-        outstr += "   - {} proteins skipped to prevent biased fitting: {}\n".format(
+        outstr += "{} proteins skipped to prevent biased fitting: {}\n\n".format(
             len(skipped_pdb_list), skipped_pdb_list
         )
         ## per protein metrics (training)
