@@ -102,7 +102,7 @@ else:
     # Load existing model.
     print ('Reading pre-trained model')
     if tf_ver == 2:
-        model = tf.keras.models.load_model(params["model_dir"]+'model.keras')
+        model = tf.keras.models.load_weights(params["model_dir"]+'model.weights.h5')
     else:
         model = tf.compat.v1.keras.models.load_model(params["model_dir"]+'model')
 

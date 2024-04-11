@@ -12,7 +12,7 @@ class MaSIF_site(tf.keras.Model):
 
     def count_number_parameters(self):
         total_parameters = 0
-        for variable in self.trainable_variables:   # https://www.tensorflow.org/api_docs/python/tf/compat/v1/trainable_variables: tf.trainable_variables() --> Module.trainable_variables, after changing maisf_site class to module
+        for variable in self.trainable_variables:
             # shape is an array of tf.Dimension
             shape = variable.shape
             print(
