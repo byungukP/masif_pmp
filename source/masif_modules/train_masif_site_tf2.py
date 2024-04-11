@@ -91,6 +91,10 @@ def train_masif_site(
     n_val = int(len(train_dirs) * params["range_val_samples"])
     val_dirs = set(train_dirs[(len(train_dirs) - n_val) :])
     # Sets use hash lookups and hash functions, which makes searching for an item significantly faster compared to lists
+    
+    # for check
+    print(f"train_dirs: {len(train_dirs)}, {train_dirs}")
+    print(f"val_dirs: {len(val_dirs)}, {val_dirs}")
 
     # Custom training loop
     for epoch in range(num_epochs):
@@ -305,13 +309,13 @@ def train_masif_site(
         logfile.write(outstr + "\n")
         print(outstr)
 
-        # save model
+        # save model: save_weights() more efficient & flexible
         if np.mean(list_val_auc) > best_val_auc:
             logfile.write(">>> Saving model.\n")
             print(">>> Saving model.\n")
             best_val_auc = np.mean(list_val_auc)
-            output_model = out_dir + "model.keras"
-            model.save(output_model, overwrite=True)
+            output_model = out_dir + "model.weights.h5"   # model.keras format: for functional API models
+            model.save_weights(output_model, overwrite=True)
             # # Save the scores for test.
             # np.save(out_dir + "test_labels.npy", all_test_labels)
             # np.save(out_dir + "test_scores.npy", all_test_scores)
