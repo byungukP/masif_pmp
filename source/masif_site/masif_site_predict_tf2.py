@@ -25,11 +25,8 @@ def mask_input_feat(input_feat, mask):
 
 params = masif_opts["site"]
 custom_params_file = sys.argv[1]
-print("custom_params_file: ",custom_params_file)
 spec=importlib.util.spec_from_file_location("custom_params",custom_params_file)
-print("spec: ",spec)
 foo = importlib.util.module_from_spec(spec)
-print("foo: ",foo)
 spec.loader.exec_module(foo)
 custom_params = foo.custom_params
 
