@@ -2,10 +2,12 @@
 import time
 import os
 import numpy as np
+import tensorflow as tf
+from sklearn.metrics import roc_auc_score
 from IPython.core.debugger import set_trace
 import sys
 import importlib
-from masif_modules.train_masif_site import run_masif_site
+from masif_modules.train_masif_site_tf2 import run_masif_site, compute_roc_auc
 from default_config.masif_opts import masif_opts
 
 """
@@ -23,8 +25,10 @@ def mask_input_feat(input_feat, mask):
 
 params = masif_opts["site"]
 custom_params_file = sys.argv[1]
-custom_params = importlib.import_module(custom_params_file, package=None)
-custom_params = custom_params.custom_params
+spec=importlib.util.spec_from_file_location("custom_params",custom_params_file)
+foo = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(foo)
+custom_params = foo.custom_params
 
 for key in custom_params:
     print("Setting {} to {} ".format(key, custom_params[key]))
@@ -34,6 +38,8 @@ for key in custom_params:
 # Shape precomputation dir.
 parent_in_dir = params["masif_precomputation_dir"]
 eval_list = []
+
+all_roc_auc_scores = []
 
 if len(sys.argv) == 3:
     ppi_pair_ids = [sys.argv[2]]
@@ -51,8 +57,8 @@ else:
 # Build the neural network model
 from masif_modules.MaSIF_site import MaSIF_site
 
-learning_obj = MaSIF_site(
-    params["max_distance"],
+model = MaSIF_site(
+    max_rho=params["max_distance"],
     n_thetas=4,
     n_rhos=3,
     n_rotations=4,
@@ -60,8 +66,11 @@ learning_obj = MaSIF_site(
     feat_mask=params["feat_mask"],
     n_conv_layers=params["n_conv_layers"],
 )
-print("Restoring model from: " + params["model_dir"] + "model")
-learning_obj.saver.restore(learning_obj.session, params["model_dir"] + "model")
+print("Restoring model from: " + params["model_dir"] + "model\n")
+model.load_weights(params["model_dir"] + "model.weights.h5")
+
+# Model Summary
+model.count_number_parameters()
 
 if not os.path.exists(params["out_pred_dir"]):
     os.makedirs(params["out_pred_dir"])
@@ -104,41 +113,53 @@ for ppi_pair_id in ppi_pair_ids:
         input_feat = mask_input_feat(input_feat, params["feat_mask"])
         mask = np.load(in_dir + pid + "_mask.npy")
         indices = np.load(in_dir + pid + "_list_indices.npy", encoding="latin1", allow_pickle=True)
-        labels = np.zeros((len(mask)))
+        iface_labels = np.load(in_dir + pid + "_iface_labels.npy")  # (batch_size,)
 
-        print("Total number of patches:{} \n".format(len(mask)))
+        input_dict = {
+            "rho_coords": rho_wrt_center,
+            "theta_coords": theta_wrt_center,
+            "input_feat": input_feat,
+            "mask": mask,
+            "labels": iface_labels,
+            "indices_tensor": indices,
+        }
+
+        print("Total number of patches: {}".format(len(mask)))
 
         tic = time.time()
-        scores = run_masif_site(
-            params,
-            learning_obj,
-            rho_wrt_center,
-            theta_wrt_center,
-            input_feat,
-            mask,
-            indices,
-        )
+        scores = tf.nn.sigmoid(model(input_dict))   # scores = (batch_size,n_labels)
+        # scores = run_masif_site(
+        #     params,
+        #     model,
+        #     rho_wrt_center,
+        #     theta_wrt_center,
+        #     input_feat,
+        #     mask,
+        #     indices,
+        # )
         toc = time.time()
         print(
-            "Total number of patches for which scores were computed: {}\n".format(
-                len(scores[0])
+            "Total number of patches for which scores were computed: {}".format(
+                len(scores[:,0])
             )
         )
-        print("GPU time (real time, not actual GPU time): {:.3f}s".format(toc-tic))
+
+        # AUC computation.
+        try:
+            roc_auc = roc_auc_score(iface_labels, scores[:,0])    # ground_truth(=iface_labels), scores = (batch_size,)
+            all_roc_auc_scores.append(roc_auc)
+            print("ROC AUC score for protein {} : {:.2f} ".format(pdbid+'_'+chains[ix], roc_auc))
+        except: 
+            print("No ROC AUC computed for protein (possibly, no ground truth defined in input)") 
+
+        print("GPU time (real time, not actual GPU time): {:.3f}s\n".format(toc-tic))
         np.save(
             params["out_pred_dir"] + "/pred_" + pdbid + "_" + chains[ix] + ".npy",
             scores,
-        )
+        )   # scores = (batch_size,)
 
-#### for tf2 version, use model.predict ####
+med_roc = np.median(all_roc_auc_scores)
 
-model.predict(
-    x,
-    batch_size=None,
-    verbose='auto',
-    steps=None,
-    callbacks=None,
-    max_queue_size=10,
-    workers=1,
-    use_multiprocessing=False
-)
+if len(all_roc_auc_scores) > 0:
+    print("Computed the ROC AUC for {} proteins".format(len(all_roc_auc_scores)))
+    print("Median ROC AUC score: {}".format(med_roc))

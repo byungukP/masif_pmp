@@ -610,7 +610,10 @@ class MaSIF_site(tf.keras.Model):
         # eval_logits and eval_scores are reordered according to pos and neg_idx.
         self.eval_logits = tf.nn.sigmoid(self.eval_logits)
         self.eval_score = tf.squeeze(self.eval_logits)[:, 0]
-        
+
+        self.full_logits = tf.nn.sigmoid(self.logits)
+        self.full_score = tf.squeeze(self.full_logits)[:, 0]
+
         # Update metrics
         for metric in self.metrics_list:
             metric.update_state(

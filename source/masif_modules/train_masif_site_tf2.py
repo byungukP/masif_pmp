@@ -20,22 +20,23 @@ def pad_indices(indices, max_verts):
     return padded_ix
 
 
-# # Run masif site on a protein, on a previously trained network.
-# def run_masif_site(
-#     params, learning_obj, rho_wrt_center, theta_wrt_center, input_feat, mask, indices
-# ):
-#     indices = pad_indices(indices, mask.shape[1])
-#     mask = np.expand_dims(mask, 2)
-#     feed_dict = {
-#         learning_obj.rho_coords: rho_wrt_center,
-#         learning_obj.theta_coords: theta_wrt_center,
-#         learning_obj.input_feat: input_feat,
-#         learning_obj.mask: mask,
-#         learning_obj.indices_tensor: indices,
-#     }
+# Run masif site on a protein, on a previously trained network.
+def run_masif_site(
+    params, model, rho_wrt_center, theta_wrt_center, input_feat, mask, indices
+):
+    indices = pad_indices(indices, mask.shape[1])
+    mask = np.expand_dims(mask, 2)
+    feed_dict = {
+        model.rho_coords: rho_wrt_center,
+        model.theta_coords: theta_wrt_center,
+        model.input_feat: input_feat,
+        model.mask: mask,
+        model.indices_tensor: indices,
+    }
 
-#     score = learning_obj.session.run([learning_obj.full_score], feed_dict=feed_dict)
-#     return score
+    logits = model(input_dict)
+    score = model.session.run([model.full_score], feed_dict=feed_dict)
+    return score
 
 
 def compute_roc_auc(pos, neg):

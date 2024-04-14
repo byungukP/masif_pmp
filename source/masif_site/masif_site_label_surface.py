@@ -9,11 +9,12 @@ from default_config.masif_opts import masif_opts
 
 """
 masif_site_label_surface.py: Color a protein ply surface file by the MaSIF-site interface score.
+
+TF v2
 Pablo Gainza - LPDI STI EPFL 2019
 This file is part of MaSIF.
 Released under an Apache License 2.0
 """
-
 
 params = masif_opts["site"]
 custom_params_file = sys.argv[1]
