@@ -7,7 +7,7 @@ from sklearn.metrics import roc_auc_score
 from IPython.core.debugger import set_trace
 import sys
 import importlib
-from masif_modules.train_masif_site_tf2 import run_masif_site, compute_roc_auc
+# from masif_modules.train_masif_site_tf2 import run_masif_site, compute_roc_auc
 from default_config.masif_opts import masif_opts
 
 """
