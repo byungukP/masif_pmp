@@ -581,7 +581,7 @@ class MaSIF_site(tf.keras.Model):
         )   # a shape of [-1] flattens into 1-D.
         
         # Update metrics
-        true=tf.cast(self.eval_labels[:, 0],tf.float32)
+        true=tf.cast(self.eval_labels[:, 0],tf.int32)
         pred=self.eval_score
         true, pred = true.numpy(), pred.numpy()
         print("true: {}\npred: {}".format(true, pred))
