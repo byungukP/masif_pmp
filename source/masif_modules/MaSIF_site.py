@@ -587,7 +587,17 @@ class MaSIF_site(tf.keras.Model):
         print("true: {}\npred: {}".format(true, pred))
         print("dtype: true: {}\npred: {}".format(type(true), type(pred)))
         print("len: true: {}\npred: {}".format(len(true), len(pred)))
-        metrics_dict = self.compute_metrics(true, pred)
+        
+        metrics_dict = {
+            "binary_accuracy": metrics.accuracy_score(true, pred),
+            "precision": metrics.precision_score(true, pred),
+            "recall": metrics.recall_score(true, pred),
+            "auc": metrics.roc_auc_score(true, pred)
+        }
+        
+        
+        
+        # metrics_dict = self.compute_metrics(true, pred)
         return {
                     "loss": self.loss,
                     "eval_score": self.eval_score,
