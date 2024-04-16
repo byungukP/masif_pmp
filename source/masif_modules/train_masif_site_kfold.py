@@ -332,7 +332,7 @@ def train_masif_site_kfold(
                     np.mean(list_training_auc), np.median(list_training_auc)
                     )
                 )
-                logfile.write(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n",format(
+                logfile.write(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n".format(
                     np.mean(list_val_auc), np.median(list_val_auc)
                     )
                 )
@@ -341,7 +341,7 @@ def train_masif_site_kfold(
                     np.mean(list_training_auc), np.median(list_training_auc)
                     )
                 )
-                print(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n",format(
+                print(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n".format(
                     np.mean(list_val_auc), np.median(list_val_auc)
                     )
                 )

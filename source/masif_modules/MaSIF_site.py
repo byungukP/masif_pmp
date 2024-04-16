@@ -337,21 +337,6 @@ class MaSIF_site(tf.keras.Model):
             tf.keras.layers.Dense(self.n_labels, activation=None)
         ])
 
-        # # metrics definition: arg name='binary_accuracy', 'precision', 'recall', 'auc'
-        # self.metrics_list = [
-        #     tf.keras.metrics.BinaryAccuracy(name='binary_accuracy'),
-        #     tf.keras.metrics.Precision(name='precision'),
-        #     tf.keras.metrics.Recall(name='recall'),
-        #     tf.keras.metrics.AUC(name='auc')
-        # ]
-
-        # Stateful metrics from tf.keras accumulate information over time and require manual resetting
-        # if you want to start fresh (e.g., at the beginning of a new epoch or evaluation phase)
-        # in our case, have to reset states of the metrics per batch since metrics for a batch (per protein) is all we need        
-        # also, memory issues may arise if you don't reset the states of the metrics
-        # thus, explicitly using simple sklearn.metrics.methods may be more efficient
-
-
     def call(self, input_dict):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
@@ -629,10 +614,3 @@ class MaSIF_site(tf.keras.Model):
                     "auc": metrics.roc_auc_score(true, pred)
                 }
 
-        # legacy code
-        # Update metrics
-        # for metric in self.metrics_list:
-        #     metric.update_state(
-        #         tf.cast(self.eval_labels[:, 0],tf.float32),
-        #         self.eval_score
-        #     )
