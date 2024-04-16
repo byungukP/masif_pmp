@@ -68,31 +68,31 @@ def train_masif_site_kfold(
 
     # Open training list.
     training_list = open(params["training_list"]).readlines()
-    training_list = [x.rstrip() for x in training_list]
+    training_list = np.array([x.rstrip() for x in training_list])
 
     # k-fold splits
-    kfold = KFold(params["k_fold"], True, 1)
+    kfold = KFold(params["k_fold"], True, 1)    # random_state=1 --> for reproducibility (same splits each time)
     split_count = 0
 
     # enumerate splits
-    for train, test in kfold.split(training_list):  # train, test: array of indices for split data samples
+    for train_idx, test_idx in kfold.split(training_list):  # train, test: array of indices for split data samples
         split_count += 1
         
         logfile.write("\nStarting split {}\n".format(split_count))
         print("\nStarting split {}\n".format(split_count))
         
         # for debug
-        print(f"train: {train}\ntest: {test}\ntrain_num: {len(train)}\ntest_num: {len(test)}")
+        print(f"train: {train_idx}\ntest: {test_idx}\ntrain_num: {len(train_idx)}\ntest_num: {len(test_idx)}")
         logfile.write('train: {}, test: {}\ntrain_num: {}, test_num: {}\n'.format(
-            training_list[train], training_list[test], len(train), len(test)
+            training_list[train_idx], training_list[test_idx], len(train_idx), len(test_idx)
             )
         )
         print('train: {}, test: {}\ntrain_num: {}, test_num: {}\n'.format(
-            training_list[train], training_list[test], len(train), len(test)
+            training_list[train_idx], training_list[test_idx], len(train_idx), len(test_idx)
             )
         )
-        train_dirs = training_list[train]
-        val_dirs = training_list[test]
+        train_dirs = training_list[train_idx]
+        val_dirs = training_list[test_idx]
 
         # Build new neural network model for each split
         from masif_modules.MaSIF_site import MaSIF_site
