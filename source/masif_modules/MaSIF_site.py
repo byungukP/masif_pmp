@@ -24,17 +24,6 @@ class MaSIF_site(tf.keras.Model):
             total_parameters += variable_parameters
         print("Total number parameters: %d" % total_parameters.numpy())
 
-    # just use AUC since other metrics require binary values and the actual metrics depend on the threshold
-    # thus, AUC is enough to check the whole model performance
-    def compute_metrics(true, pred):
-        metrics_dict = {
-            "binary_accuracy": metrics.accuracy_score(true, pred),
-            "precision": metrics.precision_score(true, pred),
-            "recall": metrics.recall_score(true, pred),
-            "auc": metrics.roc_auc_score(true, pred)
-        }
-        return metrics_dict
-
     def frobenius_norm(self, tensor):
         square_tensor = tf.square(tensor)
         tensor_sum = tf.reduce_sum(square_tensor)

@@ -327,12 +327,22 @@ def train_masif_site_kfold(
             print(outstr)
 
             if epoch + 1 == num_epochs:
-                logfile.write(">>> Split {:d} CV done:\n>>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n>>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n",format(
-                    split_count, np.mean(list_training_auc), np.median(list_training_auc), np.mean(list_val_auc), np.median(list_val_auc)
+                logfile.write(">>> Split {:d} CV test done\n".format(split_count))
+                logfile.write(">>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n".format(
+                    np.mean(list_training_auc), np.median(list_training_auc)
                     )
                 )
-                print(">>> Split {:d} CV done:\n>>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n>>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n",format(
-                    split_count, np.mean(list_training_auc), np.median(list_training_auc), np.mean(list_val_auc), np.median(list_val_auc)
+                logfile.write(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n",format(
+                    np.mean(list_val_auc), np.median(list_val_auc)
+                    )
+                )
+                print(">>> Split {:d} CV test done\n".format(split_count))
+                print(">>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n".format(
+                    np.mean(list_training_auc), np.median(list_training_auc)
+                    )
+                )
+                print(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n",format(
+                    np.mean(list_val_auc), np.median(list_val_auc)
                     )
                 )
 
