@@ -327,24 +327,15 @@ def train_masif_site_kfold(
             print(outstr)
 
             if epoch + 1 == num_epochs:
-                logfile.write(">>> Split {:d} CV test done\n".format(split_count))
-                logfile.write(">>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n".format(
+                outstr = ">>> Split {:d} CV test done\n".format(split_count)
+                outstr += ">>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n".format(
                     np.mean(list_training_auc), np.median(list_training_auc)
-                    )
                 )
-                logfile.write(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n".format(
+                outstr += ">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n".format(
                     np.mean(list_val_auc), np.median(list_val_auc)
-                    )
                 )
-                print(">>> Split {:d} CV test done\n".format(split_count))
-                print(">>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n".format(
-                    np.mean(list_training_auc), np.median(list_training_auc)
-                    )
-                )
-                print(">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n".format(
-                    np.mean(list_val_auc), np.median(list_val_auc)
-                    )
-                )
+                logfile.write(outstr + "\n")
+                print(outstr)
 
     # Display the model's architecture: built-in model.summary() for functional API models
     print("\nModel Summary: trainable variables & structure\n")

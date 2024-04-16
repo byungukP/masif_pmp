@@ -100,21 +100,6 @@ def train_masif_site(
     # Custom training loop
     for epoch in range(num_epochs):
         # Start training epoch:
-        
-        """
-        train loss, auc, acc --> defined in __init__() & train_set()
-        in MaSIF_site.py model
-
-        validation loss, auc, acc --> defined in __init__() & test_set()
-        in MaSIF_site.py model
-
-        test loss, auc, acc --> same with valid test_set()
-        
-        ==> still need to save each metric of proteins (batches) as list
-            to track the epoch-series evolution of each metric
-
-        """
-
         count_proteins = 0
         skipped_pdb_list = []
 
@@ -192,9 +177,6 @@ def train_masif_site(
                 mask = np.load(mydir + pid + "_mask.npy")
                 mask = np.expand_dims(mask, 2)
                 indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
-                # indice_lists: array of lists, each list representing each patch with indices of vertices that are encompassed in the patch
-                # each indice list of patches starts with index of the center, then vertices inside the patch
-                # max number of indices for patch <= custom_params["max_shape_size"] (default=100)
                 # since some patches may have less than max shape size (100) for patch representation but all the matrix are generated based on max shape size for computational reason,
                 # need padding for matrix of indice list --> pad_indices()
                 indices = pad_indices(indices, mask.shape[1])
@@ -238,17 +220,9 @@ def train_masif_site(
                 if ppi_pair_id in val_dirs:
                     logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
                     input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
-                    
-                    """
-                    validation step
-                    For 5-CV --> maybe write new script using KFold() from sklearn.model_selection
-                    """
+
                     logs = model.test_step(input_dict)
-                    acc, precision, recall, auc = logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
-                    list_val_acc.append(acc)
-                    list_val_precision.append(precision)
-                    list_val_recall.append(recall)
-                    list_val_auc.append(auc)
+                    list_val_auc.append(logs["auc"])
 
                 # Perform training step
                 else:
@@ -260,13 +234,7 @@ def train_masif_site(
                         optimizer_method="Adam",
                         learning_rate=1e-3
                     )
-
-                    # auc = metrics.roc_auc_score(eval_labels[:, 0], score)
-                    acc, precision, recall, auc = logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
-                    list_training_acc.append(acc)
-                    list_training_precision.append(precision)
-                    list_training_recall.append(recall)
-                    list_training_auc.append(auc)
+                    list_training_auc.append(logs["auc"])
                 logfile.flush()
 
         # Run testing cycle. --> not in this code, but might be added later
@@ -277,46 +245,13 @@ def train_masif_site(
         outstr += "{} proteins skipped to prevent biased fitting: {}\n\n".format(
             len(skipped_pdb_list), skipped_pdb_list
         )
-        ## per protein metrics (training)
-        outstr += "Per protein Accuracy mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_training_acc), np.median(list_training_acc), epoch +1
-        )
-        outstr += ">>> list_training_acc: {}\n".format(list_training_acc)
-
-        outstr += "Per protein Precision mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_training_precision), np.median(list_training_precision), epoch +1
-        )
-        outstr += ">>> list_training_precision: {}\n".format(list_training_precision)
-
-        outstr += "Per protein Recall mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_training_recall), np.median(list_training_recall), epoch +1
-        )
-        outstr += ">>> list_training_recall: {}\n".format(list_training_recall)
-
+        ## per protein metrics
         outstr += "Per protein AUC mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_training_auc), np.median(list_training_auc), epoch +1
         )
-        outstr += ">>> list_training_auc: {}\n".format(list_training_auc)
-        ## per protein metrics (validation)
-        outstr += "Per protein Accuracy mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_val_acc), np.median(list_val_acc), epoch +1
-        )
-        outstr += ">>> list_val_acc: {}\n".format(list_val_acc)
-
-        outstr += "Per protein Precision mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_val_precision), np.median(list_val_precision), epoch +1
-        )
-        outstr += ">>> list_val_precision: {}\n".format(list_val_precision)
-        
-        outstr += "Per protein Recall mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
-            np.mean(list_val_recall), np.median(list_val_recall), epoch +1
-        )
-        outstr += ">>> list_val_recall: {}\n".format(list_val_recall)
-
         outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_auc), np.median(list_val_auc), epoch +1
         )
-        outstr += ">>> list_val_auc: {}\n".format(list_val_auc)
 
         # outstr += "Per protein AUC mean (test): {:.4f}; median: {:.4f} for epoch {}\n".format(
         #     np.mean(list_test_auc), np.median(list_test_auc), epoch +1
