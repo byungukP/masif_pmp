@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-
+from sklearn import metrics
 
 class MaSIF_site(tf.keras.Model):
 
@@ -23,6 +23,15 @@ class MaSIF_site(tf.keras.Model):
             variable_parameters = tf.reduce_prod(shape)
             total_parameters += variable_parameters
         print("Total number parameters: %d" % total_parameters.numpy())
+
+    def compute_metrics(true, pred):
+        metrics_dict = {
+            "binary_accuracy": metrics.accuracy_score(true, pred),
+            "precision": metrics.precision_score(true, pred),
+            "recall": metrics.recall_score(true, pred),
+            "auc": metrics.roc_auc_score(true, pred)
+        }
+        return metrics_dict
 
     def frobenius_norm(self, tensor):
         square_tensor = tf.square(tensor)
@@ -337,13 +346,19 @@ class MaSIF_site(tf.keras.Model):
             tf.keras.layers.Dense(self.n_labels, activation=None)
         ])
 
-        # metrics definition: arg name='binary_accuracy', 'precision', 'recall', 'auc'
-        self.metrics_list = [
-            tf.keras.metrics.BinaryAccuracy(),
-            tf.keras.metrics.Precision(),
-            tf.keras.metrics.Recall(),
-            tf.keras.metrics.AUC()
-        ]
+        # # metrics definition: arg name='binary_accuracy', 'precision', 'recall', 'auc'
+        # self.metrics_list = [
+        #     tf.keras.metrics.BinaryAccuracy(name='binary_accuracy'),
+        #     tf.keras.metrics.Precision(name='precision'),
+        #     tf.keras.metrics.Recall(name='recall'),
+        #     tf.keras.metrics.AUC(name='auc')
+        # ]
+
+        # Stateful metrics from tf.keras accumulate information over time and require manual resetting
+        # if you want to start fresh (e.g., at the beginning of a new epoch or evaluation phase)
+        # in our case, have to reset states of the metrics per batch since metrics for a batch (per protein) is all we need        
+        # also, memory issues may arise if you don't reset the states of the metrics
+        # thus, explicitly using simple sklearn.metrics.methods may be more efficient
 
 
     def call(self, input_dict):
@@ -489,7 +504,7 @@ class MaSIF_site(tf.keras.Model):
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         self.logits = self.final_MLP(self.global_desc)
-        # self.count_number_parameters() --> train_masif_site_tf2.py model.summary() instead
+        # self.count_number_parameters()
 
         return self.logits
 
@@ -566,16 +581,14 @@ class MaSIF_site(tf.keras.Model):
         )   # a shape of [-1] flattens into 1-D.
         
         # Update metrics
-        for metric in self.metrics_list:
-            metric.update_state(
-                tf.cast(self.eval_labels[:, 0],tf.float32),
-                self.eval_score
-            )
+        true=tf.cast(self.eval_labels[:, 0],tf.float32)
+        pred=self.eval_score
+        metrics_dict = self.compute_metrics(true, pred)
         return {
                     "loss": self.loss,
                     "eval_score": self.eval_score,
                     "full_score": self.full_score,
-                    **{metric.name: metric.result().numpy() for metric in self.metrics_list}
+                    **metrics_dict
                 }
 
     # for manually iterating over the validation dataset using a custom validation loop
@@ -615,15 +628,20 @@ class MaSIF_site(tf.keras.Model):
         self.full_score = tf.squeeze(self.full_logits)[:, 0]
 
         # Update metrics
-        for metric in self.metrics_list:
-            metric.update_state(
-                tf.cast(self.eval_labels[:, 0],tf.float32),
-                self.eval_score
-            )
+        true=tf.cast(self.eval_labels[:, 0],tf.float32)
+        pred=self.eval_score
+        metrics_dict = self.compute_metrics(true, pred)
         return {
                     "loss": self.loss,
                     "eval_score": self.eval_score,
                     "full_score": self.full_score,
-                    **{metric.name: metric.result().numpy() for metric in self.metrics_list}
+                    **metrics_dict
                 }
 
+        # legacy code
+        # Update metrics
+        # for metric in self.metrics_list:
+        #     metric.update_state(
+        #         tf.cast(self.eval_labels[:, 0],tf.float32),
+        #         self.eval_score
+        #     )

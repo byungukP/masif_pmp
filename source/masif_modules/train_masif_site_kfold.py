@@ -60,7 +60,6 @@ def train_masif_site_kfold(
 
     """
 
-    best_val_auc = 0
     out_dir = params["model_dir"]
     logfile = open(out_dir + "log.txt", "w")
     for key in params:
