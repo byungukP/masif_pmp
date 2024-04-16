@@ -111,7 +111,7 @@ if not os.path.exists(params["out_pred_dir"]):
 if not os.path.exists(params["out_surf_dir"]):
     os.makedirs(params["out_surf_dir"])
 
-if not params["k_fold"]:
+if not params["cv_test"]:
     from masif_modules.train_masif_site_tf2 import train_masif_site
     train_masif_site(model, params, num_epochs=params['epoch_num'])
 else:
