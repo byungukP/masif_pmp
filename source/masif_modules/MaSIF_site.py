@@ -24,6 +24,8 @@ class MaSIF_site(tf.keras.Model):
             total_parameters += variable_parameters
         print("Total number parameters: %d" % total_parameters.numpy())
 
+    # just use AUC since other metrics require binary values and the actual metrics depend on the threshold
+    # thus, AUC is enough to check the whole model performance
     def compute_metrics(true, pred):
         metrics_dict = {
             "binary_accuracy": metrics.accuracy_score(true, pred),
@@ -584,25 +586,16 @@ class MaSIF_site(tf.keras.Model):
         true=tf.cast(self.eval_labels[:, 0],tf.int32)
         pred=self.eval_score
         true, pred = true.numpy(), pred.numpy()
-        print("true: {}\npred: {}".format(true, pred))
-        print("dtype: true: {}\npred: {}".format(type(true), type(pred)))
-        print("len: true: {}\npred: {}".format(len(true), len(pred)))
-        
-        metrics_dict = {
-            "binary_accuracy": metrics.accuracy_score(true, pred),
-            "precision": metrics.precision_score(true, pred),
-            "recall": metrics.recall_score(true, pred),
-            "auc": metrics.roc_auc_score(true, pred)
-        }
-        
-        
-        
+        # print("true: {}\npred: {}".format(true, pred))
+        # print("dtype: true: {}\npred: {}".format(type(true), type(pred)))
+        # print("len: true: {}\npred: {}".format(len(true), len(pred)))       
+
         # metrics_dict = self.compute_metrics(true, pred)
         return {
                     "loss": self.loss,
                     "eval_score": self.eval_score,
                     "full_score": self.full_score,
-                    **metrics_dict
+                    "auc": metrics.roc_auc_score(true, pred)
                 }
 
     # for manually iterating over the validation dataset using a custom validation loop
