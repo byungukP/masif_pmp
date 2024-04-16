@@ -82,12 +82,12 @@ def train_masif_site_kfold(
         print("\nStarting split {}\n".format(split_count))
         
         # for debug
-        print(f"train: {train_idx}\ntest: {test_idx}\ntrain_num: {len(train_idx)}\ntest_num: {len(test_idx)}")
-        logfile.write('train: {}, test: {}\ntrain_num: {}, test_num: {}\n'.format(
-            training_list[train_idx], training_list[test_idx], len(train_idx), len(test_idx)
-            )
-        )
-        print('train: {}, test: {}\ntrain_num: {}, test_num: {}\n'.format(
+        # print(f"train: {train_idx}\ntest: {test_idx}\ntrain_num: {len(train_idx)}\ntest_num: {len(test_idx)}")
+        # logfile.write('train: {}, test: {}\ntrain_num: {}, test_num: {}\n'.format(
+        #     training_list[train_idx], training_list[test_idx], len(train_idx), len(test_idx)
+        #     )
+        # )
+        print('train: {}\ntest: {}\ntrain_num: {}, test_num: {}\n'.format(
             training_list[train_idx], training_list[test_idx], len(train_idx), len(test_idx)
             )
         )
@@ -226,6 +226,7 @@ def train_masif_site_kfold(
                         learning_rate=1e-3
                     )
 
+                    print("logs from model.train-step():\nkeys = {}".format(logs.keys())) # deebug
                     acc, precision, recall, auc = logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
                     list_training_acc.append(acc)
                     list_training_precision.append(precision)
