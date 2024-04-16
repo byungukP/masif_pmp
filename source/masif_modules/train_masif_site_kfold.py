@@ -81,6 +81,8 @@ def train_masif_site_kfold(
         logfile.write("\nStarting split {}\n".format(split_count))
         print("\nStarting split {}\n".format(split_count))
         
+        # for debug
+        print(f"train: {train}\ntest: {test}\ntrain_num: {len(train)}\ntest_num: {len(test)}")
         logfile.write('train: {}, test: {}\ntrain_num: {}, test_num: {}\n'.format(
             training_list[train], training_list[test], len(train), len(test)
             )
