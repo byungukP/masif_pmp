@@ -124,14 +124,7 @@ def train_masif_site_kfold(
             skipped_pdb_list = []
 
             # list_training_loss = []     # loss shape = [batch_size, 2] --> list_loss cannot be averaged directly
-            list_training_acc = []
-            list_training_precision = []
-            list_training_recall = []
             list_training_auc = []
-
-            list_val_acc = []
-            list_val_precision = []
-            list_val_recall = []
             list_val_auc = []
 
             logfile.write("\nStarting epoch {}\n".format(epoch +1))
@@ -225,12 +218,7 @@ def train_masif_site_kfold(
                         learning_rate=1e-3
                     )
 
-                    print("logs from model.train-step():\nkeys = {}".format(logs.keys())) # deebug
-                    acc, precision, recall, auc = logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
-                    list_training_acc.append(acc)
-                    list_training_precision.append(precision)
-                    list_training_recall.append(recall)
-                    list_training_auc.append(auc)
+                    list_training_auc.append(logs["auc"])
                     logfile.flush()
 
             # Validation loop
@@ -304,16 +292,10 @@ def train_masif_site_kfold(
 
                     logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
                     input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
-                    """
-                    validation step
-                    For 5-CV --> maybe write new script using KFold() from sklearn.model_selection
-                    """
+
                     logs = model.test_step(input_dict)
-                    acc, precision, recall, auc = logs["binary_accuracy"], logs["precision"], logs["recall"], logs["auc"]
-                    list_val_acc.append(acc)
-                    list_val_precision.append(precision)
-                    list_val_recall.append(recall)
-                    list_val_auc.append(auc)                                        
+                    
+                    list_val_auc.append(logs["auc"])
                     logfile.flush()
 
             # Run testing cycle. --> not in this code, but might be added later
@@ -325,28 +307,10 @@ def train_masif_site_kfold(
                 len(skipped_pdb_list), skipped_pdb_list
             )
             ## per protein metrics (training)
-            outstr += "Per protein Accuracy mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
-                np.mean(list_training_acc), np.median(list_training_acc), epoch +1
-            )
-            outstr += "Per protein Precision mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
-                np.mean(list_training_precision), np.median(list_training_precision), epoch +1
-            )
-            outstr += "Per protein Recall mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
-                np.mean(list_training_recall), np.median(list_training_recall), epoch +1
-            )
             outstr += "Per protein AUC mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
                 np.mean(list_training_auc), np.median(list_training_auc), epoch +1
             )
             ## per protein metrics (validation)
-            outstr += "Per protein Accuracy mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
-                np.mean(list_val_acc), np.median(list_val_acc), epoch +1
-            )
-            outstr += "Per protein Precision mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
-                np.mean(list_val_precision), np.median(list_val_precision), epoch +1
-            )
-            outstr += "Per protein Recall mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
-                np.mean(list_val_recall), np.median(list_val_recall), epoch +1
-            )
             outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
                 np.mean(list_val_auc), np.median(list_val_auc), epoch +1
             )

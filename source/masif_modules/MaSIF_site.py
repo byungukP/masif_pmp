@@ -586,11 +586,6 @@ class MaSIF_site(tf.keras.Model):
         true=tf.cast(self.eval_labels[:, 0],tf.int32)
         pred=self.eval_score
         true, pred = true.numpy(), pred.numpy()
-        # print("true: {}\npred: {}".format(true, pred))
-        # print("dtype: true: {}\npred: {}".format(type(true), type(pred)))
-        # print("len: true: {}\npred: {}".format(len(true), len(pred)))       
-
-        # metrics_dict = self.compute_metrics(true, pred)
         return {
                     "loss": self.loss,
                     "eval_score": self.eval_score,
@@ -635,14 +630,14 @@ class MaSIF_site(tf.keras.Model):
         self.full_score = tf.squeeze(self.full_logits)[:, 0]
 
         # Update metrics
-        true=tf.cast(self.eval_labels[:, 0],tf.float32)
+        true=tf.cast(self.eval_labels[:, 0],tf.int32)
         pred=self.eval_score
-        metrics_dict = self.compute_metrics(true, pred)
+        true, pred = true.numpy(), pred.numpy()
         return {
                     "loss": self.loss,
                     "eval_score": self.eval_score,
                     "full_score": self.full_score,
-                    **metrics_dict
+                    "auc": metrics.roc_auc_score(true, pred)
                 }
 
         # legacy code
