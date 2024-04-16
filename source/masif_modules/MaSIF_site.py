@@ -584,6 +584,7 @@ class MaSIF_site(tf.keras.Model):
         true=tf.cast(self.eval_labels[:, 0],tf.float32)
         pred=self.eval_score
         print("true: {}\npred: {}".format(true.numpy(), pred.numpy()))
+        print("dtype: true: {}\npred: {}".format(type(true.numpy()), type(pred.numpy())))
         metrics_dict = self.compute_metrics(true, pred)
         return {
                     "loss": self.loss,
