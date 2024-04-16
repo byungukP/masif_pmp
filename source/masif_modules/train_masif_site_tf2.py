@@ -281,28 +281,43 @@ def train_masif_site(
         outstr += "Per protein Accuracy mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_training_acc), np.median(list_training_acc), epoch +1
         )
+        outstr += ">>> list_training_acc: {}\n".format(list_training_acc)
+
         outstr += "Per protein Precision mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_training_precision), np.median(list_training_precision), epoch +1
         )
+        outstr += ">>> list_training_precision: {}\n".format(list_training_precision)
+
         outstr += "Per protein Recall mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_training_recall), np.median(list_training_recall), epoch +1
         )
+        outstr += ">>> list_training_recall: {}\n".format(list_training_recall)
+
         outstr += "Per protein AUC mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_training_auc), np.median(list_training_auc), epoch +1
         )
+        outstr += ">>> list_training_auc: {}\n".format(list_training_auc)
         ## per protein metrics (validation)
         outstr += "Per protein Accuracy mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_acc), np.median(list_val_acc), epoch +1
         )
+        outstr += ">>> list_val_acc: {}\n".format(list_val_acc)
+
         outstr += "Per protein Precision mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_precision), np.median(list_val_precision), epoch +1
         )
+        outstr += ">>> list_val_precision: {}\n".format(list_val_precision)
+        
         outstr += "Per protein Recall mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_recall), np.median(list_val_recall), epoch +1
         )
+        outstr += ">>> list_val_recall: {}\n".format(list_val_recall)
+
         outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_auc), np.median(list_val_auc), epoch +1
         )
+        outstr += ">>> list_val_auc: {}\n".format(list_val_auc)
+
         # outstr += "Per protein AUC mean (test): {:.4f}; median: {:.4f} for epoch {}\n".format(
         #     np.mean(list_test_auc), np.median(list_test_auc), epoch +1
         # )

@@ -115,7 +115,7 @@ if not os.path.exists(csv_path):
     print("csv file for PMP dataset does not exist")
     sys.exit(1)
 
-# For each surface residue, assign the IBS labels of its amino acid. (residue-level IBS, shape (vertice_num,))
+# For each surface residue, asssign the IBS labels of its amino acid. (residue-level IBS, shape (vertice_num,))
 # iface = np.zeros(len(regular_mesh.vertices))
 
 if 'compute_ibs' in masif_opts and masif_opts['compute_ibs']:

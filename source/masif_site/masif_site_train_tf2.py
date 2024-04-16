@@ -93,7 +93,6 @@ else:
     # "indices_tensor": indices,
 # }
 
-from masif_modules.train_masif_site_tf2 import train_masif_site
 
 print(params["feat_mask"])
 if not os.path.exists(params["model_dir"]):
@@ -112,4 +111,10 @@ if not os.path.exists(params["out_pred_dir"]):
 if not os.path.exists(params["out_surf_dir"]):
     os.makedirs(params["out_surf_dir"])
 
-train_masif_site(model, params, num_epochs=params['epoch_num'])
+if not params["k_fold"]:
+    from masif_modules.train_masif_site_tf2 import train_masif_site
+    train_masif_site(model, params, num_epochs=params['epoch_num'])
+else:
+    from masif_modules.train_masif_site_kfold import train_masif_site_kfold
+    train_masif_site_kfold(params, num_epochs=params['epoch_num'])
+
