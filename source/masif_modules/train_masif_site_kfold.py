@@ -70,7 +70,11 @@ def train_masif_site_kfold(
     training_list = np.array([x.rstrip() for x in training_list])
 
     # k-fold splits
-    kfold = KFold(params["k_fold"], True, 1)    # random_state=1 --> for reproducibility (same splits each time)
+    kfold = KFold(
+        n_splits=params["k_fold"],
+        shuffle=True,
+        random_state=1
+    )    # random_state=1 --> for reproducibility (same splits each time)
     split_count = 0
 
     # enumerate splits
