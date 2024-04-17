@@ -22,7 +22,7 @@ masif_opts["feature_interpolation"] = True
 
 # k-fold CV test
 masif_opts["cv_test"] = False
-masif_opts["k_fold"] = 5
+masif_opts["k_fold"] = 0
 
 # Coords params
 masif_opts["radius"] = 12.0
