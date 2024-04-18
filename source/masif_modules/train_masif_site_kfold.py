@@ -67,7 +67,7 @@ def train_masif_site_kfold(
         logfile.write("{}: {}\n".format(key, params[key]))
 
     training_list = open(params["training_list"]).readlines()
-    training_list = [x.rstrip() for x in training_list]
+    training_list = np.array([x.rstrip() for x in training_list])
 
     # testing_list = open(params["testing_list"]).readlines()
     # testing_list = [x.rstrip() for x in testing_list]
