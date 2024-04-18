@@ -45,8 +45,7 @@ def compute_roc_auc(pos, neg):
     return metrics.roc_auc_score(labels, dist_pairs)
 
 
-def train_masif_site(
-    learning_obj,
+def train_masif_site_kfold(
     params,
     batch_size=100,
     num_iterations=100,
