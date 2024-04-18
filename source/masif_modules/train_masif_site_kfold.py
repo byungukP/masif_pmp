@@ -135,8 +135,8 @@ def train_masif_site_kfold(
             list_val_names = []
             list_training_acc = []
             list_val_acc = []
-            logfile.write("Starting epoch {}\n".format(num_iter))
-            print("Starting epoch {}\n".format(num_iter))
+            logfile.write("\nStarting epoch {}\n".format(num_iter+1))
+            print("\nStarting epoch {}\n".format(num_iter+1))
             tic = time.time()
             all_training_labels = []
             all_training_scores = []
@@ -151,6 +151,8 @@ def train_masif_site_kfold(
             list_test_acc = []
             all_test_labels = []
             all_test_scores = []
+
+            skipped_pdb_list = []
 
             # Run training cycle.
             for ppi_pair_id in train_dirs:
@@ -171,12 +173,12 @@ def train_masif_site_kfold(
                         iface_labels = np.load(mydir + pid + "_iface_labels.npy")
                     except:
                         continue
-                    if len(iface_labels) > 8000:
-                        continue
                     if (
-                        np.sum(iface_labels) > 0.75 * len(iface_labels)
+                        len(iface_labels) > 8000
+                        or np.sum(iface_labels) > 0.75 * len(iface_labels)
                         or np.sum(iface_labels) < 30
                     ):
+                        skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
                         continue
                     count_proteins += 1
 
@@ -276,12 +278,12 @@ def train_masif_site_kfold(
                         iface_labels = np.load(mydir + pid + "_iface_labels.npy")
                     except:
                         continue
-                    if len(iface_labels) > 8000:
-                        continue
                     if (
-                        np.sum(iface_labels) > 0.75 * len(iface_labels)
+                        len(iface_labels) > 8000
+                        or np.sum(iface_labels) > 0.75 * len(iface_labels)
                         or np.sum(iface_labels) < 30
                     ):
+                        skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
                         continue
                     count_proteins += 1
 
@@ -335,16 +337,33 @@ def train_masif_site_kfold(
                     all_val_scores = np.concatenate([all_val_scores, score])
                 logfile.flush()
 
+            # Summary of epoch
             outstr = "Epoch ran on {} proteins\n".format(count_proteins)
-            outstr += "Per protein AUC mean (training): {:.4f}; median: {:.4f} for iter {}\n".format(
-                np.mean(list_training_auc), np.median(list_training_auc), num_iter
+            outstr += "{} proteins skipped to prevent biased fitting: {}\n\n".format(
+                len(skipped_pdb_list), skipped_pdb_list
             )
-            outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for iter {}\n".format(
-                np.mean(list_val_auc), np.median(list_val_auc), num_iter
+            ## per protein metrics (training)
+            outstr += "Per protein AUC mean (training): {:.4f}; median: {:.4f} for epoch {}\n".format(
+                np.mean(list_training_auc), np.median(list_training_auc), num_iter +1
+            )
+            ## per protein metrics (validation)
+            outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
+                np.mean(list_val_auc), np.median(list_val_auc), num_iter +1
             )
             outstr += "Epoch took {:2f}s\n".format(time.time() - tic)
             logfile.write(outstr + "\n")
             print(outstr)
+
+            if num_iter + 1 == num_iterations:
+                outstr = ">>> Split {:d} CV test done\n".format(split_count)
+                outstr += ">>> Per protein AUC mean (training): {:.4f}; median: {:.4f}\n".format(
+                    np.mean(list_training_auc), np.median(list_training_auc)
+                )
+                outstr += ">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n".format(
+                    np.mean(list_val_auc), np.median(list_val_auc)
+                )
+                logfile.write(outstr + "\n")
+                print(outstr)
 
             if np.mean(list_val_auc) > best_val_auc:
                 logfile.write(">>> Saving model.\n")
