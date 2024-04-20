@@ -223,7 +223,7 @@ class MaSIF_site(tf.keras.Model):
             )  # batch_size, max_verts, n_feat
 
             self.global_desc = self.soft_grid_l2(
-                my_input_feat,
+                self.global_desc,
                 self.rho_coords,
                 self.theta_coords,
                 self.mask
@@ -246,7 +246,7 @@ class MaSIF_site(tf.keras.Model):
             )  # batch_size, max_verts, n_feat
 
             self.global_desc = self.soft_grid_l3(
-                my_input_feat,
+                self.global_desc,
                 self.rho_coords,
                 self.theta_coords,
                 self.mask
@@ -269,7 +269,7 @@ class MaSIF_site(tf.keras.Model):
             print("ConvL4 input global_desc shape: {}".format(self.global_desc.get_shape()))
 
             self.global_desc = self.soft_grid_l4(
-                my_input_feat,
+                self.global_desc,
                 self.rho_coords,
                 self.theta_coords,
                 self.mask
