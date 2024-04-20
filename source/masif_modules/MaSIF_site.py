@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from sklearn import metrics
+from masif_modules.masif_layers import layer1, layer2, layer3
 
 class MaSIF_site(tf.keras.Model):
 
@@ -144,6 +145,8 @@ class MaSIF_site(tf.keras.Model):
         feat_mask=[1.0, 1.0, 1.0, 1.0, 1.0],
         n_conv_layers=1,
         optimizer_method="Adam",
+        name="MaSIF_site",
+        **kwargs
     ):
         """
         Initialize the MaSIF_site object.
@@ -161,7 +164,7 @@ class MaSIF_site(tf.keras.Model):
         - optimizer_method (str): The optimization method to use.
 
         """
-        super().__init__()
+        super().__init__(name=name, **kwargs)
 
         # order of the spectral filters
         self.max_rho = max_rho

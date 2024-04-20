@@ -16,7 +16,6 @@ Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
 """
 
 params = masif_opts["site"]
-tf_ver = 2
 
 ### if IndexError: commented out the following if statements ###
 ### edited the following to parse HTC argument as custom_parameters for training
@@ -49,7 +48,29 @@ print("Num GPUs Available: ", len(physical_devices))
 print("GPUs Available: ", physical_devices)
 
 # Build the neural network model
-from masif_modules.MaSIF_site import MaSIF_site
+# from masif_modules.MaSIF_site import MaSIF_site
+from masif_modules.MaSIF_site_wLayers import MaSIF_site
+
+# if "n_theta" in params:
+#     model = MaSIF_site(
+#         max_rho=params["max_distance"],
+#         n_thetas=params["n_theta"],
+#         n_rhos=params["n_rho"],
+#         n_rotations=params["n_rotations"],
+#         idx_gpu="/device:GPU:0",
+#         feat_mask=params["feat_mask"],
+#         n_conv_layers=params["n_conv_layers"],
+#     )
+# else:
+#     model = MaSIF_site(
+#         max_rho=params["max_distance"],
+#         n_thetas=4,
+#         n_rhos=3,
+#         n_rotations=4,
+#         idx_gpu="/device:GPU:0",
+#         feat_mask=params["feat_mask"],
+#         n_conv_layers=params["n_conv_layers"],
+#     )
 
 if "n_theta" in params:
     model = MaSIF_site(
@@ -57,7 +78,7 @@ if "n_theta" in params:
         n_thetas=params["n_theta"],
         n_rhos=params["n_rho"],
         n_rotations=params["n_rotations"],
-        idx_gpu="/device:GPU:0",
+        idx_gpu="/GPU:0",
         feat_mask=params["feat_mask"],
         n_conv_layers=params["n_conv_layers"],
     )
@@ -67,7 +88,7 @@ else:
         n_thetas=4,
         n_rhos=3,
         n_rotations=4,
-        idx_gpu="/device:GPU:0",
+        idx_gpu="/GPU:0",
         feat_mask=params["feat_mask"],
         n_conv_layers=params["n_conv_layers"],
     )
@@ -100,10 +121,7 @@ if not os.path.exists(params["model_dir"]):
 else:
     # Load existing model.
     print ('Reading pre-trained model')
-    if tf_ver == 2:
-        model = tf.keras.models.load_weights(params["model_dir"]+'model.weights.h5')
-    else:
-        model = tf.compat.v1.keras.models.load_model(params["model_dir"]+'model')
+    model = tf.keras.models.load_weights(params["model_dir"]+'model.weights.h5')
 
 # os.makedirs(dirs) for out_pred_dir, out_surf_dir
 if not os.path.exists(params["out_pred_dir"]):

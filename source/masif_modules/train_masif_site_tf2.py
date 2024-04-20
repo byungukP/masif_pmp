@@ -280,5 +280,7 @@ def train_masif_site(
     # Display the model's architecture: built-in model.summary() for functional API models
     print("\nModel Summary: trainable variables & structure\n")
     model.count_number_parameters()
+    print("\model.summary() check\n")
+    model.summary()
 
     logfile.close()
