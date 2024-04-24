@@ -99,6 +99,7 @@ class MaSIF_site(tf.keras.Model):
         self.max_rho = max_rho
         self.n_thetas = n_thetas
         self.n_rhos = n_rhos
+        self.learning_rate = learning_rate
 
         self.sigma_rho_init = (
             max_rho / 8
@@ -315,9 +316,7 @@ class MaSIF_site(tf.keras.Model):
     @tf.function(input_signature=[input_dict])
     def train_step(
         self,
-        input_dict,
-        optimizer_method,
-        learning_rate=1e-3
+        input_dict
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
@@ -353,17 +352,8 @@ class MaSIF_site(tf.keras.Model):
             full_score = tf.squeeze(full_logits)[:, 0]
 
         # definition of the solver
-        if optimizer_method == "AMSGrad":
-            from monet_modules import AMSGrad
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
 
-            print("Using AMSGrad as the optimizer")
-            self.optimizer = AMSGrad.AMSGrad(
-                learning_rate=0.01, beta1=0.9, beta2=0.99, epsilon=1e-8
-            )
-        else:
-            self.optimizer = tf.keras.optimizers.Adam(
-                learning_rate=learning_rate
-            )
         # Compute gradients wrt trainable_variables (or weights)
         gradients = tape.gradient(loss, self.trainable_variables)
         # Update weights

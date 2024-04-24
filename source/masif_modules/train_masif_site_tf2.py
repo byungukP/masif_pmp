@@ -234,11 +234,9 @@ def train_masif_site(
                     logfile.write("Training on {} {}\n".format(ppi_pair_id, pid))
                     # input_dict["keep_prob"] = 1.0
                     
-                    logs = model.train_step(
-                        input_dict,
-                        optimizer_method="Adam",
-                        learning_rate=1e-3
-                    )
+                    # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
+                    # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
+                    logs = model.train_step(input_dict)
                     list_training_auc.append(logs["auc"])
                 logfile.flush()
 
