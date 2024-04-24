@@ -175,6 +175,9 @@ class MaSIF_site(tf.keras.Model):
         # final_MLP = FC4, FC2
         self.final_MLPBlock = Final_MLPBlock(self.n_thetas, self.n_labels)
 
+        # metrics
+        self.metrics_auc = tf.keras.metrics.AUC(name="AUC")
+
 
     def call(
             self,
@@ -350,7 +353,8 @@ class MaSIF_site(tf.keras.Model):
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
-        # print('Tracing with', input_dict)    # for debugging, check whether trace only one tf.Graph for train_step()
+        # print('Tracing with', input_dict)    # for debugging, check whether trace only one tf.Graph for train_step()       
+        self.metrics_auc.reset_states()
         with tf.GradientTape() as tape:
             # Forward pass (self() ~ model.call())
             logits = self(
@@ -411,12 +415,13 @@ class MaSIF_site(tf.keras.Model):
 
         true = tf.cast(eval_labels[:, 0], tf.int32)
         pred = eval_score
+        self.metrics_auc.update_state(true, pred)
         # true, pred = true.numpy(), pred.numpy()
         return {
                     "loss": loss,
                     "eval_score": eval_score,
                     "full_score": full_score,
-                    "auc": metrics.roc_auc_score(true, pred)
+                    "auc": self.metrics_auc.result() # metrics.roc_auc_score(true, pred)
                 }
 
     # for manually iterating over the validation dataset using a custom validation loop
@@ -432,6 +437,7 @@ class MaSIF_site(tf.keras.Model):
         indices_tensor
     ):
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
+        self.metrics_auc.reset_states()
         # Forward pass
         logits = self(
             rho_coords,
@@ -473,11 +479,12 @@ class MaSIF_site(tf.keras.Model):
         # Update metrics
         true=tf.cast(eval_labels[:, 0],tf.int32)
         pred=eval_score
-        true, pred = true.numpy(), pred.numpy()
+        # true, pred = true.numpy(), pred.numpy()
+        self.metrics_auc.update_state(true, pred)
         return {
                     "loss": loss,
                     "eval_score": eval_score,
                     "full_score": full_score,
-                    "auc": metrics.roc_auc_score(true, pred)
+                    "auc": self.metrics_auc.result() # metrics.roc_auc_score(true, pred)
                 }
 
