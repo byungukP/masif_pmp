@@ -340,7 +340,7 @@ class MaSIF_site(tf.keras.Model):
     #             tf.TensorSpec(shape=[None, None], dtype=tf.int32, name="indices_tensor"),
     #         ],
     # )
-    @tf.function(reduce_retracing=True)
+    # @tf.function(reduce_retracing=True)
     def train_step(
         self,
         rho_coords,
