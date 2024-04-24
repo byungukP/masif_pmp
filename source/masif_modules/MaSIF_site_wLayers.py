@@ -411,7 +411,7 @@ class MaSIF_site(tf.keras.Model):
 
         true = tf.cast(eval_labels[:, 0], tf.int32)
         pred = eval_score
-        true, pred = true.numpy(), pred.numpy()
+        # true, pred = true.numpy(), pred.numpy()
         return {
                     "loss": loss,
                     "eval_score": eval_score,
