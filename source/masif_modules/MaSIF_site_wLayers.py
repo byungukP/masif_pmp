@@ -354,8 +354,7 @@ class MaSIF_site(tf.keras.Model):
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
-        # print('Tracing with', input_dict)    # for debugging, check whether trace only one tf.Graph for train_step()       
-        self.metrics_auc.reset_states()
+        # print('Tracing with', input_dict)    # for debugging, check whether trace only one tf.Graph for train_step()
         with tf.GradientTape() as tape:
             # Forward pass (self() ~ model.call())
             logits = self(
@@ -438,7 +437,6 @@ class MaSIF_site(tf.keras.Model):
         indices_tensor
     ):
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
-        self.metrics_auc.reset_states()
         # Forward pass
         logits = self(
             rho_coords,
