@@ -178,6 +178,8 @@ class MaSIF_site(tf.keras.Model):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
 
+        # simplify parsing steps below if works fine (already tf.cast done for input_dict)
+
         self.rho_coords = tf.cast(input_dict["rho_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
         self.theta_coords = tf.cast(input_dict["theta_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
         self.input_feat = tf.cast(input_dict["input_feat"], dtype=tf.float32)  # batch_size, n_vertices, n_feat
@@ -302,7 +304,7 @@ class MaSIF_site(tf.keras.Model):
     """
 
     @tf.function(
-            input_signature=(
+            input_signature=[
                 {"rho_coords": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
                  "theta_coords": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
                  "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
@@ -311,7 +313,7 @@ class MaSIF_site(tf.keras.Model):
                  "pos_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
                  "neg_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
                  "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
-            ),
+            ],
     )
     def train_step(
         self,
