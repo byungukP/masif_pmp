@@ -328,18 +328,19 @@ class MaSIF_site(tf.keras.Model):
     #                  "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
 
     # @tf.function(input_signature=[signature_dict])
-    @tf.function(
-            input_signature=[
-                tf.TensorSpec(shape=[None, None], dtype=tf.float32, name="rho_coords"),
-                tf.TensorSpec(shape=[None, None], dtype=tf.float32, name="theta_coords"),
-                tf.TensorSpec(shape=[None, None, None], dtype=tf.float32, name="input_feat"),
-                tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32, name="mask"),
-                tf.TensorSpec(shape=[None, 2], dtype=tf.int32, name="labels"),
-                tf.TensorSpec(shape=[None], dtype=tf.int32, name="pos_idx"),
-                tf.TensorSpec(shape=[None], dtype=tf.int32, name="neg_idx"),
-                tf.TensorSpec(shape=[None, None], dtype=tf.int32, name="indices_tensor"),
-            ],
-    )
+    # @tf.function(
+    #         input_signature=[
+    #             tf.TensorSpec(shape=[None, None], dtype=tf.float32, name="rho_coords"),
+    #             tf.TensorSpec(shape=[None, None], dtype=tf.float32, name="theta_coords"),
+    #             tf.TensorSpec(shape=[None, None, None], dtype=tf.float32, name="input_feat"),
+    #             tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32, name="mask"),
+    #             tf.TensorSpec(shape=[None, 2], dtype=tf.int32, name="labels"),
+    #             tf.TensorSpec(shape=[None], dtype=tf.int32, name="pos_idx"),
+    #             tf.TensorSpec(shape=[None], dtype=tf.int32, name="neg_idx"),
+    #             tf.TensorSpec(shape=[None, None], dtype=tf.int32, name="indices_tensor"),
+    #         ],
+    # )
+    @tf.function(reduce_retracing=True)
     def train_step(
         self,
         rho_coords,
