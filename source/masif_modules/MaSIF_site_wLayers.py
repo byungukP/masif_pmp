@@ -3,14 +3,6 @@ import numpy as np
 from sklearn import metrics
 from masif_modules.masif_layers import SoftGrid, Init_MLPBlock, Final_MLPBlock
 
-signature_dict ={"rho_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
-                 "theta_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
-                 "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
-                 "mask": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
-                 "labels": tf.TensorSpec(shape=[None, 2], dtype=tf.int32),
-                 "pos_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
-                 "neg_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
-                 "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
 
 class MaSIF_site(tf.keras.Model):
 
@@ -312,6 +304,15 @@ class MaSIF_site(tf.keras.Model):
     may need to modify this function to fit the custom training loop for transfer learning
     so let's use train_step() for now
     """
+
+    signature_dict ={"rho_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
+                     "theta_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
+                     "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
+                     "mask": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
+                     "labels": tf.TensorSpec(shape=[None, 2], dtype=tf.int32),
+                     "pos_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
+                     "neg_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
+                     "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
 
     @tf.function(input_signature=[signature_dict])
     def train_step(
