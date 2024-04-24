@@ -3,8 +3,8 @@ import numpy as np
 from sklearn import metrics
 from masif_modules.masif_layers import SoftGrid, Init_MLPBlock, Final_MLPBlock
 
-input_dict ={"rho_coords": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
-             "theta_coords": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
+input_dict ={"rho_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
+             "theta_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
              "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
              "mask": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
              "labels": tf.TensorSpec(shape=[None, 2], dtype=tf.int32),
@@ -190,15 +190,15 @@ class MaSIF_site(tf.keras.Model):
 
         # simplify parsing steps below if works fine (already tf.cast done for input_dict)
 
-        self.rho_coords = tf.cast(input_dict["rho_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
-        self.theta_coords = tf.cast(input_dict["theta_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.rho_coords = tf.cast(input_dict["rho_coords"], dtype=tf.float32)  # batch_size, n_vertices,
+        self.theta_coords = tf.cast(input_dict["theta_coords"], dtype=tf.float32)  # batch_size, n_vertices,
         self.input_feat = tf.cast(input_dict["input_feat"], dtype=tf.float32)  # batch_size, n_vertices, n_feat
         self.mask = tf.cast(input_dict["mask"], dtype=tf.float32)  # batch_size, n_vertices, 1
-        self.pos_idx = tf.cast(input_dict["pos_idx"], dtype=tf.int32)  # batch_size/2
-        self.neg_idx = tf.cast(input_dict["neg_idx"], dtype=tf.int32)  # batch_size/2
-        self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
+        self.pos_idx = tf.cast(input_dict["pos_idx"], dtype=tf.int32)  # batch_size/2,
+        self.neg_idx = tf.cast(input_dict["neg_idx"], dtype=tf.int32)  # batch_size/2,
+        self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels(=2)
         self.indices_tensor = tf.cast(input_dict["indices_tensor"], dtype=tf.int32)  # batch_size, max_verts (< 30)
-        self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
+        # self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
 
         self.global_desc = []
 
