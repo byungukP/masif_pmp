@@ -300,7 +300,19 @@ class MaSIF_site(tf.keras.Model):
     may need to modify this function to fit the custom training loop for transfer learning
     so let's use train_step() for now
     """
-    # @tf.function
+
+    @tf.function(
+            input_signature=(
+                {"rho_coords": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
+                 "theta_coords": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
+                 "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
+                 "mask": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
+                 "labels": tf.TensorSpec(shape=[None, 2], dtype=tf.int32),
+                 "pos_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
+                 "neg_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
+                 "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
+            ),
+    )
     def train_step(
         self,
         input_dict,
@@ -309,6 +321,7 @@ class MaSIF_site(tf.keras.Model):
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
+        print('Tracing with', input_dict)    # for debugging, check whether trace only one tf.Graph for train_step()
         with tf.GradientTape() as tape:
             # Forward pass (self() ~ model.call())
             logits = self(input_dict, training=True)

@@ -1,5 +1,6 @@
 import time
 import os
+import tensorflow as tf
 from sklearn import metrics
 import numpy as np
 from IPython.core.debugger import set_trace
@@ -169,6 +170,9 @@ def train_masif_site(
                     continue
                 count_proteins += 1
 
+                # laoding as numpy array might cause memory issue
+                # so turn np.array to tf.Tensor
+                # also, try to trace tf.Graph w/ TensorShape([1, None])
                 rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
                 theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
                 input_feat = np.load(mydir + pid + "_input_feat.npy")
@@ -204,22 +208,23 @@ def train_masif_site(
                     pos_labels = pos_labels[:n]
 
                 # then, save as input_dict
+                # pass inputs as tensors to reduce retracing
                 input_dict = {
-                    "rho_coords": rho_wrt_center,
-                    "theta_coords": theta_wrt_center,
-                    "input_feat": input_feat,
-                    "mask": mask,
-                    "labels": iface_labels_dc,
-                    "pos_idx": pos_labels,
-                    "neg_idx": neg_labels,
-                    "indices_tensor": indices,
+                    "rho_coords": tf.cast(rho_wrt_center, dtype=tf.float32),
+                    "theta_coords": tf.cast(theta_wrt_center, dtype=tf.float32),
+                    "input_feat": tf.cast(input_feat, dtype=tf.float32),
+                    "mask": tf.cast(mask, dtype=tf.float32),
+                    "labels": tf.cast(iface_labels_dc, dtype=tf.int32),
+                    "pos_idx": tf.cast(pos_labels, dtype=tf.int32),
+                    "neg_idx": tf.cast(neg_labels, dtype=tf.int32),
+                    "indices_tensor": tf.cast(indices, dtype=tf.int32)
                 }
 
                 # Validation checkpoint
                 # search for val_dirs 1st since it's much faster with small search space of val_dirs
                 if ppi_pair_id in val_dirs:
                     logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
-                    input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
+                    # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
                     logs = model.test_step(input_dict)
                     list_val_auc.append(logs["auc"])
@@ -227,7 +232,7 @@ def train_masif_site(
                 # Perform training step
                 else:
                     logfile.write("Training on {} {}\n".format(ppi_pair_id, pid))
-                    input_dict["keep_prob"] = 1.0
+                    # input_dict["keep_prob"] = 1.0
                     
                     logs = model.train_step(
                         input_dict,
