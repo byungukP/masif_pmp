@@ -226,7 +226,16 @@ def train_masif_site(
                     logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
                     # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
-                    logs = model.test_step(input_dict)
+                    logs = model.test_step(
+                        input_dict["rho_coords"],
+                        input_dict["theta_coords"],
+                        input_dict["input_feat"],
+                        input_dict["mask"],
+                        input_dict["labels"],
+                        input_dict["pos_idx"],
+                        input_dict["neg_idx"],
+                        input_dict["indices_tensor"]
+                    )
                     list_val_auc.append(logs["auc"])
 
                 # Perform training step
@@ -236,7 +245,16 @@ def train_masif_site(
                     
                     # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
                     # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
-                    logs = model.train_step(input_dict)
+                    logs = model.train_step(
+                        input_dict["rho_coords"],
+                        input_dict["theta_coords"],
+                        input_dict["input_feat"],
+                        input_dict["mask"],
+                        input_dict["labels"],
+                        input_dict["pos_idx"],
+                        input_dict["neg_idx"],
+                        input_dict["indices_tensor"]                        
+                    )
                     list_training_auc.append(logs["auc"])
                 logfile.flush()
 

@@ -176,20 +176,30 @@ class MaSIF_site(tf.keras.Model):
         self.final_MLPBlock = Final_MLPBlock(self.n_thetas, self.n_labels)
 
 
-    def call(self, input_dict):
+    def call(
+            self,
+            rho_coords,
+            theta_coords,
+            input_feat,
+            mask,
+            labels,
+            pos_idx,
+            neg_idx,
+            indices_tensor
+        ):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
 
         # simplify parsing steps below if works fine (already tf.cast done for input_dict)
 
-        self.rho_coords = tf.cast(input_dict["rho_coords"], dtype=tf.float32)  # batch_size, n_vertices,
-        self.theta_coords = tf.cast(input_dict["theta_coords"], dtype=tf.float32)  # batch_size, n_vertices,
-        self.input_feat = tf.cast(input_dict["input_feat"], dtype=tf.float32)  # batch_size, n_vertices, n_feat
-        self.mask = tf.cast(input_dict["mask"], dtype=tf.float32)  # batch_size, n_vertices, 1
-        self.pos_idx = tf.cast(input_dict["pos_idx"], dtype=tf.int32)  # batch_size/2,
-        self.neg_idx = tf.cast(input_dict["neg_idx"], dtype=tf.int32)  # batch_size/2,
-        self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels(=2)
-        self.indices_tensor = tf.cast(input_dict["indices_tensor"], dtype=tf.int32)  # batch_size, max_verts (< 30)
+        self.rho_coords = tf.cast(rho_coords, dtype=tf.float32)  # batch_size, n_vertices,
+        self.theta_coords = tf.cast(theta_coords, dtype=tf.float32)  # batch_size, n_vertices,
+        self.input_feat = tf.cast(input_feat, dtype=tf.float32)  # batch_size, n_vertices, n_feat
+        self.mask = tf.cast(mask, dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.pos_idx = tf.cast(pos_idx, dtype=tf.int32)  # batch_size/2,
+        self.neg_idx = tf.cast(neg_idx, dtype=tf.int32)  # batch_size/2,
+        self.labels = tf.cast(labels, dtype=tf.int32)  # batch_size, n_labels(=2)
+        self.indices_tensor = tf.cast(indices_tensor, dtype=tf.int32)  # batch_size, max_verts (< 30)
         # self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
 
         self.global_desc = []
@@ -305,27 +315,55 @@ class MaSIF_site(tf.keras.Model):
     so let's use train_step() for now
     """
 
-    signature_dict ={"rho_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
-                     "theta_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
-                     "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
-                     "mask": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
-                     "labels": tf.TensorSpec(shape=[None, 2], dtype=tf.int32),
-                     "pos_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
-                     "neg_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
-                     "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
+    # signature_dict ={"rho_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
+    #                  "theta_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
+    #                  "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
+    #                  "mask": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
+    #                  "labels": tf.TensorSpec(shape=[None, 2], dtype=tf.int32),
+    #                  "pos_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
+    #                  "neg_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
+    #                  "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
 
-    @tf.function(input_signature=[signature_dict])
+    # @tf.function(input_signature=[signature_dict])
+    @tf.function(
+            input_signature=[
+                tf.TensorSpec(shape=[None, None], dtype=tf.float32, name="rho_coords"),
+                tf.TensorSpec(shape=[None, None], dtype=tf.float32, name="theta_coords"),
+                tf.TensorSpec(shape=[None, None, None], dtype=tf.float32, name="input_feat"),
+                tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32, name="mask"),
+                tf.TensorSpec(shape=[None, 2], dtype=tf.int32, name="labels"),
+                tf.TensorSpec(shape=[None], dtype=tf.int32, name="pos_idx"),
+                tf.TensorSpec(shape=[None], dtype=tf.int32, name="neg_idx"),
+                tf.TensorSpec(shape=[None, None], dtype=tf.int32, name="indices_tensor"),
+            ],
+    )
     def train_step(
         self,
-        input_dict
+        rho_coords,
+        theta_coords,
+        input_feat,
+        mask,
+        labels,
+        pos_idx,
+        neg_idx,
+        indices_tensor
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
-        print('Tracing with', input_dict)    # for debugging, check whether trace only one tf.Graph for train_step()
+        # print('Tracing with', input_dict)    # for debugging, check whether trace only one tf.Graph for train_step()
         with tf.GradientTape() as tape:
             # Forward pass (self() ~ model.call())
-            logits = self(input_dict, training=True)
-            
+            logits = self(
+                rho_coords,
+                theta_coords,
+                input_feat,
+                mask,
+                labels,
+                pos_idx,
+                neg_idx,
+                indices_tensor,
+                training=True
+            )            
             eval_labels = tf.concat(
                 [
                     tf.gather(self.labels, self.pos_idx),
@@ -384,12 +422,28 @@ class MaSIF_site(tf.keras.Model):
     # for manually iterating over the validation dataset using a custom validation loop
     def test_step(
         self,
-        input_dict
+        rho_coords,
+        theta_coords,
+        input_feat,
+        mask,
+        labels,
+        pos_idx,
+        neg_idx,
+        indices_tensor
     ):
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
         # Forward pass
-        logits = self(input_dict, training=True)
-        
+        logits = self(
+            rho_coords,
+            theta_coords,
+            input_feat,
+            mask,
+            labels,
+            pos_idx,
+            neg_idx,
+            indices_tensor,
+            training=True
+        )            
         eval_labels = tf.concat(
             [
                 tf.gather(self.labels, self.pos_idx),
