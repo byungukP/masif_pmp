@@ -351,7 +351,7 @@ class MaSIF_site(tf.keras.Model):
             self.optimizer = tf.keras.optimizers.Adam(
                 learning_rate=learning_rate
             )
-        # Compute gradients
+        # Compute gradients wrt trainable_variables (or weights)
         gradients = tape.gradient(loss, self.trainable_variables)
         # Update weights
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))

@@ -79,7 +79,6 @@ class SoftGrid(keras.layers.Layer):
         rho_coords,
         theta_coords,
         mask,
-        training=True,
         eps=1e-5,
         mean_gauss_fxns=True,
     ):

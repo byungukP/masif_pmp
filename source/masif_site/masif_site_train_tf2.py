@@ -51,27 +51,6 @@ print("GPUs Available: ", physical_devices)
 # from masif_modules.MaSIF_site import MaSIF_site
 from masif_modules.MaSIF_site_wLayers import MaSIF_site
 
-# if "n_theta" in params:
-#     model = MaSIF_site(
-#         max_rho=params["max_distance"],
-#         n_thetas=params["n_theta"],
-#         n_rhos=params["n_rho"],
-#         n_rotations=params["n_rotations"],
-#         idx_gpu="/device:GPU:0",
-#         feat_mask=params["feat_mask"],
-#         n_conv_layers=params["n_conv_layers"],
-#     )
-# else:
-#     model = MaSIF_site(
-#         max_rho=params["max_distance"],
-#         n_thetas=4,
-#         n_rhos=3,
-#         n_rotations=4,
-#         idx_gpu="/device:GPU:0",
-#         feat_mask=params["feat_mask"],
-#         n_conv_layers=params["n_conv_layers"],
-#     )
-
 if "n_theta" in params:
     model = MaSIF_site(
         max_rho=params["max_distance"],
@@ -121,7 +100,7 @@ if not os.path.exists(params["model_dir"]):
 else:
     # Load existing model.
     print ('Reading pre-trained model')
-    model = tf.keras.models.load_weights(params["model_dir"]+'model.weights.h5')
+    model = tf.keras.model.load_weights(params["model_dir"]+'model.weights.h5')
 
 # os.makedirs(dirs) for out_pred_dir, out_surf_dir
 if not os.path.exists(params["out_pred_dir"]):
