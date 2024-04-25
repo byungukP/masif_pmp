@@ -97,6 +97,11 @@ def train_masif_site(
     # for check
     # print(f"train_dirs: {len(train_dirs)}, {train_dirs}")
     # print(f"val_dirs: {len(val_dirs)}, {val_dirs}")
+    model.build()
+    print("\nModel Summary: trainable variables & structure\n")
+    model.count_number_parameters()
+    print("\model.summary() check\n")
+    model.summary()
 
     # Custom training loop
     for epoch in range(num_epochs):
