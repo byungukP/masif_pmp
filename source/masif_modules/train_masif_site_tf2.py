@@ -129,10 +129,7 @@ def train_masif_site(
         list_test_names = []
         list_test_acc = []
         all_test_labels = []
-        all_test_scores = []
-        
-        # reset metrics states for each epoch
-        model.metrics_auc.reset_states()
+        all_test_scores = []       
 
         """
         shuffling the training set before each epoch is a common practice to ensure
