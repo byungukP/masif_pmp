@@ -178,7 +178,6 @@ class MaSIF_site(tf.keras.Model):
         # metrics
         self.metrics_auc = tf.keras.metrics.AUC(name="AUC")
 
-    @tf.function(autograph=True)
     def call(self, input_dict):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
@@ -330,7 +329,6 @@ class MaSIF_site(tf.keras.Model):
     # )
     # @tf.function(reduce_retracing=True)
 
-    @tf.function(autograph=True)
     def train_step(
         self,
         input_dict,
@@ -402,7 +400,6 @@ class MaSIF_site(tf.keras.Model):
                 }
 
     # for manually iterating over the validation dataset using a custom validation loop
-    @tf.function(autograph=True)
     def test_step(self, input_dict):
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
         self.metrics_auc.reset_states()
