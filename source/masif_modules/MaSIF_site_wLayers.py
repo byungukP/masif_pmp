@@ -191,7 +191,7 @@ class MaSIF_site(tf.keras.Model):
         self.neg_idx = tf.cast(input_dict["neg_idx"], dtype=tf.int32)  # batch_size/2
         self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
         self.indices_tensor = tf.cast(input_dict["indices_tensor"], dtype=tf.int32)  # batch_size, max_verts (< 30)
-        self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
+        # self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
 
         self.global_desc = []
 
