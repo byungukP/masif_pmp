@@ -179,31 +179,19 @@ class MaSIF_site(tf.keras.Model):
         self.metrics_auc = tf.keras.metrics.AUC(name="AUC")
 
 
-    def call(
-            self,
-            rho_coords,
-            theta_coords,
-            input_feat,
-            mask,
-            labels,
-            pos_idx,
-            neg_idx,
-            indices_tensor
-        ):
+    def call(self, input_dict):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
 
-        # simplify parsing steps below if works fine (already tf.cast done for input_dict)
-
-        self.rho_coords = tf.cast(rho_coords, dtype=tf.float32)  # batch_size, n_vertices,
-        self.theta_coords = tf.cast(theta_coords, dtype=tf.float32)  # batch_size, n_vertices,
-        self.input_feat = tf.cast(input_feat, dtype=tf.float32)  # batch_size, n_vertices, n_feat
-        self.mask = tf.cast(mask, dtype=tf.float32)  # batch_size, n_vertices, 1
-        self.pos_idx = tf.cast(pos_idx, dtype=tf.int32)  # batch_size/2,
-        self.neg_idx = tf.cast(neg_idx, dtype=tf.int32)  # batch_size/2,
-        self.labels = tf.cast(labels, dtype=tf.int32)  # batch_size, n_labels(=2)
-        self.indices_tensor = tf.cast(indices_tensor, dtype=tf.int32)  # batch_size, max_verts (< 30)
-        # self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
+        self.rho_coords = tf.cast(input_dict["rho_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.theta_coords = tf.cast(input_dict["theta_coords"], dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.input_feat = tf.cast(input_dict["input_feat"], dtype=tf.float32)  # batch_size, n_vertices, n_feat
+        self.mask = tf.cast(input_dict["mask"], dtype=tf.float32)  # batch_size, n_vertices, 1
+        self.pos_idx = tf.cast(input_dict["pos_idx"], dtype=tf.int32)  # batch_size/2
+        self.neg_idx = tf.cast(input_dict["neg_idx"], dtype=tf.int32)  # batch_size/2
+        self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
+        self.indices_tensor = tf.cast(input_dict["indices_tensor"], dtype=tf.int32)  # batch_size, max_verts (< 30)
+        self.keep_prob = tf.cast(input_dict["keep_prob"], dtype=tf.float32)  # scalar
 
         self.global_desc = []
 
@@ -341,17 +329,11 @@ class MaSIF_site(tf.keras.Model):
     #         ],
     # )
     # @tf.function(reduce_retracing=True)
-    @tf.function(reduce_retracing=True)
     def train_step(
         self,
-        rho_coords,
-        theta_coords,
-        input_feat,
-        mask,
-        labels,
-        pos_idx,
-        neg_idx,
-        indices_tensor
+        input_dict,
+        optimizer_method,
+        learning_rate
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
@@ -359,17 +341,7 @@ class MaSIF_site(tf.keras.Model):
         self.metrics_auc.reset_states()
         with tf.GradientTape() as tape:
             # Forward pass (self() ~ model.call())
-            logits = self(
-                rho_coords,
-                theta_coords,
-                input_feat,
-                mask,
-                labels,
-                pos_idx,
-                neg_idx,
-                indices_tensor,
-                training=True
-            )            
+            logits = self(input_dict, training=True)
             eval_labels = tf.concat(
                 [
                     tf.gather(self.labels, self.pos_idx),
@@ -397,7 +369,8 @@ class MaSIF_site(tf.keras.Model):
             full_score = tf.squeeze(full_logits)[:, 0]
 
         # definition of the solver
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        if optimizer_method == "Adam":
+            self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
 
         # Compute gradients wrt trainable_variables (or weights)
         gradients = tape.gradient(loss, self.trainable_variables)
@@ -427,31 +400,11 @@ class MaSIF_site(tf.keras.Model):
                 }
 
     # for manually iterating over the validation dataset using a custom validation loop
-    def test_step(
-        self,
-        rho_coords,
-        theta_coords,
-        input_feat,
-        mask,
-        labels,
-        pos_idx,
-        neg_idx,
-        indices_tensor
-    ):
+    def test_step(self, input_dict):
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
         self.metrics_auc.reset_states()
         # Forward pass
-        logits = self(
-            rho_coords,
-            theta_coords,
-            input_feat,
-            mask,
-            labels,
-            pos_idx,
-            neg_idx,
-            indices_tensor,
-            training=True
-        )            
+        logits = self(input_dict, training=True)
         eval_labels = tf.concat(
             [
                 tf.gather(self.labels, self.pos_idx),
