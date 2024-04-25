@@ -3,14 +3,6 @@ import numpy as np
 from sklearn import metrics
 from masif_modules.masif_layers import SoftGrid, Init_MLPBlock, Final_MLPBlock
 
-signature_dict ={"rho_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
-                 "theta_coords": tf.TensorSpec(shape=[None, None], dtype=tf.float32),
-                 "input_feat": tf.TensorSpec(shape=[None, None, None], dtype=tf.float32),
-                 "mask": tf.TensorSpec(shape=[None, None, 1], dtype=tf.float32),
-                 "labels": tf.TensorSpec(shape=[None, 2], dtype=tf.int32),
-                 "pos_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
-                 "neg_idx": tf.TensorSpec(shape=[None], dtype=tf.int32),
-                 "indices_tensor": tf.TensorSpec(shape=[None, None], dtype=tf.int32),}
 
 class MaSIF_site(tf.keras.Model):
 
@@ -186,7 +178,6 @@ class MaSIF_site(tf.keras.Model):
         # metrics
         self.metrics_auc = tf.keras.metrics.AUC(name="AUC")
 
-    @tf.function(input_signature=[signature_dict])
     def call(self, input_dict):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
@@ -338,10 +329,11 @@ class MaSIF_site(tf.keras.Model):
     # )
     # @tf.function(reduce_retracing=True)
 
-    @tf.function(input_signature=[signature_dict])
     def train_step(
         self,
-        input_dict
+        input_dict,
+        optimizer_method,
+        learning_rate
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
@@ -377,8 +369,8 @@ class MaSIF_site(tf.keras.Model):
             full_score = tf.squeeze(full_logits)[:, 0]
 
         # definition of the solver
-        # if optimizer_method == "Adam":
-        optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        if optimizer_method == "Adam":
+            optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
         # Compute gradients wrt trainable_variables (or weights)
         gradients = tape.gradient(loss, self.trainable_variables)
@@ -393,12 +385,10 @@ class MaSIF_site(tf.keras.Model):
         # )   # a shape of [-1] flattens into 1-D.
         
         # Update metrics
-        # print("true:",tf.cast(eval_labels[:, 0], tf.int32))
-        # print("pred:",eval_score)
-
-        true = tf.cast(eval_labels[:, 0], tf.int32)
-        pred = eval_score
-        self.metrics_auc.update_state(true, pred)
+        self.metrics_auc.update_state(
+            tf.cast(eval_labels[:, 0],tf.int32),
+            eval_score
+        )
         # true, pred = true.numpy(), pred.numpy()
         return {
                     "loss": loss,
@@ -408,7 +398,6 @@ class MaSIF_site(tf.keras.Model):
                 }
 
     # for manually iterating over the validation dataset using a custom validation loop
-    @tf.function(input_signature=[signature_dict])
     def test_step(self, input_dict):
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
         self.metrics_auc.reset_states()
@@ -441,10 +430,10 @@ class MaSIF_site(tf.keras.Model):
         full_score = tf.squeeze(full_logits)[:, 0]
 
         # Update metrics
-        true=tf.cast(eval_labels[:, 0],tf.int32)
-        pred=eval_score
-        # true, pred = true.numpy(), pred.numpy()
-        self.metrics_auc.update_state(true, pred)
+        self.metrics_auc.update_state(
+            tf.cast(eval_labels[:, 0],tf.int32),
+            eval_score
+        )
         return {
                     "loss": loss,
                     "eval_score": eval_score,
