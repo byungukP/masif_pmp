@@ -341,9 +341,7 @@ class MaSIF_site(tf.keras.Model):
     @tf.function(input_signature=[signature_dict])
     def train_step(
         self,
-        input_dict,
-        optimizer_method,
-        learning_rate
+        input_dict
     ):
         # input = input_dict
         # self.labels = tf.cast(input_dict["labels"], dtype=tf.int32)  # batch_size, n_labels
@@ -379,8 +377,8 @@ class MaSIF_site(tf.keras.Model):
             full_score = tf.squeeze(full_logits)[:, 0]
 
         # definition of the solver
-        if optimizer_method == "Adam":
-            optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        # if optimizer_method == "Adam":
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
 
         # Compute gradients wrt trainable_variables (or weights)
         gradients = tape.gradient(loss, self.trainable_variables)
