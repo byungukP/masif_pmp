@@ -341,7 +341,7 @@ class MaSIF_site(tf.keras.Model):
     #         ],
     # )
     # @tf.function(reduce_retracing=True)
-    @tf.function(experimental_relax_shape=True)
+    @tf.function(reduce_retracing=True)
     def train_step(
         self,
         rho_coords,
