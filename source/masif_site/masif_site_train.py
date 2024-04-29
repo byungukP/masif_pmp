@@ -55,7 +55,7 @@ if "n_theta" in params:
         n_rotations=params["n_rotations"],
         feat_mask=params["feat_mask"],
         n_conv_layers=params["n_conv_layers"],
-    ).to(device)
+    )
 else:
     model = MaSIF_site(
         max_rho=params["max_distance"],
@@ -64,7 +64,8 @@ else:
         n_rotations=4,
         feat_mask=params["feat_mask"],
         n_conv_layers=params["n_conv_layers"],
-    ).to(device)
+    )
+model.to(device)
 
 # train
 print(params["feat_mask"])
@@ -84,7 +85,7 @@ if not os.path.exists(params["out_surf_dir"]):
 
 if not params["cv_test"]:
     from masif_modules.train_masif_site import train_masif_site
-    train_masif_site(model, params, num_epochs=params['epoch_num'])
+    train_masif_site(model, params, device, num_epochs=params['epoch_num'])
 else:
     from masif_modules.train_masif_site_kfold import train_masif_site_kfold
-    train_masif_site_kfold(params, num_epochs=params['epoch_num'])
+    train_masif_site_kfold(params, device, num_epochs=params['epoch_num'])

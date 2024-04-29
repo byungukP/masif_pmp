@@ -50,6 +50,7 @@ def pad_indices(indices, max_verts):
 def train_masif_site(
     model,
     params,
+    device,
     batch_size=100,
     num_epochs=100
 ):
@@ -212,7 +213,8 @@ def train_masif_site(
                     "neg_idx": torch.tensor(neg_labels),
                     "indices_tensor": torch.tensor(indices),
                 }
-
+                # move input tensors to the same device w/ parameter tensors of the model
+                input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
                 # Validation checkpoint
                 # search for val_dirs 1st since it's much faster with small search space of val_dirs
