@@ -46,23 +46,27 @@ class SoftGrid(L.LightningModule):
         self.mu_rho = nn.Parameter(
             torch.tensor(mu_rho_initial, dtype=torch.float32),
             requires_grad=True,
-            name="mu_rho_{}".format(name)  # var_name='mu_rho_l1_0' or 'mu_rho_l2'
-        )   # 1, n_gauss
+        )
+        #     name="mu_rho_{}".format(name)  # var_name='mu_rho_l1_0' or 'mu_rho_l2'
+        # )   # 1, n_gauss
         self.sigma_rho = nn.Parameter(
             torch.ones_like(self.mu_rho) * sigma_rho_init,
             requires_grad=True,
-            name="sigma_rho_{}".format(name)
-        )   # 1, n_gauss
+        )
+        #     name="sigma_rho_{}".format(name)
+        # )   # 1, n_gauss
         self.mu_theta = nn.Parameter(
             torch.tensor(mu_theta_initial, dtype=torch.float32),
             requires_grad=True,
-            name="mu_theta_{}".format(name)
-        )   # 1, n_gauss
+        )
+        #     name="mu_theta_{}".format(name)
+        # )   # 1, n_gauss
         self.sigma_theta = nn.Parameter(
             torch.ones_like(self.mu_theta) * sigma_theta_init,
             requires_grad=True,
-            name="sigma_theta_{}".format(name)
-        )   # 1, n_gauss
+        )
+        #     name="sigma_theta_{}".format(name)
+        # )   # 1, n_gauss
 
         # weights for convolution
         self.W = nn.Parameter(
@@ -71,16 +75,18 @@ class SoftGrid(L.LightningModule):
                  self.n_thetas * self.n_rhos * self.n_feat)
             ),
             requires_grad=True,
-            name="W_conv_{}".format(name)
         )
+        #     name="W_conv_{}".format(name)
+        # )
         nn.init.xavier_uniform_(self.W)
         self.b = nn.Parameter(
             torch.zeros(
                 self.n_thetas * self.n_rhos * self.n_feat
             ),
             requires_grad=True,
-            name="b_conv_{}".format(name)
         )
+        #     name="b_conv_{}".format(name)
+        # )
 
     def forward(
             self,
