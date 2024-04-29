@@ -82,7 +82,7 @@ class MaSIF_site(L.LightningModule):
         - optimizer_method (str): The optimization method to use.
 
         """
-        super().__init__()
+        super(MaSIF_site, self).__init__()
 
         # order of the spectral filters
         self.max_rho = max_rho

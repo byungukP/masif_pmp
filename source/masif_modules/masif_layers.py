@@ -36,7 +36,7 @@ class SoftGrid(L.LightningModule):
             name,           # name='l1_0' or 'l2'
             **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        super(SoftGrid, self).__init__()
         self.n_thetas = n_thetas
         self.n_rhos = n_rhos
         self.n_gauss = n_thetas * n_rhos
