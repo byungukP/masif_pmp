@@ -296,8 +296,8 @@ class MaSIF_site(L.LightningModule):
         optimizer
     ):
         # input = input_dict
-        # Forward pass (self() ~ model.call())
-        logits = self(input_dict, training=True)
+        # Forward pass (self() ~ self.forward())
+        logits = self(input_dict)
         eval_labels = torch.cat(
             [
                 torch.gather(self.labels, 0, self.pos_idx),
@@ -351,7 +351,7 @@ class MaSIF_site(L.LightningModule):
         self._shared_eval(input_dict)
 
     def _shared_eval(self, input_dict):
-        logits = self(input_dict, training=False)
+        logits = self(input_dict)
         eval_labels = torch.cat(
             [
                 torch.gather(self.labels, 0, self.pos_idx),
