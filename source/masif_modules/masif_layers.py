@@ -142,7 +142,7 @@ class SoftGrid(L.LightningModule):
 
             # gaussian descriptors: gaussian kernels w/ probability weights locally (=gaussian-wise) average the vertex-wise patch features (by torch.multiply(gauss_fxns, input_feat_), thus acting as soft pixels)
             gauss_desc = torch.mul(
-                gauss_fxns * input_feat_
+                gauss_fxns, input_feat_
             )  # batch_size, n_vertices, n_feat, n_gauss,
             gauss_desc = torch.sum(gauss_desc, 1)  # batch_size, n_feat, n_gauss, (=abstract out vertices factor)
             gauss_desc = torch.reshape(
