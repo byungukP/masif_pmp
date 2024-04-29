@@ -18,7 +18,7 @@ class MaSIF_site(L.LightningModule):
 
     def count_number_parameters(self):
         total_parameters = 0
-        for variable in self.model.parameters():
+        for variable in self.parameters():
             variable_parameters = torch.numel(variable)
             print(f"<{variable.name} shape={variable.shape} {variable.dtype}>")
             total_parameters += variable_parameters
@@ -288,7 +288,7 @@ class MaSIF_site(L.LightningModule):
 
     # definition of the optimizer
     def configure_optimizers(self):
-        return torch.optim.Adam(self.model.parameters(), lr=1e-3)
+        return torch.optim.Adam(self.parameters(), lr=1e-3)
 
     def training_step(
         self,
@@ -297,7 +297,7 @@ class MaSIF_site(L.LightningModule):
     ):
         # input = input_dict
         # Forward pass (self() ~ model.call())
-        logits = self.model(input_dict, training=True)
+        logits = self(input_dict, training=True)
         eval_labels = torch.cat(
             [
                 torch.gather(self.labels, 0, self.pos_idx),
@@ -351,7 +351,7 @@ class MaSIF_site(L.LightningModule):
         self._shared_eval(input_dict)
 
     def _shared_eval(self, input_dict):
-        logits = self.model(input_dict, training=False)
+        logits = self(input_dict, training=False)
         eval_labels = torch.cat(
             [
                 torch.gather(self.labels, 0, self.pos_idx),
