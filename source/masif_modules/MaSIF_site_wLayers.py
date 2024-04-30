@@ -321,6 +321,7 @@ class MaSIF_site(L.LightningModule):
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
         print("eval_labels shape: {}".format(eval_labels.shape))
+        print("eval_labels: {}".format(eval_labels))
 
         eval_logits = torch.cat(
             [
@@ -330,6 +331,7 @@ class MaSIF_site(L.LightningModule):
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
         print("eval_logits shape: {}".format(eval_logits.shape))
+        print("eval_logits: {}".format(eval_logits))
 
         # Compute the loss
         loss = F.binary_cross_entropy_with_logits(
@@ -337,10 +339,10 @@ class MaSIF_site(L.LightningModule):
         )
         # eval_logits and eval_scores are reordered according to pos and neg_idx.
         eval_logits = torch.sigmoid(eval_logits)
-        eval_score = torch.squeeze(eval_logits)[:, 0]                            
+        eval_score = torch.squeeze(eval_logits)[:, 0]   # 2*pos_idx(=neg_idx),
 
         full_logits = torch.sigmoid(logits)
-        full_score = torch.squeeze(full_logits)[:, 0]
+        full_score = torch.squeeze(full_logits)[:, 0]   # batch_size(=total mesh vertices num),
 
         # Compute gradients wrt trainable_variables (or weights)
         optimizer.zero_grad()
@@ -355,11 +357,6 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
-        print("loss: {}".format(loss))
-        print("eval_score: {}, shape: {}".format(eval_score, eval_score.shape))
-        print("full_score: {}, shape: {}".format(full_score, full_score.shape))
-        print("auc: {}".format(auc))
-        print("auc.item(): {}".format(auc.item()))
         return {
                     "loss": loss.item(),
                     "eval_score": eval_score.detach().cpu().numpy(),
