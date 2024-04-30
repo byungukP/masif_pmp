@@ -214,7 +214,7 @@ class MaSIF_site(L.LightningModule):
         if self.n_conv_layers > 1:
             print("global_desc shape before gather: {}".format(global_desc.shape))
             print("vert1234 surface desc before gather: {}".format(global_desc[1234,:]))
-            print(global_desc)
+            print((global_desc == 0).all(dim=1).sum().item())
             # Rebuild a patch based on the output of the first layer
             global_desc = global_desc[self.indices_tensor]
             # global_desc = torch.gather(
