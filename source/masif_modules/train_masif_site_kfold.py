@@ -1,10 +1,12 @@
 import time
 import os
+import torch
+from torchinfo import summary
 from sklearn import metrics
 import numpy as np
 from IPython.core.debugger import set_trace
-from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import KFold
+# from sklearn.metrics import accuracy_score, roc_auc_score
 
 # Apply mask to input_feat
 def mask_input_feat(input_feat, mask):
@@ -45,9 +47,16 @@ def compute_roc_auc(pos, neg):
     dist_pairs = np.concatenate([pos, neg])
     return metrics.roc_auc_score(labels, dist_pairs)
 
+def reset_weights(model):
+    for layer in model.children():
+       if hasattr(layer, 'reset_parameters'):
+           layer.reset_parameters()
+
 
 def train_masif_site_kfold(
+    model,
     params,
+    device,
     batch_size=100,
     num_epochs=100
 ):
@@ -97,29 +106,34 @@ def train_masif_site_kfold(
         train_dirs = training_list[train_idx]
         val_dirs = training_list[test_idx]
 
-        # Build new neural network model for each split
-        from masif_modules.MaSIF_site import MaSIF_site
+        # Reset model weights & reinstantiate optimizer for each split
+        reset_weights(model)
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-        if "n_theta" in params:
-            model = MaSIF_site(
-                max_rho=params["max_distance"],
-                n_thetas=params["n_theta"],
-                n_rhos=params["n_rho"],
-                n_rotations=params["n_rotations"],
-                idx_gpu="/device:GPU:0",
-                feat_mask=params["feat_mask"],
-                n_conv_layers=params["n_conv_layers"],
-            )
-        else:
-            model = MaSIF_site(
-                max_rho=params["max_distance"],
-                n_thetas=4,
-                n_rhos=3,
-                n_rotations=4,
-                idx_gpu="/device:GPU:0",
-                feat_mask=params["feat_mask"],
-                n_conv_layers=params["n_conv_layers"],
-            )
+        # OR
+
+        # # Build new neural network model for each split
+        # from masif_modules.MaSIF_site_wLayers import MaSIF_site
+
+        # if "n_theta" in params:
+        #     model = MaSIF_site(
+        #         max_rho=params["max_distance"],
+        #         n_thetas=params["n_theta"],
+        #         n_rhos=params["n_rho"],
+        #         n_rotations=params["n_rotations"],
+        #         feat_mask=params["feat_mask"],
+        #         n_conv_layers=params["n_conv_layers"],
+        #     )
+        # else:
+        #     model = MaSIF_site(
+        #         max_rho=params["max_distance"],
+        #         n_thetas=4,
+        #         n_rhos=3,
+        #         n_rotations=4,
+        #         feat_mask=params["feat_mask"],
+        #         n_conv_layers=params["n_conv_layers"],
+        #     )
+        # model.to(device)
 
         # Custom training loop
         for epoch in range(num_epochs):
@@ -130,6 +144,9 @@ def train_masif_site_kfold(
             # list_training_loss = []     # loss shape = [batch_size, 2] --> list_loss cannot be averaged directly
             list_training_auc = []
             list_val_auc = []
+
+            all_val_labels = []
+            all_val_scores = []
 
             logfile.write("\nStarting epoch {}\n".format(epoch +1))
             print("\nStarting epoch {}\n".format(epoch + 1))
@@ -202,26 +219,24 @@ def train_masif_site_kfold(
 
                     # then, save as input_dict
                     input_dict = {
-                        "rho_coords": rho_wrt_center,
-                        "theta_coords": theta_wrt_center,
-                        "input_feat": input_feat,
-                        "mask": mask,
-                        "labels": iface_labels_dc,
-                        "pos_idx": pos_labels,
-                        "neg_idx": neg_labels,
-                        "indices_tensor": indices,
+                        "rho_coords": torch.tensor(rho_wrt_center),
+                        "theta_coords": torch.tensor(theta_wrt_center),
+                        "input_feat": torch.tensor(input_feat),
+                        "mask": torch.tensor(mask),
+                        "labels": torch.tensor(iface_labels_dc),
+                        "pos_idx": torch.tensor(pos_labels),
+                        "neg_idx": torch.tensor(neg_labels),
+                        "indices_tensor": torch.tensor(indices),
                     }
+                    # move input tensors to the same device w/ parameter tensors of the model
+                    input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
                     # Perform training step
                     logfile.write("Training on {} {}\n".format(ppi_pair_id, pid))
-                    input_dict["keep_prob"] = 1.0
+                    # input_dict["keep_prob"] = 1.0
 
-                    logs = model.train_step(
-                        input_dict,
-                        optimizer_method="Adam",
-                        learning_rate=1e-3
-                    )
-
+                    print("\nTraining on {} {}\n".format(ppi_pair_id, pid))
+                    logs = model.training_step(input_dict, optimizer)
                     list_training_auc.append(logs["auc"])
                     logfile.flush()
 
@@ -284,22 +299,26 @@ def train_masif_site_kfold(
 
                     # then, save as input_dict
                     input_dict = {
-                        "rho_coords": rho_wrt_center,
-                        "theta_coords": theta_wrt_center,
-                        "input_feat": input_feat,
-                        "mask": mask,
-                        "labels": iface_labels_dc,
-                        "pos_idx": pos_labels,
-                        "neg_idx": neg_labels,
-                        "indices_tensor": indices,
+                        "rho_coords": torch.tensor(rho_wrt_center),
+                        "theta_coords": torch.tensor(theta_wrt_center),
+                        "input_feat": torch.tensor(input_feat),
+                        "mask": torch.tensor(mask),
+                        "labels": torch.tensor(iface_labels_dc),
+                        "pos_idx": torch.tensor(pos_labels),
+                        "neg_idx": torch.tensor(neg_labels),
+                        "indices_tensor": torch.tensor(indices),
                     }
+                    # move input tensors to the same device w/ parameter tensors of the model
+                    input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
                     logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
-                    input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
+                    # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
-                    logs = model.test_step(input_dict)
-                    
+                    logs = model.validation_step(input_dict)
                     list_val_auc.append(logs["auc"])
+                    all_val_labels.append(iface_labels)
+                    all_val_scores.append(logs["full_score"])
+
                     logfile.flush()
 
             # Run testing cycle. --> not in this code, but might be added later
@@ -318,6 +337,13 @@ def train_masif_site_kfold(
             outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
                 np.mean(list_val_auc), np.median(list_val_auc), epoch +1
             )
+            ## all points metrics (validation)
+            flat_all_val_labels = np.concatenate(all_val_labels, axis=0)
+            flat_all_val_scores = np.concatenate(all_val_scores, axis=0)
+            outstr += "Validation auc (all points): {:.2f}\n".format(
+                metrics.roc_auc_score(flat_all_val_labels, flat_all_val_scores)
+            )
+
             # outstr += "Per protein AUC mean (test): {:.4f}; median: {:.4f} for epoch {}\n".format(
             #     np.mean(list_test_auc), np.median(list_test_auc), epoch +1
             # )
@@ -338,11 +364,15 @@ def train_masif_site_kfold(
                 outstr += ">>> Per protein AUC mean (validation): {:.4f}; median: {:.4f}\n".format(
                     np.mean(list_val_auc), np.median(list_val_auc)
                 )
+                outstr += ">>> Validation auc (all points): {:.2f}\n".format(
+                    metrics.roc_auc_score(flat_all_val_labels, flat_all_val_scores)
+                )
                 logfile.write(outstr + "\n")
                 print(outstr)
 
     # Display the model's architecture: built-in model.summary() for functional API models
     print("\nModel Summary: trainable variables & structure\n")
     model.count_number_parameters()
+    summary(model)
 
     logfile.close()

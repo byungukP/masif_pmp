@@ -254,6 +254,7 @@ def train_masif_site(
         outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_auc), np.median(list_val_auc), epoch +1
         )
+        ## all points metrics (validation)
         flat_all_val_labels = np.concatenate(all_val_labels, axis=0)
         flat_all_val_scores = np.concatenate(all_val_scores, axis=0)
         outstr += "Validation auc (all points): {:.2f}\n".format(

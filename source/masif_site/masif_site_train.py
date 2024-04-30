@@ -88,4 +88,4 @@ if not params["cv_test"]:
     train_masif_site(model, params, device, num_epochs=params['epoch_num'])
 else:
     from masif_modules.train_masif_site_kfold import train_masif_site_kfold
-    train_masif_site_kfold(params, device, num_epochs=params['epoch_num'])
+    train_masif_site_kfold(model, params, device, num_epochs=params['epoch_num'])
