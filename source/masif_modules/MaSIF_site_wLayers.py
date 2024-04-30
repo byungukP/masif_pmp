@@ -163,7 +163,7 @@ class MaSIF_site(L.LightningModule):
             )
 
         # final_MLP = FC4, FC2
-        self.final_MLPBlock = Final_MLPBlock(self.n_thetas, self.n_labels)
+        self.final_MLPBlock = Final_MLPBlock(self.n_thetas, self.n_feat, self.n_labels)
 
         # # metrics
         # self.train_auc = pl.metrics.AUC(reorder=True)
@@ -186,7 +186,8 @@ class MaSIF_site(L.LightningModule):
         global_desc = []
 
         # debug flag
-        print("num of rows w/ 0 only before conv: {}".format((self.input_feat == 0).all(dim=2).sum().item()))
+        # print("num of rows w/ 0 only before conv: {}".format((self.input_feat == 0).all(dim=2).sum().item()))
+
         # Use Geometric deep learning
 
         # 1st GDL layer: surf feat-wise convolution
@@ -220,10 +221,6 @@ class MaSIF_site(L.LightningModule):
             # Rebuild a patch based on the output of the first layer
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
 
-            # global_desc = torch.gather(
-            #     global_desc, 1, self.indices_tensor
-            # )  # batch_size, max_verts, n_feat
-
             # print("global_desc shape after gather: {}".format(global_desc.shape))
             # print("vert1234 surface desc after gather: {}".format(global_desc[1234,0,:]))
             global_desc = self.soft_grid_l2(
@@ -245,10 +242,6 @@ class MaSIF_site(L.LightningModule):
         if self.n_conv_layers > 2:
             # Rebuild a patch based on the output of the first layer
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
-
-            # global_desc = torch.gather(
-            #     global_desc, 1, self.indices_tensor
-            # )  # batch_size, max_verts, n_feat
 
             global_desc = self.soft_grid_l3(
                 global_desc,
@@ -294,10 +287,11 @@ class MaSIF_site(L.LightningModule):
             global_desc = torch.max(global_desc, dim=2)[0]
             global_desc_shape = global_desc.shape
 
-        # debug flag
-        print("num of rows w/ 0 only after conv: {}".format((global_desc == 0).all(dim=1).sum().item()))
-        print(global_desc.shape)
-        print(global_desc)
+        # # debug flag
+        # print("num of rows w/ 0 only after conv: {}".format((global_desc == 0).all(dim=1).sum().item()))
+        # print(global_desc.shape)
+        # print(global_desc)
+        
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         logits = self.final_MLPBlock(global_desc)

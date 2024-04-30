@@ -180,9 +180,9 @@ class Final_MLPBlock(L.LightningModule):
     inputs: global_desc, (batch_size, n_gauss*n_feat)
     output: logits, (batch_size, n_labels)
     """
-    def __init__(self, n_thetas, n_labels):
+    def __init__(self, n_thetas, n_feat, n_labels):
         super().__init__()
-        self.FC4 = nn.Linear(n_thetas * n_thetas, n_thetas)
+        self.FC4 = nn.Linear(n_feat, n_thetas)
         self.FC2 = nn.Linear(n_thetas, n_labels)
         self.relu = nn.ReLU()
 
