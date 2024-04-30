@@ -52,6 +52,28 @@ def reset_weights(model):
        if hasattr(layer, 'reset_parameters'):
            layer.reset_parameters()
 
+from masif_modules.MaSIF_site_wLayers import MaSIF_site
+
+def build_model(params):
+    if "n_theta" in params:
+        model = MaSIF_site(
+            max_rho=params["max_distance"],
+            n_thetas=params["n_theta"],
+            n_rhos=params["n_rho"],
+            n_rotations=params["n_rotations"],
+            feat_mask=params["feat_mask"],
+            n_conv_layers=params["n_conv_layers"],
+        )
+    else:
+        model = MaSIF_site(
+            max_rho=params["max_distance"],
+            n_thetas=4,
+            n_rhos=3,
+            n_rotations=4,
+            feat_mask=params["feat_mask"],
+            n_conv_layers=params["n_conv_layers"],
+        )
+    return model
 
 def train_masif_site_kfold(
     model,
@@ -106,34 +128,13 @@ def train_masif_site_kfold(
         train_dirs = training_list[train_idx]
         val_dirs = training_list[test_idx]
 
-        # Reset model weights & reinstantiate optimizer for each split
-        reset_weights(model)
+        # re-instantiate model & optimizer for each split
+        # reset_weights(model)    # not working
+        model = build_model(params)
+        print("new model w/ new optimizer built for split {}\n".format(split_count))
+        model.to(device)
+
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-
-        # OR
-
-        # # Build new neural network model for each split
-        # from masif_modules.MaSIF_site_wLayers import MaSIF_site
-
-        # if "n_theta" in params:
-        #     model = MaSIF_site(
-        #         max_rho=params["max_distance"],
-        #         n_thetas=params["n_theta"],
-        #         n_rhos=params["n_rho"],
-        #         n_rotations=params["n_rotations"],
-        #         feat_mask=params["feat_mask"],
-        #         n_conv_layers=params["n_conv_layers"],
-        #     )
-        # else:
-        #     model = MaSIF_site(
-        #         max_rho=params["max_distance"],
-        #         n_thetas=4,
-        #         n_rhos=3,
-        #         n_rotations=4,
-        #         feat_mask=params["feat_mask"],
-        #         n_conv_layers=params["n_conv_layers"],
-        #     )
-        # model.to(device)
 
         # Custom training loop
         for epoch in range(num_epochs):
