@@ -223,6 +223,8 @@ def train_masif_site(
                     # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
                     logs = model.validation_step(input_dict)
+                    print("logs: {}".format(logs))
+                    print("logs['auc']: {}".format(logs["auc"]))
                     list_val_auc.append(logs["auc"])
                     all_val_labels.append(iface_labels)
                     all_val_scores.append(logs["full_score"])
