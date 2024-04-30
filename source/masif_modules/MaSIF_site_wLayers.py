@@ -217,6 +217,7 @@ class MaSIF_site(L.LightningModule):
                 global_desc, 1, self.indices_tensor
             )  # batch_size, max_verts, n_feat
 
+            print("global_desc shape after gather: {}".format(global_desc.shape))
             global_desc = self.soft_grid_l2(
                 global_desc,
                 self.rho_coords,
