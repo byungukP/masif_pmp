@@ -20,7 +20,7 @@ class MaSIF_site(L.LightningModule):
         total_parameters = 0
         for variable in self.parameters():
             variable_parameters = torch.numel(variable)
-            print(f"<{variable.name} shape={variable.shape} {variable.dtype}>")
+            print(f"<{variable} shape={variable.shape} {variable.dtype}>")
             total_parameters += variable_parameters
         print("Total number parameters: %d" % total_parameters)
 
@@ -329,7 +329,7 @@ class MaSIF_site(L.LightningModule):
             ],
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
-        print("eval_logits shape: {}".format(eval_logits.shape))
+        # print("eval_logits shape: {}".format(eval_logits.shape))
 
         # Compute the loss
         loss = F.binary_cross_entropy_with_logits(
