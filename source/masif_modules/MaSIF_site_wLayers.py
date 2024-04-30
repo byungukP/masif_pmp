@@ -356,14 +356,15 @@ class MaSIF_site(L.LightningModule):
             task="binary"
         )
         print("loss: {}".format(loss))
-        print("eval_score: {}".format(eval_score))
-        print("full_score: {}".format(full_score))
+        print("eval_score: {}, shape: {}".format(eval_score, eval_score.shape))
+        print("full_score: {}, shape: {}".format(full_score, full_score.shape))
         print("auc: {}".format(auc))
+        print("auc.item(): {}".format(auc.item()))
         return {
                     "loss": loss.item(),
                     "eval_score": eval_score.detach().cpu().numpy(),
                     "full_score": full_score.detach().cpu().numpy(),
-                    "auc": auc[0].item()
+                    "auc": auc.item()
                 }
 
     def validation_step(self, input_dict):
@@ -377,15 +378,15 @@ class MaSIF_site(L.LightningModule):
         logits = self(input_dict)
         eval_labels = torch.cat(
             [
-                torch.gather(self.labels, 0, self.pos_idx),
-                torch.gather(self.labels, 0, self.neg_idx),
+                self.labels[self.pos_idx],
+                self.labels[self.neg_idx],
             ],
             dim=0,
         )
         eval_logits = torch.cat(
             [
-                torch.gather(logits, 0, self.pos_idx),
-                torch.gather(logits, 0, self.neg_idx),
+                logits[self.pos_idx],
+                logits[self.neg_idx],
             ],
             dim=0,
         )
@@ -408,8 +409,8 @@ class MaSIF_site(L.LightningModule):
         )
         return {
                     "loss": loss.item(),
-                    "eval_score": eval_score.detach().numpy(),
-                    "full_score": full_score.detach().numpy(),
-                    "auc": auc[0].item()
+                    "eval_score": eval_score.detach().cpu().numpy(),
+                    "full_score": full_score.detach().cpu().numpy(),
+                    "auc": auc.item()
                 }
 
