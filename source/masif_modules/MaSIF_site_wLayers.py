@@ -296,6 +296,8 @@ class MaSIF_site(L.LightningModule):
 
         # debug flag
         print("num of rows w/ 0 only after conv: {}".format((global_desc == 0).all(dim=1).sum().item()))
+        print(global_desc.shape)
+        print(global_desc)
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         logits = self.final_MLPBlock(global_desc)
