@@ -310,7 +310,8 @@ class MaSIF_site(L.LightningModule):
         # Forward pass (self() ~ self.forward())
         logits = self(input_dict)
         print("labels shape: {}".format(self.labels.shape))
-        print("labels shape: {}".format(self.pos_idx.shape))
+        print("pos_idx shape: {}".format(self.pos_idx.shape))
+        print("neg_idx shape: {}".format(self.neg_idx.shape))
         eval_labels = torch.cat(
             [
                 torch.gather(self.labels, 0, self.pos_idx),
