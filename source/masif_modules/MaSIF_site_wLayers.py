@@ -186,7 +186,7 @@ class MaSIF_site(L.LightningModule):
         global_desc = []
 
         # debug flag
-        print("num of rows w/ 0 only before conv: {}".format((global_desc == 0).all(dim=1).sum().item()))
+        print("num of rows w/ 0 only before conv: {}".format((self.input_feat == 0).all(dim=2).sum().item()))
         # Use Geometric deep learning
 
         # 1st GDL layer: surf feat-wise convolution
