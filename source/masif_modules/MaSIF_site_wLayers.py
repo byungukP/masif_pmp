@@ -20,7 +20,7 @@ class MaSIF_site(L.LightningModule):
         total_parameters = 0
         for variable in self.parameters():
             variable_parameters = torch.numel(variable)
-            print(f"<{variable} shape={variable.shape} {variable.dtype}>")
+            print(f"<Parameters w/ shape={variable.shape}, {variable.dtype}>")
             total_parameters += variable_parameters
         print("Total number parameters: %d" % total_parameters)
 
