@@ -185,6 +185,8 @@ class MaSIF_site(L.LightningModule):
 
         global_desc = []
 
+        # debug flag
+        print("num of rows w/ 0 only before conv: {}".format((global_desc == 0).all(dim=1).sum().item()))
         # Use Geometric deep learning
 
         # 1st GDL layer: surf feat-wise convolution
@@ -212,17 +214,18 @@ class MaSIF_site(L.LightningModule):
         # additional GDL layers: simple convolutions
         # second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
         if self.n_conv_layers > 1:
-            print("global_desc shape before gather: {}".format(global_desc.shape))
-            print("vert1234 surface desc before gather: {}".format(global_desc[1234,:]))
-            print((global_desc == 0).all(dim=1).sum().item())
+            # print("global_desc shape before gather: {}".format(global_desc.shape))
+            # print("vert1234 surface desc before gather: {}".format(global_desc[1234,:]))
+            
             # Rebuild a patch based on the output of the first layer
-            global_desc = global_desc[self.indices_tensor]
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+
             # global_desc = torch.gather(
             #     global_desc, 1, self.indices_tensor
             # )  # batch_size, max_verts, n_feat
 
-            print("global_desc shape after gather: {}".format(global_desc.shape))
-            print("vert1234 surface desc after gather: {}".format(global_desc[1234,0,:]))
+            # print("global_desc shape after gather: {}".format(global_desc.shape))
+            # print("vert1234 surface desc after gather: {}".format(global_desc[1234,0,:]))
             global_desc = self.soft_grid_l2(
                 global_desc,
                 self.rho_coords,
@@ -241,9 +244,11 @@ class MaSIF_site(L.LightningModule):
         # third convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
         if self.n_conv_layers > 2:
             # Rebuild a patch based on the output of the first layer
-            global_desc = torch.gather(
-                global_desc, 1, self.indices_tensor
-            )  # batch_size, max_verts, n_feat
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+
+            # global_desc = torch.gather(
+            #     global_desc, 1, self.indices_tensor
+            # )  # batch_size, max_verts, n_feat
 
             global_desc = self.soft_grid_l3(
                 global_desc,
@@ -263,9 +268,11 @@ class MaSIF_site(L.LightningModule):
             # never used l4 though since n_conv_layers = 3
         if self.n_conv_layers > 3:
             # Rebuild a patch based on the output of the first layer
-            global_desc = torch.gather(
-                global_desc, 1, self.indices_tensor
-            )  # batch_size, max_verts, n_gauss (nope, n_feat)
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+
+            # global_desc = torch.gather(
+            #     global_desc, 1, self.indices_tensor
+            # )  # batch_size, max_verts, n_gauss (nope, n_feat)
             print("ConvL4 input global_desc shape: {}".format(global_desc.shape))
 
             global_desc = self.soft_grid_l4(
@@ -287,6 +294,8 @@ class MaSIF_site(L.LightningModule):
             global_desc = torch.max(global_desc, dim=2)[0]
             global_desc_shape = global_desc.shape
 
+        # debug flag
+        print("num of rows w/ 0 only after conv: {}".format((global_desc == 0).all(dim=1).sum().item()))
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         logits = self.final_MLPBlock(global_desc)

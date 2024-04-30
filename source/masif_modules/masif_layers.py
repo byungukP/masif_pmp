@@ -98,8 +98,6 @@ class SoftGrid(L.LightningModule):
             mean_gauss_fxns=True
     ):
         # define the forward pass in the layer
-        print("rho_coords.shape:", rho_coords.shape)
-        print("input_feat.shape:", input_feat.shape)
         batch_size = rho_coords.shape[0]
         n_vertices = rho_coords.shape[1]
         n_feat = input_feat.shape[2]
