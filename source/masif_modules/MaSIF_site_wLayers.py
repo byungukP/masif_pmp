@@ -362,6 +362,13 @@ class MaSIF_site(L.LightningModule):
                     "auc": auc.item()
                 }
 
+    def validation_step(self, input_dict):
+        # input = input_dict
+        return self._shared_eval(input_dict)
+
+    def test_step(self, input_dict):
+        return self._shared_eval(input_dict)
+
     def _shared_eval(self, input_dict):
         logits = self(input_dict)
         eval_labels = torch.cat(
@@ -401,11 +408,4 @@ class MaSIF_site(L.LightningModule):
                     "full_score": full_score.detach().cpu().numpy(),
                     "auc": auc.item()
                 }
-
-    def validation_step(self, input_dict):
-        # input = input_dict
-        self._shared_eval(input_dict)
-
-    def test_step(self, input_dict):
-        self._shared_eval(input_dict)
 
