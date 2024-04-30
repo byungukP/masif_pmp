@@ -102,7 +102,6 @@ class SoftGrid(L.LightningModule):
         print("input_feat.shape:", input_feat.shape)
         batch_size = rho_coords.shape[0]
         n_vertices = rho_coords.shape[1]
-        print(batch_size, n_vertices)
         n_feat = input_feat.shape[2]
 
         # soft grid mapping w/ rotation_replicas

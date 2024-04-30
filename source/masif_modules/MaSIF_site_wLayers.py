@@ -212,6 +212,7 @@ class MaSIF_site(L.LightningModule):
         # additional GDL layers: simple convolutions
         # second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
         if self.n_conv_layers > 1:
+            print("global_desc shape before gather: {}".format(global_desc.shape))
             # Rebuild a patch based on the output of the first layer
             global_desc = torch.gather(
                 global_desc, 1, self.indices_tensor
