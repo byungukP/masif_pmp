@@ -234,6 +234,7 @@ def train_masif_site(
                     
                     # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
                     # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
+                    print("\nTraining on {} {}\n".format(ppi_pair_id, pid))
                     logs = model.training_step(input_dict, optimizer)
                     list_training_auc.append(logs["auc"])
                 logfile.flush()

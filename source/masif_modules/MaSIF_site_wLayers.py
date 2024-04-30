@@ -321,7 +321,6 @@ class MaSIF_site(L.LightningModule):
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
         print("eval_labels shape: {}".format(eval_labels.shape))
-        print("eval_labels: {}".format(eval_labels))
 
         eval_logits = torch.cat(
             [
@@ -331,7 +330,6 @@ class MaSIF_site(L.LightningModule):
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
         print("eval_logits shape: {}".format(eval_logits.shape))
-        print("eval_logits: {}".format(eval_logits))
 
         # Compute the loss
         loss = F.binary_cross_entropy_with_logits(
