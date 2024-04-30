@@ -312,6 +312,7 @@ class MaSIF_site(L.LightningModule):
         print("labels shape: {}".format(self.labels.shape))
         print("pos_idx shape: {}".format(self.pos_idx.shape))
         print("neg_idx shape: {}".format(self.neg_idx.shape))
+
         eval_labels = torch.cat(
             [
                 self.labels[self.pos_idx],
@@ -320,8 +321,6 @@ class MaSIF_site(L.LightningModule):
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
         print("eval_labels shape: {}".format(eval_labels.shape))
-        # # OR
-        # torch.unsqueeze(self.pos_idx & self.neg_idx, dim=1)
 
         eval_logits = torch.cat(
             [
@@ -329,8 +328,9 @@ class MaSIF_site(L.LightningModule):
                 logits[self.neg_idx],
             ],
             dim=0,
-        )
+        )   # 2*pos_idx(=neg_idx), n_labels
         print("eval_logits shape: {}".format(eval_logits.shape))
+
         # Compute the loss
         loss = F.binary_cross_entropy_with_logits(
             eval_logits, eval_labels.float()
@@ -355,10 +355,14 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
+        print("loss: {}".format(loss))
+        print("eval_score: {}".format(eval_score))
+        print("full_score: {}".format(full_score))
+        print("auc: {}".format(auc))
         return {
                     "loss": loss.item(),
-                    "eval_score": eval_score.detach().numpy(),
-                    "full_score": full_score.detach().numpy(),
+                    "eval_score": eval_score.detach().cpu().numpy(),
+                    "full_score": full_score.detach().cpu().numpy(),
                     "auc": auc[0].item()
                 }
 
