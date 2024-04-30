@@ -223,8 +223,6 @@ def train_masif_site(
                     # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
                     logs = model.validation_step(input_dict)
-                    print("logs: {}".format(logs))
-                    print("logs['auc']: {}".format(logs["auc"]))
                     list_val_auc.append(logs["auc"])
                     all_val_labels.append(iface_labels)
                     all_val_scores.append(logs["full_score"])
@@ -280,7 +278,7 @@ def train_masif_site(
             print(">>> Saving model.\n")
             best_val_auc = np.mean(list_val_auc)
             output_model = out_dir + "model.pt"
-            torch.save(model.state_dict(), output_model, overwrite=True)
+            torch.save(model.state_dict(), output_model)
             # # Save the scores for test.
             # np.save(out_dir + "test_labels.npy", all_test_labels)
             # np.save(out_dir + "test_scores.npy", all_test_scores)
