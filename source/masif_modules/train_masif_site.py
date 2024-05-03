@@ -257,6 +257,10 @@ def train_masif_site(
         ## all points metrics (validation)
         flat_all_val_labels = np.concatenate(all_val_labels, axis=0)
         flat_all_val_scores = np.concatenate(all_val_scores, axis=0)
+        # debug flag
+        print("flat_all_val_labesl: {}\nshape {}, include NaN --> {}".format(flat_all_val_labels, flat_all_val_labels.shape, np.isnan(flat_all_val_labels).any()))
+        print("flat_all_val_scores: {}\nshape {}, include NaN --> {}".format(flat_all_val_scores, flat_all_val_scores.shape, np.isnan(flat_all_val_scores).any()))
+
         outstr += "Validation auc (all points): {:.2f}\n".format(
             metrics.roc_auc_score(flat_all_val_labels, flat_all_val_scores)
         )
