@@ -309,7 +309,7 @@ class MaSIF_site(L.LightningModule):
         # input = input_dict
         # Forward pass (self() ~ self.forward())
         logits = self(input_dict)
-        print("labels shape: {}".format(self.labels.shape))
+        print("labels shape: {}\n{}".format(self.labels.shape, self.labels))
         print("pos_idx shape: {}".format(self.pos_idx.shape))
         print("neg_idx shape: {}".format(self.neg_idx.shape))
 
@@ -320,7 +320,7 @@ class MaSIF_site(L.LightningModule):
             ],
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
-        print("eval_labels shape: {}".format(eval_labels.shape))
+        print("eval_labels shape: {}\n{}".format(eval_labels.shape, eval_labels))
 
         eval_logits = torch.cat(
             [
@@ -342,7 +342,7 @@ class MaSIF_site(L.LightningModule):
         full_logits = torch.sigmoid(logits)
         full_score = torch.squeeze(full_logits)[:, 0]   # batch_size(=total mesh vertices num),
 
-        # Compute gradients wrt trainable_variables (or weights)
+        # Compute gradients wrt trainable_variables (or weights) --> might have to consider using L2 normalization to prevent grad explosion
         optimizer.zero_grad()
         loss.backward()
 
@@ -356,7 +356,9 @@ class MaSIF_site(L.LightningModule):
             task="binary"
         )
         print(f"loss: {loss.item()}\n")
+        print(f"eval_logits: {eval_logits.shape}\n{eval_logits}\n")
         print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}\n{eval_score.detach().cpu().numpy()}\n")
+        print(f"full_logits: {logits.shape}\n{logits}\n")
         print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}\n{full_score.detach().cpu().numpy()}\n")
         print(f"auc: {auc.item()}\n")
         return {
