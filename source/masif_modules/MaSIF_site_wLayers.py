@@ -355,6 +355,10 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
+        print(f"loss: {loss.item()}\n")
+        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}\n{eval_score.detach().cpu().numpy()}\n")
+        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}\n{full_score.detach().cpu().numpy()}\n")
+        print(f"auc: {auc.item()}\n")
         return {
                     "loss": loss.item(),
                     "eval_score": eval_score.detach().cpu().numpy(),
@@ -372,6 +376,7 @@ class MaSIF_site(L.LightningModule):
     def _shared_eval(self, input_dict):
         logits = self(input_dict)
         print(f"logits: {logits.shape}\n{logits}\n")
+        print(f"self.labels: {self.labels.shape}\n{self.labels}\n")
         eval_labels = torch.cat(
             [
                 self.labels[self.pos_idx],
@@ -404,7 +409,10 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
+        print(f"loss: {loss.item()}\n")
+        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}\n{eval_score.detach().cpu().numpy()}\n")
         print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}\n{full_score.detach().cpu().numpy()}\n")
+        print(f"auc: {auc.item()}\n")
         return {
                     "loss": loss.item(),
                     "eval_score": eval_score.detach().cpu().numpy(),
