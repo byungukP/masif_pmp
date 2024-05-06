@@ -371,6 +371,7 @@ class MaSIF_site(L.LightningModule):
 
     def _shared_eval(self, input_dict):
         logits = self(input_dict)
+        print(f"logits: {logits.shape}\n{logits}\n")
         eval_labels = torch.cat(
             [
                 self.labels[self.pos_idx],
@@ -395,6 +396,7 @@ class MaSIF_site(L.LightningModule):
 
         full_logits = torch.sigmoid(logits)
         full_score = torch.squeeze(full_logits)[:, 0]
+        print(f"full_score: {full_score.shape}\n{full_score}\n")
         
         # Update metrics
         auc = auroc(
@@ -402,6 +404,7 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
+        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}\n{full_score.detach().cpu().numpy()}\n")
         return {
                     "loss": loss.item(),
                     "eval_score": eval_score.detach().cpu().numpy(),
