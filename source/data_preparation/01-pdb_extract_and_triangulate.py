@@ -111,13 +111,6 @@ if 'compute_iface' in masif_opts and masif_opts['compute_iface']:
                         normalize_charges=True, hbond=vertex_hbond, hphob=vertex_hphobicity,\
                         iface=iface)
     
-    # debug
-    for i in [regular_mesh.vertices, regular_mesh.faces, vertex_normal, vertex_charges, vertex_hbond, vertex_hphobicity, iface]:
-        if np.isnan(i).any():
-            print(f"nan value exists in {i}")
-        else:
-            print(f"no nan value in {i}")
-
 else:
     # Convert to ply and save.
     save_ply(out_filename1+".ply", regular_mesh.vertices,\
