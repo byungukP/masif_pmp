@@ -104,7 +104,7 @@ class SoftGrid(L.LightningModule):
 
         # soft grid mapping w/ rotation_replicas
         all_conv_desc = []
-        n_rotations = self.n_rhos
+        n_rotations = self.n_thetas
         for k in range(n_rotations):
             print("rotation replica: ", k)
             rho_coords_ = torch.reshape(rho_coords, (-1, 1))  # batch_size*n_vertices_in_patch
@@ -176,6 +176,10 @@ class SoftGrid(L.LightningModule):
             else:
                 print("no nan value after gauss_fxns.unsqueeze(2)")
 
+            if torch.isnan(input_feat).any():
+                print("nan value already contained in input_feat")
+            else:
+                print("no nan value already contained in input_feat")
             input_feat_ = input_feat.unsqueeze(3)  # batch_size, n_vertices, n_feat, 1
             print("input_feat_ shape: ", input_feat_.shape)
             if torch.isnan(input_feat_).any():
