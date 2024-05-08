@@ -179,7 +179,7 @@ class SoftGrid(L.LightningModule):
             if torch.isnan(input_feat).any():
                 print("nan value already contained in input_feat")
             else:
-                print("no nan value already contained in input_feat")
+                print("no nan value contained in input_feat")
             input_feat_ = input_feat.unsqueeze(3)  # batch_size, n_vertices, n_feat, 1
             print("input_feat_ shape: ", input_feat_.shape)
             if torch.isnan(input_feat_).any():
