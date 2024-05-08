@@ -55,7 +55,7 @@ def read_data_from_surface(ply_fn, params):
     si = (k1+k2)/(k1-k2)
     print("(k1+k2)/(k1-k2) contains nan: {}, nan num: {}".format(np.isnan(si).any(), np.isnan(si).sum()))
     si = np.arctan(si)*(2/np.pi)
-    print("si contains nan: {}, nan num: {}".format(np.isnan(si).any(), np.isnan(si).sum()))
+    print("si contains nan: {}, nan num: {}\n".format(np.isnan(si).any(), np.isnan(si).sum()))
 
     # Normalize the charge.
     charge = mesh.get_attribute("vertex_charge")
@@ -101,7 +101,7 @@ def read_data_from_surface(ply_fn, params):
     ### debug flags for input_feat
     for i, feat in enumerate(["si", "ddc", "hbond", "charge", "hphob"]):
         if np.isnan(input_feat[:,:,i]).any():
-            print(">>> input_feat {} contains nan, nan num: {}".format(feat, np.isnan(input_feat[:,:,i]).sum()))
+            print(">>> input_feat {} contains nan, nan num: {}\n".format(feat, np.isnan(input_feat[:,:,i]).sum()))
 
     return input_feat, rho, theta, mask, neigh_indices, iface_labels, np.copy(mesh.vertices)
 
