@@ -44,7 +44,7 @@ def read_data_from_surface(ply_fn, params):
     k1 = H + np.sqrt(elem)
     k2 = H - np.sqrt(elem)
 
-    # degub flag for SI calculation
+    ### degub flag for SI calculation
     print("H contains nan: {}, nan num: {}".format(np.isnan(H).any(), np.isnan(H).sum()))
     print("K contains nan: {}, nan num: {}".format(np.isnan(K).any(), np.isnan(K).sum()))
     print("elem contains nan: {}, nan num: {}".format(np.isnan(elem).any(), np.isnan(elem).sum()))
@@ -97,7 +97,12 @@ def read_data_from_surface(ply_fn, params):
         input_feat[vix, :len(neigh_vix), 2] = hbond[neigh_vix]
         input_feat[vix, :len(neigh_vix), 3] = charge[neigh_vix]
         input_feat[vix, :len(neigh_vix), 4] = hphob[neigh_vix]
-        
+
+    ### debug flags for input_feat
+    for i, feat in enumerate(["si", "ddc", "hbond", "charge", "hphob"]):
+        if np.isnan(input_feat[:,:,i]).any():
+            print(">>> input_feat {} contains nan, nan num: {}".format(feat, np.isnan(input_feat[:,:,i]).sum()))
+
     return input_feat, rho, theta, mask, neigh_indices, iface_labels, np.copy(mesh.vertices)
 
 # From a full shape in a full protein, extract a patch around a vertex.
