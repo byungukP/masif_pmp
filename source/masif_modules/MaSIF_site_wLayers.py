@@ -210,17 +210,17 @@ class MaSIF_site(L.LightningModule):
         )
 
         if torch.isnan(global_desc).any():
-            print("nan value exists after 1st soft grid")
+            print("nan value exists in global_desc after 1st soft grid")
         else:
-            print("no nan value after 1st soft grid")
+            print("no nan value in global_desc after 1st soft grid")
 
         # init_MLP = FC12 (n_thease * n_rhos), FC5 (n_feat)
         global_desc = self.init_MLPBlock(global_desc)
 
         if torch.isnan(global_desc).any():
-            print("nan value exists in global_desc after init_MLP")
+            print("nan value exists after init_MLP")
         else:
-            print("no nan value in global_desc after init_MLP")
+            print("no nan value after init_MLP")
 
         # additional GDL layers: simple convolutions
         # second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
@@ -337,7 +337,7 @@ class MaSIF_site(L.LightningModule):
         # input = input_dict
         # Forward pass (self() ~ self.forward())
         logits = self(input_dict)
-        print("labels shape: {}\n{}".format(self.labels.shape, self.labels))
+        print("labels shape: {}".format(self.labels.shape))
         print("pos_idx shape: {}".format(self.pos_idx.shape))
         print("neg_idx shape: {}".format(self.neg_idx.shape))
 
@@ -348,7 +348,7 @@ class MaSIF_site(L.LightningModule):
             ],
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
-        print("eval_labels shape: {}\n{}".format(eval_labels.shape, eval_labels))
+        print("eval_labels shape: {}".format(eval_labels.shape))
 
         eval_logits = torch.cat(
             [
@@ -383,11 +383,11 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
-        print(f"loss: {loss.item()}\n")
-        print(f"eval_logits: {eval_logits.shape}\n{eval_logits}\n")
-        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}\n{eval_score.detach().cpu().numpy()}\n")
-        print(f"full_logits: {logits.shape}\n{logits}\n")
-        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}\n{full_score.detach().cpu().numpy()}\n")
+        print(f"loss: {loss.item()}")
+        print(f"eval_logits: {eval_logits.shape}")
+        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
+        print(f"full_logits: {logits.shape}")
+        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
         print(f"auc: {auc.item()}\n")
         return {
                     "loss": loss.item(),
@@ -405,8 +405,8 @@ class MaSIF_site(L.LightningModule):
 
     def _shared_eval(self, input_dict):
         logits = self(input_dict)
-        print(f"logits: {logits.shape}\n{logits}\n")
-        print(f"self.labels: {self.labels.shape}\n{self.labels}\n")
+        print(f"logits: {logits.shape}")
+        print(f"self.labels: {self.labels.shape}")
         eval_labels = torch.cat(
             [
                 self.labels[self.pos_idx],
@@ -431,7 +431,7 @@ class MaSIF_site(L.LightningModule):
 
         full_logits = torch.sigmoid(logits)
         full_score = torch.squeeze(full_logits)[:, 0]
-        print(f"full_score: {full_score.shape}\n{full_score}\n")
+        print(f"full_score: {full_score.shape}")
         
         # Update metrics
         auc = auroc(
@@ -439,9 +439,9 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
-        print(f"loss: {loss.item()}\n")
-        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}\n{eval_score.detach().cpu().numpy()}\n")
-        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}\n{full_score.detach().cpu().numpy()}\n")
+        print(f"loss: {loss.item()}")
+        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
+        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
         print(f"auc: {auc.item()}\n")
         return {
                     "loss": loss.item(),

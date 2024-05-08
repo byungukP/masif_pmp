@@ -224,13 +224,6 @@ def train_masif_site(
 
                     logs = model.validation_step(input_dict)
                     list_val_auc.append(logs["auc"])
-                    
-                    # debug flags
-                    if np.isnan(iface_labels).any():
-                        print("{} {} iface_labels include NaN: shape {}\n{}".format(ppi_pair_id, pid, iface_labels.shape, iface_labels))
-                    if np.isnan(logs["full_score"]).any():
-                        print("{} {} logs['full_score'] include NaN: shape {}\n{}".format(ppi_pair_id, pid, logs["full_score"].shape, logs["full_score"]))
-
                     all_val_labels.append(iface_labels)
                     all_val_scores.append(logs["full_score"])
 

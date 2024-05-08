@@ -120,42 +120,16 @@ class SoftGrid(L.LightningModule):
             thetas_coords_ = torch.exp(
                 -torch.square(thetas_coords_ - self.mu_theta) / (torch.square(self.sigma_theta) + eps)
             )
-
-            """
-            if NaN first appears after gaussian exp prob calculation of rho coords,
-            we can put either 1) simply ignore the input pdb_id and continue with the next pdb_id
-            OR 2) put the upper & lower bounds on the input to prevent the NaN values
-            """
-            if torch.isnan(rho_coords_).any():
-                print("nan value appears after gaussian exp prob calculation of rho coords")
-            else:
-                print("no nan value after gaussian exp prob calculation of rho coords")
-            if torch.isnan(thetas_coords_).any():
-                print("nan value appears after gaussian exp prob calculation of theta coords")
-            else:
-                print("no nan value after gaussian exp prob calculation of theta coords")
-
             # map to soft grid (gaussian descriptors)
             gauss_fxns = torch.mul(
                 rho_coords_, thetas_coords_
             ) # batch_size*n_vertices, n_gauss (n_gauss = n_thetas*n_rhos)
-
-            if torch.isnan(gauss_fxns).any():
-                print("nan value appears after gaussian exp prob multiplication")
-            else:
-                print("no nan value after gaussian exp prob multiplication")
-
             gauss_fxns = torch.reshape(
                 gauss_fxns, (batch_size, n_vertices, -1)
             )  # batch_size, n_vertices, n_gauss
             gauss_fxns = torch.mul(
                 gauss_fxns, mask
             )
-
-            if torch.isnan(gauss_fxns).any():
-                print("nan value appears after gaussian fxn * mask multiplication")
-            else:
-                print("no nan value after gaussian fxn * mask multiplication")
 
             if mean_gauss_fxns:
             # computes mean weights for the different gaussians = gaussian-wise(OR local) averaging
@@ -164,34 +138,17 @@ class SoftGrid(L.LightningModule):
                     torch.sum(gauss_fxns, 1, keepdim=True) + eps
                 )  # batch_size, n_vertices, n_gauss
 
-            if torch.isnan(gauss_fxns).any():
-                print("nan value appears after mean gauss fxns")
-            else:
-                print("no nan value after mean gauss fxns")
-
             gauss_fxns = gauss_fxns.unsqueeze(2)  # batch_size, n_vertices, 1, n_gauss,
-            print("gauss_fxns shape: ", gauss_fxns.shape)
-            if torch.isnan(gauss_fxns).any():
-                print("nan value appears after gauss_fxns.unsqueeze(2)")
-            else:
-                print("no nan value after gauss_fxns.unsqueeze(2)")
 
             if torch.isnan(input_feat).any():
                 print("nan value already contained in input_feat")
             else:
                 print("no nan value contained in input_feat")
             input_feat_ = input_feat.unsqueeze(3)  # batch_size, n_vertices, n_feat, 1
-            print("input_feat_ shape: ", input_feat_.shape)
-            if torch.isnan(input_feat_).any():
-                print("nan value appears after input_feat_.unsqueeze(3)")
-            else:
-                print("no nan value after input_feat_.unsqueeze(3)")
-
             # gaussian descriptors: gaussian kernels w/ probability weights locally (=gaussian-wise) average the vertex-wise patch features (by torch.multiply(gauss_fxns, input_feat_), thus acting as soft pixels)
             gauss_desc = torch.mul(
                 gauss_fxns, input_feat_
             )  # batch_size, n_vertices, n_feat, n_gauss,
-            print("gauss_desc shape: ", gauss_desc.shape)
 
             if torch.isnan(gauss_desc).any():
                 print("nan value appears after gauss fxn * input_feat_ multiplication")
@@ -205,23 +162,12 @@ class SoftGrid(L.LightningModule):
 
             # convolution
             conv_desc = torch.matmul(gauss_desc, self.W) + self.b  # batch_size, self.n_thetas*self.n_rhos*n_feat
-
-            if torch.isnan(conv_desc).any():
-                print("nan value appears after convolution")
-            else:
-                print("no nan value after convolution")
-
             all_conv_desc.append(conv_desc)
 
         # (gaussian-wise) angular max pooling
         all_conv_desc = torch.stack(all_conv_desc)  # n_rotations, batch_size, self.n_thetas*self.n_rhos*n_feat
         conv_desc = torch.max(all_conv_desc, 0)[0]  # batch_size, self.n_thetas*self.n_rhos*n_feat
         conv_desc = nn.ReLU()(conv_desc)
-
-        if torch.isnan(conv_desc).any():
-            print("nan value appears after ReLU activation")
-        else:
-            print("no nan value after ReLU activation")
         return conv_desc
 
 
