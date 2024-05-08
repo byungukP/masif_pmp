@@ -106,6 +106,7 @@ class SoftGrid(L.LightningModule):
         all_conv_desc = []
         n_rotations = self.n_rhos
         for k in range(n_rotations):
+            print("rotation replica: ", k)
             rho_coords_ = torch.reshape(rho_coords, (-1, 1))  # batch_size*n_vertices_in_patch
             thetas_coords_ = torch.reshape(theta_coords, (-1, 1))  # batch_size*n_vertices_in_patch
 
@@ -120,6 +121,11 @@ class SoftGrid(L.LightningModule):
                 -torch.square(thetas_coords_ - self.mu_theta) / (torch.square(self.sigma_theta) + eps)
             )
 
+            """
+            if NaN first appears after gaussian exp prob calculation of rho coords,
+            we can put either 1) simply ignore the input pdb_id and continue with the next pdb_id
+            OR 2) put the upper & lower bounds on the input to prevent the NaN values
+            """
             if torch.isnan(rho_coords_).any():
                 print("nan value appears after gaussian exp prob calculation of rho coords")
             else:
@@ -164,12 +170,24 @@ class SoftGrid(L.LightningModule):
                 print("no nan value after mean gauss fxns")
 
             gauss_fxns = gauss_fxns.unsqueeze(2)  # batch_size, n_vertices, 1, n_gauss,
+            print("gauss_fxns shape: ", gauss_fxns.shape)
+            if torch.isnan(gauss_fxns).any():
+                print("nan value appears after gauss_fxns.unsqueeze(2)")
+            else:
+                print("no nan value after gauss_fxns.unsqueeze(2)")
+
             input_feat_ = input_feat.unsqueeze(3)  # batch_size, n_vertices, n_feat, 1
+            print("input_feat_ shape: ", input_feat_.shape)
+            if torch.isnan(input_feat_).any():
+                print("nan value appears after input_feat_.unsqueeze(3)")
+            else:
+                print("no nan value after input_feat_.unsqueeze(3)")
 
             # gaussian descriptors: gaussian kernels w/ probability weights locally (=gaussian-wise) average the vertex-wise patch features (by torch.multiply(gauss_fxns, input_feat_), thus acting as soft pixels)
             gauss_desc = torch.mul(
                 gauss_fxns, input_feat_
             )  # batch_size, n_vertices, n_feat, n_gauss,
+            print("gauss_desc shape: ", gauss_desc.shape)
 
             if torch.isnan(gauss_desc).any():
                 print("nan value appears after gauss fxn * input_feat_ multiplication")
