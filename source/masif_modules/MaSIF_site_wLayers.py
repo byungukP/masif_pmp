@@ -209,18 +209,8 @@ class MaSIF_site(L.LightningModule):
             global_desc, [-1, self.n_thetas * self.n_rhos * self.n_feat]
         )
 
-        if torch.isnan(global_desc).any():
-            print("nan value exists in global_desc after 1st soft grid")
-        else:
-            print("no nan value in global_desc after 1st soft grid")
-
         # init_MLP = FC12 (n_thease * n_rhos), FC5 (n_feat)
         global_desc = self.init_MLPBlock(global_desc)
-
-        if torch.isnan(global_desc).any():
-            print("nan value exists after init_MLP")
-        else:
-            print("no nan value after init_MLP")
 
         # additional GDL layers: simple convolutions
         # second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
@@ -248,12 +238,6 @@ class MaSIF_site(L.LightningModule):
             )
             global_desc = torch.mean(global_desc, dim=2)
 
-        if torch.isnan(global_desc).any():
-            print("nan value exists after 2nd soft grid")
-        else:
-            print("no nan value after 2nd soft grid")
-
-
         # third convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
         if self.n_conv_layers > 2:
             # Rebuild a patch based on the output of the first layer
@@ -271,12 +255,6 @@ class MaSIF_site(L.LightningModule):
                 [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
             )
             global_desc = torch.mean(global_desc, dim=2)
-
-        if torch.isnan(global_desc).any():
-            print("nan value exists after 3rd soft grid")
-        else:
-            print("no nan value after 3rd soft grid")
-
 
         # fourth convolutional layer. input: batch_size, n_gauss, output: batch_size, n_gauss
         # W_conv_l4, b_conv_l4 shape looks werid, different from prev W_conv & b_conv
@@ -317,12 +295,6 @@ class MaSIF_site(L.LightningModule):
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         logits = self.final_MLPBlock(global_desc)
-
-        if torch.isnan(global_desc).any():
-            print("nan value exists after final_MLP")
-        else:
-            print("no nan value after final_MLP")
-
         return logits
 
     # definition of the optimizer

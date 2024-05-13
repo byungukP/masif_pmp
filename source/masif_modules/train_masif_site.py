@@ -219,6 +219,7 @@ def train_masif_site(
                     logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
                     # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
+                    print("\nValidating on {} {}\n".format(ppi_pair_id, pid))
                     logs = model.validation_step(input_dict)
                     list_val_auc.append(logs["auc"])
 
@@ -296,6 +297,7 @@ def train_masif_site(
                 input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
                 
                 logfile.write("Testing on {} {}\n".format(ppi_pair_id, pid))
+                print("\nTesting on {} {}\n".format(ppi_pair_id, pid))
                 logs = model.test_step(input_dict)
                 list_test_auc.append(logs["auc"])
                 list_test_names.append((ppi_pair_id, pid))

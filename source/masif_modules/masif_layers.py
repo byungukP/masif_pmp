@@ -106,7 +106,7 @@ class SoftGrid(L.LightningModule):
         all_conv_desc = []
         n_rotations = self.n_thetas
         for k in range(n_rotations):
-            print("rotation replica: ", k)
+            # print("rotation replica: ", k)
             rho_coords_ = torch.reshape(rho_coords, (-1, 1))  # batch_size*n_vertices_in_patch
             thetas_coords_ = torch.reshape(theta_coords, (-1, 1))  # batch_size*n_vertices_in_patch
 
@@ -140,20 +140,15 @@ class SoftGrid(L.LightningModule):
 
             gauss_fxns = gauss_fxns.unsqueeze(2)  # batch_size, n_vertices, 1, n_gauss,
 
-            if torch.isnan(input_feat).any():
-                print("nan value already contained in input_feat")
-            else:
-                print("no nan value contained in input_feat")
+            # if torch.isnan(input_feat).any():
+            #     print("nan value already contained in input_feat")
+            # else:
+            #     print("no nan value contained in input_feat")
             input_feat_ = input_feat.unsqueeze(3)  # batch_size, n_vertices, n_feat, 1
             # gaussian descriptors: gaussian kernels w/ probability weights locally (=gaussian-wise) average the vertex-wise patch features (by torch.multiply(gauss_fxns, input_feat_), thus acting as soft pixels)
             gauss_desc = torch.mul(
                 gauss_fxns, input_feat_
             )  # batch_size, n_vertices, n_feat, n_gauss,
-
-            if torch.isnan(gauss_desc).any():
-                print("nan value appears after gauss fxn * input_feat_ multiplication")
-            else:
-                print("no nan value after gauss fxn * input_feat_ multiplication")
 
             gauss_desc = torch.sum(gauss_desc, 1)  # batch_size, n_feat, n_gauss, (=abstract out vertices factor)
             gauss_desc = torch.reshape(
