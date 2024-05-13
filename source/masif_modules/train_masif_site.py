@@ -165,9 +165,6 @@ def train_masif_site(
                     continue
                 count_proteins += 1
 
-                # laoding as numpy array might cause memory issue
-                # so turn np.array to tf.Tensor
-                # also, try to trace tf.Graph w/ TensorShape([1, None])
                 rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
                 theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
                 input_feat = np.load(mydir + pid + "_input_feat.npy")
@@ -224,8 +221,6 @@ def train_masif_site(
 
                     logs = model.validation_step(input_dict)
                     list_val_auc.append(logs["auc"])
-                    all_val_labels.append(iface_labels)
-                    all_val_scores.append(logs["full_score"])
 
                 # Perform training step
                 else:
@@ -239,8 +234,74 @@ def train_masif_site(
                     list_training_auc.append(logs["auc"])
                 logfile.flush()
 
-        # Run testing cycle. --> not in this code, but might be added later
-        # focus on running 5-CV with this code, prediction test w/ predict_site.sh later
+        # Run testing cycle
+        for ppi_pair_id in test_dirs:
+            mydir = params["masif_precomputation_dir"] + "/" + ppi_pair_id + "/"
+            pdbid = ppi_pair_id.split("_")[0]
+            chains1 = ppi_pair_id.split("_")[1]
+            if len(ppi_pair_id.split("_")) > 2:
+                chains2 = ppi_pair_id.split("_")[2]
+            else: 
+                chains2 = ''
+            pids = []   # might need to use pids for handling representative confs from dynamic ensemble from unbiased htmd
+            if pdbid + "_" + chains1 in training_list:
+                pids.append("p1")
+            if pdbid + "_" + chains2 in training_list:
+                pids.append("p2")
+            for pid in pids:
+                try:
+                    iface_labels = np.load(mydir + pid + "_iface_labels.npy")
+                except:
+                    continue
+                if (
+                    len(iface_labels) > 20000
+                    or np.sum(iface_labels) > 0.75 * len(iface_labels)
+                    or np.sum(iface_labels) < 30
+                ):
+                    skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
+                    continue
+                count_proteins += 1
+
+                rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
+                theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
+                input_feat = np.load(mydir + pid + "_input_feat.npy")
+                if np.sum(params["feat_mask"]) < 5:
+                    input_feat = mask_input_feat(input_feat, params["feat_mask"])
+                mask = np.load(mydir + pid + "_mask.npy")
+                mask = np.expand_dims(mask, 2)
+                indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
+                indices = pad_indices(indices, mask.shape[1])
+                tmp = np.zeros((len(iface_labels), 2))
+                for i in range(len(iface_labels)):
+                    if iface_labels[i] == 1:
+                        tmp[i, 0] = 1
+                    else:
+                        tmp[i, 1] = 1
+                iface_labels_dc = tmp
+                logfile.flush()
+                pos_labels = np.where(iface_labels == 1)[0]
+                neg_labels = np.where(iface_labels == 0)[0]
+
+                input_dict = {
+                    "rho_coords": torch.tensor(rho_wrt_center),
+                    "theta_coords": torch.tensor(theta_wrt_center),
+                    "input_feat": torch.tensor(input_feat),
+                    "mask": torch.tensor(mask),
+                    "labels": torch.tensor(iface_labels_dc),
+                    "pos_idx": torch.tensor(pos_labels),
+                    "neg_idx": torch.tensor(neg_labels),
+                    "indices_tensor": torch.tensor(indices),
+                }
+                # move input tensors to the same device w/ parameter tensors of the model
+                input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
+                
+                logfile.write("Testing on {} {}\n".format(ppi_pair_id, pid))
+                logs = model.test_step(input_dict)
+                list_test_auc.append(logs["auc"])
+                list_test_names.append((ppi_pair_id, pid))
+                all_test_labels.append(iface_labels)
+                all_test_scores.append(logs["full_score"])
+                logfile.flush()
 
         # Summary of epoch
         outstr = "Epoch ran on {} proteins\n".format(count_proteins)
@@ -254,37 +315,30 @@ def train_masif_site(
         outstr += "Per protein AUC mean (validation): {:.4f}; median: {:.4f} for epoch {}\n".format(
             np.mean(list_val_auc), np.median(list_val_auc), epoch +1
         )
-        ## all points metrics (validation)
-        flat_all_val_labels = np.concatenate(all_val_labels, axis=0)
-        flat_all_val_scores = np.concatenate(all_val_scores, axis=0)
-
-        outstr += "Validation auc (all points): {:.2f}\n".format(
-            metrics.roc_auc_score(flat_all_val_labels, flat_all_val_scores)
+        outstr += "Per protein AUC mean (test): {:.4f}; median: {:.4f} for epoch {}\n".format(
+            np.mean(list_test_auc), np.median(list_test_auc), epoch +1
         )
-
-        # outstr += "Per protein AUC mean (test): {:.4f}; median: {:.4f} for epoch {}\n".format(
-        #     np.mean(list_test_auc), np.median(list_test_auc), epoch +1
-        # )
-        # flat_all_test_labels = np.concatenate(all_test_labels, axis=0)
-        # flat_all_test_scores = np.concatenate(all_test_scores, axis=0)
-        # outstr += "Testing auc (all points): {:.2f}\n".format(
-        #     metrics.roc_auc_score(flat_all_test_labels, flat_all_test_scores)
-        # )
+        ## all points metrics (test)
+        flat_all_test_labels = np.concatenate(all_test_labels, axis=0)
+        flat_all_test_scores = np.concatenate(all_test_scores, axis=0)
+        outstr += "Testing auc (all points): {:.2f}\n".format(
+            metrics.roc_auc_score(flat_all_test_labels, flat_all_test_scores)
+        )
         outstr += "Epoch took {:2f}s\n".format(time.time() - tic)
         logfile.write(outstr + "\n")
         print(outstr)
 
-        # save model: save_weights() more efficient & flexible
+        # save model
         if np.mean(list_val_auc) > best_val_auc:
             logfile.write(">>> Saving model.\n")
             print(">>> Saving model.\n")
             best_val_auc = np.mean(list_val_auc)
             output_model = out_dir + "model.pt"
             torch.save(model.state_dict(), output_model)
-            # # Save the scores for test.
-            # np.save(out_dir + "test_labels.npy", all_test_labels)
-            # np.save(out_dir + "test_scores.npy", all_test_scores)
-            # np.save(out_dir + "test_names.npy", list_test_names)
+            # Save the scores for test.
+            np.save(out_dir + "test_labels.npy", all_test_labels)
+            np.save(out_dir + "test_scores.npy", all_test_scores)
+            np.save(out_dir + "test_names.npy", list_test_names)
 
     # Display the model's architecture
     print("\nModel Summary: trainable variables & structure\n")
