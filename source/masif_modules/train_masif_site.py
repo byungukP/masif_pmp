@@ -343,6 +343,8 @@ def train_masif_site(
             output_model = out_dir + "model.pt"
             torch.save(model.state_dict(), output_model)
             # Save the scores for test.
+            all_test_labels = np.array(all_test_labels, dtype=object)  # Explicitly change the dtype to object
+            
             np.save(out_dir + "test_labels.npy", all_test_labels)
             np.save(out_dir + "test_scores.npy", all_test_scores)
             np.save(out_dir + "test_names.npy", list_test_names)
