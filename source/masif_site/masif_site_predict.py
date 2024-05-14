@@ -5,12 +5,15 @@ import numpy as np
 from IPython.core.debugger import set_trace
 import sys
 import importlib
-from masif_modules.train_masif_site import run_masif_site
+from masif_modules.train_masif_site import pad_indices
 from default_config.masif_opts import masif_opts
+import torch
+from torchinfo import summary
 
 """
 masif_site_predict.py: Evaluate one or multiple proteins on MaSIF-site. 
-Pablo Gainza - LPDI STI EPFL 2019
+ByungUk Park - UW-Madison 2024
+Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
 This file is part of MaSIF.
 Released under an Apache License 2.0
 """
@@ -23,8 +26,12 @@ def mask_input_feat(input_feat, mask):
 
 params = masif_opts["site"]
 custom_params_file = sys.argv[1]
-custom_params = importlib.import_module(custom_params_file, package=None)
-custom_params = custom_params.custom_params
+# custom_params = importlib.import_module(custom_params_file, package=None)
+# custom_params = custom_params.custom_params
+spec=importlib.util.spec_from_file_location("custom_params",custom_params_file)
+foo = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(foo)
+custom_params = foo.custom_params
 
 for key in custom_params:
     print("Setting {} to {} ".format(key, custom_params[key]))
@@ -48,20 +55,43 @@ elif len(sys.argv) == 4 and sys.argv[2] == "-l":
 else:
     sys.exit(1)
 
-# Build the neural network model
-from masif_modules.MaSIF_site import MaSIF_site
-
-learning_obj = MaSIF_site(
-    params["max_distance"],
-    n_thetas=4,
-    n_rhos=3,
-    n_rotations=4,
-    idx_gpu="/gpu:0",
-    feat_mask=params["feat_mask"],
-    n_conv_layers=params["n_conv_layers"],
+# Confirm that PyTorch is using the GPU
+device = torch.device("cuda:0" if torch.cuda.is_available()
+                      else "mps" if torch.backends.mps.is_available()
+                      else "cpu"
 )
-print("Restoring model from: " + params["model_dir"] + "model")
-learning_obj.saver.restore(learning_obj.session, params["model_dir"] + "model")
+print(f"Using device: {device}")
+
+# Build the neural network model
+from masif_modules.MaSIF_site_wLayers import MaSIF_site
+
+if "n_theta" in params:
+    model = MaSIF_site(
+        max_rho=params["max_distance"],
+        n_thetas=params["n_theta"],
+        n_rhos=params["n_rho"],
+        n_rotations=params["n_rotations"],
+        feat_mask=params["feat_mask"],
+        n_conv_layers=params["n_conv_layers"],
+    )
+else:
+    model = MaSIF_site(
+        max_rho=params["max_distance"],
+        n_thetas=4,
+        n_rhos=3,
+        n_rotations=4,
+        feat_mask=params["feat_mask"],
+        n_conv_layers=params["n_conv_layers"],
+    )
+model.to(device)
+
+print("Restoring model from: " + params["model_dir"] + "model.pt")
+model.load_state_dict(torch.load(params["model_dir"]+'model.pt'))
+
+print("\nModel Summary: trainable variables & structure\n")
+model.count_number_parameters()
+summary(model)
+
 
 if not os.path.exists(params["out_pred_dir"]):
     os.makedirs(params["out_pred_dir"])
@@ -71,11 +101,11 @@ for ppi_pair_id in ppi_pair_ids:
     print(ppi_pair_id)
     in_dir = parent_in_dir + ppi_pair_id + "/"
 
-    fields = ppi_pair_id.split('_')
+    fields = ppi_pair_id.split("_")
     if len(fields) < 2:
         continue
-    pdbid = ppi_pair_id.split("_")[0]
-    chain1 = ppi_pair_id.split("_")[1]
+    pdbid = fields[0]
+    chain1 = fields[1]
     pids = ["p1"]
     chains = [chain1]
     if len(fields) == 3 and fields[2] != "":
@@ -103,30 +133,40 @@ for ppi_pair_id in ppi_pair_ids:
         input_feat = np.load(in_dir + pid + "_input_feat.npy")
         input_feat = mask_input_feat(input_feat, params["feat_mask"])
         mask = np.load(in_dir + pid + "_mask.npy")
+        mask = np.expand_dims(mask, 2)
         indices = np.load(in_dir + pid + "_list_indices.npy", encoding="latin1", allow_pickle=True)
-        labels = np.zeros((len(mask)))
+        indices = pad_indices(indices, mask.shape[1])
+        labels = np.zeros((len(mask))) 
 
-        print("Total number of patches:{} \n".format(len(mask)))
+        print("Total number of patches: {}".format(len(mask)))
 
         tic = time.time()
-        scores = run_masif_site(
-            params,
-            learning_obj,
-            rho_wrt_center,
-            theta_wrt_center,
-            input_feat,
-            mask,
-            indices,
-        )
+
+        input_dict = {
+            "rho_coords": torch.tensor(rho_wrt_center),
+            "theta_coords": torch.tensor(theta_wrt_center),
+            "input_feat": torch.tensor(input_feat),
+            "mask": torch.tensor(mask),
+            "indices_tensor": torch.tensor(indices),
+            "labels": torch.tensor(labels), # dummy labels, pos_idx, neg_idx are not used in the forward pass, placeholder for input_dict
+            "pos_idx": torch.tensor(labels),
+            "neg_idx": torch.tensor(labels),
+        }
+        
+        logits = model(input_dict)
+        full_logits = torch.sigmoid(logits)
+        full_score_ = torch.squeeze(full_logits)[:, 0]
+        full_score = full_score_.detach().cpu().numpy() # (batch_size,)
+
         toc = time.time()
         print(
-            "Total number of patches for which scores were computed: {}\n".format(
-                len(scores[0])
+            "Total number of patches for which scores were computed: {}".format(
+                len(full_score)
             )
         )
-        print("GPU time (real time, not actual GPU time): {:.3f}s".format(toc-tic))
+        print("Inference time (real time, not actual GPU time): {:.3f}s \n".format(toc-tic))
         np.save(
             params["out_pred_dir"] + "/pred_" + pdbid + "_" + chains[ix] + ".npy",
-            scores,
+            full_score,
         )
 
