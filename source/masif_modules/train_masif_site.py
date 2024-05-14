@@ -138,8 +138,6 @@ def train_masif_site(
         """
         # np.random.shuffle(train_dirs)
         
-        print("Training list: {}\n{}".format(len(train_dirs), train_dirs))
-        print("Testing list: {}\n{}".format(len(test_dirs), test_dirs))
         # train/valid loop: since each protein as batch
         for ppi_pair_id in train_dirs:
             # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
@@ -249,9 +247,9 @@ def train_masif_site(
             else: 
                 chains2 = ''
             pids = []   # might need to use pids for handling representative confs from dynamic ensemble from unbiased htmd
-            if pdbid + "_" + chains1 in training_list:
+            if pdbid + "_" + chains1 in testing_list:
                 pids.append("p1")
-            if pdbid + "_" + chains2 in training_list:
+            if pdbid + "_" + chains2 in testing_list:
                 pids.append("p2")
             for pid in pids:
                 try:
