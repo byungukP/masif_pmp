@@ -83,8 +83,10 @@ def train_masif_site(
     for pdb_id in data_dirs:
         if pdb_id in training_list:
             train_dirs.append(pdb_id)
-        else:
+        elif pdb_id in testing_list:
             test_dirs.append(pdb_id)
+        else:
+            print("Warning: {} from precomputation dir not in either training or testing list".format(pdb_id))
 
     # train, valid split among train set
     np.random.shuffle(train_dirs)
@@ -136,6 +138,8 @@ def train_masif_site(
         """
         # np.random.shuffle(train_dirs)
         
+        print("Training list: {}\n{}".format(len(train_dirs), train_dirs))
+        print("Testing list: {}\n{}".format(len(test_dirs), test_dirs))
         # train/valid loop: since each protein as batch
         for ppi_pair_id in train_dirs:
             # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
