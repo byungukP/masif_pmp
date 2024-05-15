@@ -28,6 +28,7 @@ params = masif_opts["site"]
 custom_params_file = sys.argv[1]
 custom_params = importlib.import_module(custom_params_file, package=None)
 custom_params = custom_params.custom_params
+
 # spec=importlib.util.spec_from_file_location("custom_params",custom_params_file)
 # foo = importlib.util.module_from_spec(spec)
 # spec.loader.exec_module(foo)
@@ -152,7 +153,9 @@ for ppi_pair_id in ppi_pair_ids:
             "pos_idx": torch.tensor(labels),
             "neg_idx": torch.tensor(labels),
         }
-        
+        # move input tensors to the same device w/ parameter tensors of the model
+        input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
+
         logits = model(input_dict)
         full_logits = torch.sigmoid(logits)
         full_score_ = torch.squeeze(full_logits)[:, 0]
