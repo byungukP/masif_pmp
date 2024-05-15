@@ -40,7 +40,7 @@ def read_data_from_surface(ply_fn, params):
     # In some cases this equation is less than zero, likely due to the method that computes the mean and gaussian curvature.
     print("elem contains zero: {}, zero num: {}".format(np.isclose(elem, 0).any(), np.isclose(elem, 0).sum()))
     # set to an epsilon.
-    elem[elem<0] = 1e-8 # --> what if elem=0 --> likely to cause nan
+    elem[elem<=0] = 1e-8 # what if elem=0 --> no numerical instability issue occured
     k1 = H + np.sqrt(elem)
     k2 = H - np.sqrt(elem)
 
