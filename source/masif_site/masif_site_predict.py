@@ -121,6 +121,7 @@ for ppi_pair_id in ppi_pair_ids:
             and pdb_chain_id not in eval_list
             and pdb_chain_id + "_" not in eval_list
         ):
+            print("Skipping {}: not included in the eval_list".format(pdb_chain_id))
             continue
 
         print("Evaluating {}".format(pdb_chain_id))
@@ -156,7 +157,8 @@ for ppi_pair_id in ppi_pair_ids:
         # move input tensors to the same device w/ parameter tensors of the model
         input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
-        logits = model(input_dict)
+        with torch.no_grad():   # reduce memory consumption for gradient computations
+            logits = model(input_dict)
         full_logits = torch.sigmoid(logits)
         full_score_ = torch.squeeze(full_logits)[:, 0]
         full_score = full_score_.detach().cpu().numpy() # (batch_size,)
@@ -173,3 +175,5 @@ for ppi_pair_id in ppi_pair_ids:
             full_score,
         )
 
+        # Clear GPU memory after processing each protein
+        torch.cuda.empty_cache()
