@@ -95,9 +95,13 @@ for ppi_pair_id in ppi_pair_ids:
         mymesh = p1
 
         ground_truth = mymesh.get_attribute('vertex_iface')
+        # debug flag
+        print(f"ground_truth: {ground_truth.shape}\n", ground_truth)
+        print(f"scores: {scores.shape}\n", scores)
+        
         # Compute ROC AUC for this protein. 
         try:
-            roc_auc = roc_auc_score(ground_truth, scores[0])
+            roc_auc = roc_auc_score(ground_truth, scores)    # originally, scores[0]
             all_roc_auc_scores.append(roc_auc)
             print("ROC AUC score for protein {} : {:.2f} ".format(pdbid+'_'+chains[ix], roc_auc))
         except: 
@@ -105,7 +109,7 @@ for ppi_pair_id in ppi_pair_ids:
 
         mymesh.remove_attribute("vertex_iface")
         mymesh.add_attribute("iface")
-        mymesh.set_attribute("iface", scores[0])
+        mymesh.set_attribute("iface", scores)    # originally, scores[0]
         mymesh.remove_attribute("vertex_x")
         mymesh.remove_attribute("vertex_y")
         mymesh.remove_attribute("vertex_z")
