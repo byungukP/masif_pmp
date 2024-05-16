@@ -52,7 +52,9 @@ def train_masif_site(
     params,
     device,
     batch_size=100,
-    num_epochs=100
+    num_epochs=100,
+    optim="adam",
+    learning_rate=1e-3,
 ):
 
     """
@@ -204,14 +206,14 @@ def train_masif_site(
 
                 # then, save as input_dict
                 input_dict = {
-                    "rho_coords": torch.tensor(rho_wrt_center),
-                    "theta_coords": torch.tensor(theta_wrt_center),
-                    "input_feat": torch.tensor(input_feat),
-                    "mask": torch.tensor(mask),
-                    "labels": torch.tensor(iface_labels_dc),
-                    "pos_idx": torch.tensor(pos_labels),
-                    "neg_idx": torch.tensor(neg_labels),
-                    "indices_tensor": torch.tensor(indices),
+                    "rho_coords": torch.tensor(rho_wrt_center, dtype=torch.float32),
+                    "theta_coords": torch.tensor(theta_wrt_center, dtype=torch.float32),
+                    "input_feat": torch.tensor(input_feat, dtype=torch.float32),
+                    "mask": torch.tensor(mask, dtype=torch.float32),
+                    "labels": torch.tensor(iface_labels_dc, dtype=torch.long),
+                    "pos_idx": torch.tensor(pos_labels, dtype=torch.long),
+                    "neg_idx": torch.tensor(neg_labels, dtype=torch.long),
+                    "indices_tensor": torch.tensor(indices, dtype=torch.long),
                 }
                 # move input tensors to the same device w/ parameter tensors of the model
                 input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
@@ -287,14 +289,14 @@ def train_masif_site(
                 neg_labels = np.where(iface_labels == 0)[0]
 
                 input_dict = {
-                    "rho_coords": torch.tensor(rho_wrt_center),
-                    "theta_coords": torch.tensor(theta_wrt_center),
-                    "input_feat": torch.tensor(input_feat),
-                    "mask": torch.tensor(mask),
-                    "labels": torch.tensor(iface_labels_dc),
-                    "pos_idx": torch.tensor(pos_labels),
-                    "neg_idx": torch.tensor(neg_labels),
-                    "indices_tensor": torch.tensor(indices),
+                    "rho_coords": torch.tensor(rho_wrt_center, dtype=torch.float32),
+                    "theta_coords": torch.tensor(theta_wrt_center, dtype=torch.float32),
+                    "input_feat": torch.tensor(input_feat, dtype=torch.float32),
+                    "mask": torch.tensor(mask, dtype=torch.float32),
+                    "labels": torch.tensor(iface_labels_dc, dtype=torch.long),
+                    "pos_idx": torch.tensor(pos_labels, dtype=torch.long),
+                    "neg_idx": torch.tensor(neg_labels, dtype=torch.long),
+                    "indices_tensor": torch.tensor(indices, dtype=torch.long),
                 }
                 # move input tensors to the same device w/ parameter tensors of the model
                 input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}

@@ -173,14 +173,14 @@ class MaSIF_site(L.LightningModule):
         # Define the forward pass
         # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
 
-        self.rho_coords = input_dict["rho_coords"].float()  # batch_size, n_vertices, 1
-        self.theta_coords = input_dict["theta_coords"].float()  # batch_size, n_vertices, 1
-        self.input_feat = input_dict["input_feat"].float()  # batch_size, n_vertices, n_feat
-        self.mask = input_dict["mask"].float()  # batch_size, n_vertices, 1
-        self.pos_idx = input_dict["pos_idx"].long()  # batch_size/2
-        self.neg_idx = input_dict["neg_idx"].long()  # batch_size/2
-        self.labels = input_dict["labels"].long()  # batch_size, n_labels
-        self.indices_tensor = input_dict["indices_tensor"].long()  # batch_size, max_verts (< 30)
+        self.rho_coords = input_dict["rho_coords"]          # batch_size, n_vertices, 1
+        self.theta_coords = input_dict["theta_coords"]      # batch_size, n_vertices, 1
+        self.input_feat = input_dict["input_feat"]          # batch_size, n_vertices, n_feat
+        self.mask = input_dict["mask"]                      # batch_size, n_vertices, 1
+        self.pos_idx = input_dict["pos_idx"]                # batch_size/2
+        self.neg_idx = input_dict["neg_idx"]                # batch_size/2
+        self.labels = input_dict["labels"]                  # batch_size, n_labels
+        self.indices_tensor = input_dict["indices_tensor"]  # batch_size, max_verts (< 30)
         # self.keep_prob = input_dict["keep_prob"], dtype=tf.float32)  # scalar
 
         global_desc = []
