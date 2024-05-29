@@ -145,14 +145,14 @@ for ppi_pair_id in ppi_pair_ids:
         tic = time.time()
 
         input_dict = {
-            "rho_coords": torch.tensor(rho_wrt_center),
-            "theta_coords": torch.tensor(theta_wrt_center),
-            "input_feat": torch.tensor(input_feat),
-            "mask": torch.tensor(mask),
-            "indices_tensor": torch.tensor(indices),
-            "labels": torch.tensor(labels), # dummy labels, pos_idx, neg_idx are not used in the forward pass, placeholder for input_dict
-            "pos_idx": torch.tensor(labels),
-            "neg_idx": torch.tensor(labels),
+            "rho_coords": torch.tensor(rho_wrt_center, dtype=torch.float32),
+            "theta_coords": torch.tensor(theta_wrt_center, dtype=torch.float32),
+            "input_feat": torch.tensor(input_feat, dtype=torch.float32),
+            "mask": torch.tensor(mask, dtype=torch.float32),
+            "indices_tensor": torch.tensor(indices, dtype=torch.int32),
+            "labels": torch.tensor(labels, dtype=torch.int32), # dummy labels, pos_idx, neg_idx are not used in the forward pass, placeholder for input_dict
+            "pos_idx": torch.tensor(labels, dtype=torch.int32),
+            "neg_idx": torch.tensor(labels, dtype=torch.int32),
         }
         # move input tensors to the same device w/ parameter tensors of the model
         input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
