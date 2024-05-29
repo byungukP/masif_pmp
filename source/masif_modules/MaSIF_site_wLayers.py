@@ -171,7 +171,6 @@ class MaSIF_site(L.LightningModule):
 
     def forward(self, input_dict):
         # Define the forward pass
-        # simplify the inference & GDL layers by writing py for custom_layers then importing them (for cleaner & more modularized code)
 
         self.rho_coords = input_dict["rho_coords"]          # batch_size, n_vertices, 1
         self.theta_coords = input_dict["theta_coords"]      # batch_size, n_vertices, 1
@@ -184,9 +183,6 @@ class MaSIF_site(L.LightningModule):
         # self.keep_prob = input_dict["keep_prob"], dtype=tf.float32)  # scalar
 
         global_desc = []
-
-        # debug flag
-        # print("num of rows w/ 0 only before conv: {}".format((self.input_feat == 0).all(dim=2).sum().item()))
 
         # Use Geometric deep learning
 
@@ -214,15 +210,10 @@ class MaSIF_site(L.LightningModule):
 
         # additional GDL layers: simple convolutions
         # second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
-        if self.n_conv_layers > 1:
-            # print("global_desc shape before gather: {}".format(global_desc.shape))
-            # print("vert1234 surface desc before gather: {}".format(global_desc[1234,:]))
-            
+        if self.n_conv_layers > 1:           
             # Rebuild a patch based on the output of the first layer
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
 
-            # print("global_desc shape after gather: {}".format(global_desc.shape))
-            # print("vert1234 surface desc after gather: {}".format(global_desc[1234,0,:]))
             global_desc = self.soft_grid_l2(
                 global_desc,
                 self.rho_coords,
@@ -287,11 +278,6 @@ class MaSIF_site(L.LightningModule):
             global_desc = torch.max(global_desc, dim=2)[0]
             global_desc_shape = global_desc.shape
 
-        # # debug flag
-        # print("num of rows w/ 0 only after conv: {}".format((global_desc == 0).all(dim=1).sum().item()))
-        # print(global_desc.shape)
-        # print(global_desc)
-        
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         logits = self.final_MLPBlock(global_desc)
@@ -421,4 +407,95 @@ class MaSIF_site(L.LightningModule):
                     "full_score": full_score.detach().cpu().numpy(),
                     "auc": auc.item()
                 }
+
+    def gen_FPVec(self, input_dict):
+        # save surface fingerprint vectors generated during the forward pass
+
+        self.rho_coords = input_dict["rho_coords"]          # batch_size, n_vertices, 1
+        self.theta_coords = input_dict["theta_coords"]      # batch_size, n_vertices, 1
+        self.input_feat = input_dict["input_feat"]          # batch_size, n_vertices, n_feat
+        self.mask = input_dict["mask"]                      # batch_size, n_vertices, 1
+        self.pos_idx = input_dict["pos_idx"]                # batch_size/2
+        self.neg_idx = input_dict["neg_idx"]                # batch_size/2
+        self.labels = input_dict["labels"]                  # batch_size, n_labels
+        self.indices_tensor = input_dict["indices_tensor"]  # batch_size, max_verts (< 30)
+        # self.keep_prob = input_dict["keep_prob"], dtype=tf.float32)  # scalar
+
+        global_desc = []
+        fpvec_list = []         # list of fingerprint vectors (n_gauss*n_feat-dim)
+        feat_vec_list = []      # list of n_feature vectors (n_feat-dim)
+
+        # Use Geometric deep learning
+
+        # 1st GDL layer: surf feat-wise convolution
+        for i in range(self.n_feat):
+            my_input_feat = self.input_feat[:, :, i].unsqueeze(2)
+
+            global_desc.append(
+                self.soft_grid_feat_l1[i](
+                    my_input_feat,
+                    self.rho_coords,
+                    self.theta_coords,
+                    self.mask
+                )   # batch_size, n_gauss*1
+            )   # n_feat, batch_size, n_gauss*1
+
+        # global_desc should be batch_size, n_gauss*n_feat (12 x 5)
+        global_desc = torch.stack(global_desc, axis=1)  # batch_size, n_feat, n_gauss*1
+        global_desc = torch.reshape(
+            global_desc, [-1, self.n_thetas * self.n_rhos * self.n_feat]
+        )   # 1st 60-D fingerprint vec
+        fpvec_list.append(global_desc)
+
+        # init_MLP = FC12 (n_thease * n_rhos), FC5 (n_feat)
+        global_desc = self.init_MLPBlock(global_desc)   # 1st 5-D feat vec
+        feat_vec_list.append(global_desc)
+
+        # additional GDL layers: simple convolutions
+        # second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
+        if self.n_conv_layers > 1:           
+            # Rebuild a patch based on the output of the first layer
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+
+            # 2nd 60-D fingerprint vec
+            global_desc = self.soft_grid_l2(
+                global_desc,
+                self.rho_coords,
+                self.theta_coords,
+                self.mask
+            )   # batch_size, n_gauss*n_feat
+            fpvec_list.append(global_desc)
+
+            batch_size = global_desc.shape[0]
+            # Reduce the dimensionality by averaging over the last dimension
+            global_desc = torch.reshape(
+                global_desc,
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+            )
+            global_desc = torch.mean(global_desc, dim=2)    # 2nd 5-D fingerprint vec
+            feat_vec_list.append(global_desc)
+
+        # third convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
+        if self.n_conv_layers > 2:
+            # Rebuild a patch based on the output of the first layer
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+
+            # 3rd 60-D fingerprint vec
+            global_desc = self.soft_grid_l3(
+                global_desc,
+                self.rho_coords,
+                self.theta_coords,
+                self.mask
+            )   # batch_size, n_gauss*n_feat
+            fpvec_list.append(global_desc)
+
+            batch_size = global_desc.shape[0]
+            global_desc = torch.reshape(
+                global_desc,
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+            )
+            global_desc = torch.mean(global_desc, dim=2)   # 3rd 5-D fingerprint vec
+            feat_vec_list.append(global_desc)
+
+        return fpvec_list, feat_vec_list
 

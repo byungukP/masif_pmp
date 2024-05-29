@@ -67,6 +67,7 @@ masif_opts["site"]["range_val_samples"] = 0.9  # 0.9 to 1.0
 masif_opts["site"]["model_dir"] = "nn_models/all_feat_3l/model_data/"
 masif_opts["site"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
 masif_opts["site"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"
+masif_opts["site"]["out_FPVec_dir"] = "output/all_feat_3l/FPVec/"
 masif_opts["site"]["feat_mask"] = [1.0] * 5
 
 # Neural network ligand application specific parameters.

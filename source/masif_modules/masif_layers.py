@@ -183,7 +183,7 @@ class Init_MLPBlock(L.LightningModule):
 
 class Final_MLPBlock(L.LightningModule):
     """
-    inputs: global_desc, (batch_size, n_gauss*n_feat)
+    inputs: global_desc, (batch_size, n_feat)
     output: logits, (batch_size, n_labels)
     """
     def __init__(self, n_thetas, n_feat, n_labels):
