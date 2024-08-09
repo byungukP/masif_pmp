@@ -26,9 +26,12 @@ import pandas as pd
 from pmp_ibs.assignIBS import *
 
 """
-01d-triangulate_only.py script for HTMD-generated PDB_CHAIN structure
+01d-conf_ensemble_pdb_extract_and_triangulate.py
+: script for HTMD-generated PDB_CHAIN structure
 - PDB_CHAIN structure is already extracted and protonated for the HTMD simulation so that we can skip some steps
 - protonation state of charged residues (e.g. LYS, HIS, GLU) using HTMD system preparation tools same w/ the original script using REDUCE
+- but, still use same workflow for extracting chains & protonation steps using reduce for consistency in data preparations
+- only updated PDB input file format for the script
 all the trianulation and precomputation steps are same with orginal script
 except the iface determination
 Updated by ByungUk Park (Aug, 9, 2024)
@@ -51,7 +54,7 @@ chain_ids1 = in_fields[1]
 if (len(sys.argv)>2) and (sys.argv[2]=='masif_ligand'):
     pdb_filename = os.path.join(masif_opts["ligand"]["assembly_dir"],pdb_id+".pdb")
 else:
-    pdb_filename = masif_opts['raw_pdb_dir']+pdb_id+"_"+chain_ids1+".pdb"
+    pdb_filename = masif_opts['ensemble_pdb_dir']+pdb_id+"_"+chain_ids1+".pdb"
 tmp_dir= masif_opts['tmp_dir']
 protonated_file = tmp_dir+"/"+pdb_id+"_"+chain_ids1+".pdb"
 protonate(pdb_filename, protonated_file)
