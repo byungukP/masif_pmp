@@ -53,6 +53,7 @@ else:
 tmp_dir= masif_opts['tmp_dir']
 protonated_file = tmp_dir+"/"+pdb_id+".pdb"
 protonate(pdb_filename, protonated_file)
+print("protnated file: ", protonated_file)
 pdb_filename = protonated_file
 
 # Extract chains of interest.
