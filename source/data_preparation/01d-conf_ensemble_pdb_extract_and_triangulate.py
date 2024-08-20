@@ -60,10 +60,15 @@ chain_ids1 = in_fields[1]
 pdb_dir = masif_opts['ensemble_pdb_dir']+pdb_id+"_"+chain_ids1
 cluster_num = len([f for f in os.listdir(pdb_dir) if f.startswith("Cluster_")])
 
+print(f"{pdb_id}_{chain_ids1} cluster number: {cluster_num}")
+
 # loop for each cluster
 for i in np.arange(1,cluster_num+1):
     cluster_dir = pdb_dir + "/Cluster_"+str(cluster_num)+"/"
     frame_num = len([f for f in os.listdir(cluster_dir) if f.startswith("frame_")])
+    
+    print(f"Cluster_{i} frame number: {frame_num}")
+    
     # loop for each frame
     for j in range(frame_num):
         raw_pdb = os.path.join(f'{cluster_dir}/', f'frame_{j:04d}.pdb')
