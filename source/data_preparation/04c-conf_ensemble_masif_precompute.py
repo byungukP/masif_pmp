@@ -41,7 +41,7 @@ np.random.seed(0)
 print('Reading data from input ply surface files.')
 for ppi_pair_id in ppi_pair_list:
     # Check cluster number
-    ply_dir = masif_opts['ply_file_template']+ppi_pair_id
+    ply_dir = params['ply_chain_dir']+ppi_pair_id
     cluster_num = len([f for f in os.listdir(ply_dir) if f.startswith("Cluster_")])
 
     print(f"{ppi_pair_id} cluster number: {cluster_num}")
