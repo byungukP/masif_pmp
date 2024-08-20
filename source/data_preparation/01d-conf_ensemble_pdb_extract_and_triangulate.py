@@ -180,4 +180,5 @@ for i in np.arange(1,cluster_num+1):
         shutil.copy(out_filename1+'.ply', ply_chain_dir) 
         shutil.copy(out_filename1+'.pdb', pdb_chain_dir) 
         # Clean up the tmp pdb file
-        os.remove(pdb_filename)
+        if os.path.isfile(pdb_filename):
+            os.remove(pdb_filename)
