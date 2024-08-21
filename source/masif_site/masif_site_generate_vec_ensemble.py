@@ -197,14 +197,14 @@ for ppi_pair_id in ppi_pair_ids:
                 except:
                     raise ValueError("The number of fingerprint vectors and feature vectors must be the same.")
 
-                for i in range(len(fpvec_list)):
+                for k in range(len(fpvec_list)):
                     np.save(
-                        out_dir + "/fpvec_l" + str(i+1) + ".npy",
-                        fpvec_list[i],
+                        out_dir + "/fpvec_l" + str(k+1) + ".npy",
+                        fpvec_list[k],
                     )
                     np.save(
-                        out_dir + "/featvec_l" + str(i+1) + ".npy",
-                        feat_vec_list[i],
+                        out_dir + "/featvec_l" + str(k+1) + ".npy",
+                        feat_vec_list[k],
                     )
 
                 # Clear GPU memory after processing each protein
