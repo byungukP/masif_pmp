@@ -12,7 +12,7 @@ from torchinfo import summary
 
 """
 masif_site_generate_vec.py
-: Generate fingerprint vectors for one or multiple proteins with pretrained MaSIF-site. 
+: Generate fingerprint vectors for one or multiple proteins with pretrained MaSIF-site.
 ByungUk Park - UW-Madison 2024
 
 This file is part of MaSIF.
