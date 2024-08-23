@@ -6,6 +6,7 @@ import importlib
 import sys
 from default_config.masif_opts import masif_opts
 import torch
+import torch.nn as nn
 
 """
 masif_site_train.py: Entry function to train MaSIF-site.
@@ -72,10 +73,24 @@ print(params["feat_mask"])
 if not os.path.exists(params["model_dir"]):
     os.makedirs(params["model_dir"])
 elif os.path.exists(params["model_dir"] + "model.pt"):
-# else:
     # Load existing network.
     print('Reading pre-trained network')
     model.load_state_dict(torch.load(params["model_dir"]+'model.pt'))
+
+
+
+### Transfer Learning
+if params["transferLR"]:
+    # Freeze all layers in the model
+    for param in model.parameters():
+        param.requires_grad = False
+
+    # Replace the final fully connected layer with a new one for our specific task
+    num_classes = 2
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, num_classes)
+
+
 
 # os.makedirs(dirs) for out_pred_dir, out_surf_dir
 if not os.path.exists(params["out_pred_dir"]):
