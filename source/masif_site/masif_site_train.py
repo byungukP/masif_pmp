@@ -89,6 +89,7 @@ if params["transferLR"]:
     # FC128 FC64 FC4 FC2
     from masif_modules.masif_layers import Final_MLPBlock_transferLR
     model.final_MLPBlock = Final_MLPBlock_transferLR(model.n_thetas, model.n_feat, model.n_labels)
+    model.to(device)
 
 
 # os.makedirs(dirs) for out_pred_dir, out_surf_dir
