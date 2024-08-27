@@ -81,15 +81,14 @@ elif os.path.exists(params["model_dir"] + "model.pt"):
 
 ### Transfer Learning
 if params["transferLR"]:
-    # Freeze all layers in the model
+    # Freeze all layers in the model except the final FC block
     for param in model.parameters():
         param.requires_grad = False
 
     # Replace the final fully connected layer with a new one for our specific task
-    num_classes = 2
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, num_classes)
-
+    # FC128 FC64 FC4 FC2
+    from masif_modules.masif_layers import Final_MLPBlock_transferLR
+    model.final_MLPBlock = Final_MLPBlock_transferLR(model.n_thetas, model.n_feat, model.n_labels)
 
 
 # os.makedirs(dirs) for out_pred_dir, out_surf_dir

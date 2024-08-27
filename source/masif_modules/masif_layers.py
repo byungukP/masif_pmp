@@ -196,3 +196,24 @@ class Final_MLPBlock(L.LightningModule):
         desc = self.relu(self.FC4(inputs))
         return self.FC2(desc)
 
+class Final_MLPBlock_transferLR(L.LightningModule):
+    """
+    new FC layers at the end of the model for transfer learning
+    basic architecture: FC128 FC64 FC4 FC2 (for now)
+    inputs: global_desc, (batch_size, n_feat)
+    output: logits, (batch_size, n_labels)
+    """
+    def __init__(self, n_thetas, n_feat, n_labels):
+        super().__init__()
+        self.FC128  = nn.Linear(n_feat, 128)
+        self.FC64   = nn.Linear(128, 64)
+        self.FC4    = nn.Linear(64, n_thetas)
+        self.FC2    = nn.Linear(n_thetas, n_labels)
+        self.relu   = nn.ReLU()
+
+    def forward(self, inputs):
+        desc = self.relu(self.FC128(inputs))
+        desc = self.relu(self.FC64(desc))
+        desc = self.relu(self.FC4(desc))
+        return self.FC2(desc)
+
