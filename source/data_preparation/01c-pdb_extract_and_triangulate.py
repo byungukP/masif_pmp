@@ -57,8 +57,6 @@ pdb_filename = protonated_file
 
 # Extract chains of interest.
 out_filename1 = tmp_dir+"/"+pdb_id+"_"+chain_ids1
-
-print(pdb_filename, out_filename1, chain_ids1)
 extractPDB(pdb_filename, out_filename1+".pdb", chain_ids1)
 
 # Compute MSMS of surface w/hydrogens, 
