@@ -80,7 +80,13 @@ for ppi_pair_id in ppi_pair_list:
             verts = {}
 
             for pid in pids:
-                input_feat[pid], rho[pid], theta[pid], mask[pid], neigh_indices[pid], iface_labels[pid], verts[pid] = read_data_from_surface(ply_file[pid], params)
+                try:
+                    input_feat[pid], rho[pid], theta[pid], mask[pid], neigh_indices[pid], iface_labels[pid], verts[pid] = read_data_from_surface(ply_file[pid], params)
+                except IndexError:
+                    # Handle the IndexError here, for example by skipping the current iteration.
+                    # w/ some mesh files, index error occurs when searching for neighboring vertices of a triangle.
+                    set_trace()
+                    continue
 
             my_precomp_dir = params['masif_precomputation_dir']+ppi_pair_id+"/"+"Cluster_"+str(i)+"/"+f"/frame_{j:04d}/"
             if not os.path.exists(my_precomp_dir):
