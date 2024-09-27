@@ -102,6 +102,9 @@ for ppi_pair_id in ppi_pair_list:
 
             # Save data only if everything went well. 
             for pid in pids: 
+                print("rho", rho)
+                print(rho == None)
+                print(rho == {})
                 print("rho[pid]:", rho[pid])
                 if rho[pid] is None:
                     continue
