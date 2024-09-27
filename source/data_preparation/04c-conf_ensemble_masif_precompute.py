@@ -102,6 +102,7 @@ for ppi_pair_id in ppi_pair_list:
 
             # Save data only if everything went well. 
             for pid in pids: 
+                print("rho[pid]:", rho[pid])
                 if rho[pid] is None:
                     continue
                 np.save(my_precomp_dir+pid+'_rho_wrt_center', rho[pid])
