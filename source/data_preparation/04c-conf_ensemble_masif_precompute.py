@@ -85,7 +85,6 @@ for ppi_pair_id in ppi_pair_list:
                 except IndexError:
                     # Handle the IndexError here, for example by skipping the current iteration.
                     # w/ some mesh files, index error occurs when searching for neighboring vertices of a triangle.
-                    set_trace()
                     print(f"{ppi_pair_id} Cluster_{i} frame_{j:04d} {pid} IndexError")
                     continue
 
