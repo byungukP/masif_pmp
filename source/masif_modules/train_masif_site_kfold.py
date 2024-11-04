@@ -306,10 +306,11 @@ def train_masif_site_kfold(
                     # move input tensors to the same device w/ parameter tensors of the model
                     input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
-                    logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
+                    logfile.write("Validating on {} {} ==> ".format(ppi_pair_id, pid))
                     # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
                     logs = model.validation_step(input_dict)
+                    logfile.write("Per protein AUC: {:.4f}\n".format(logs["auc"]))
                     list_val_auc.append(logs["auc"])
                     all_val_labels.append(iface_labels)
                     all_val_scores.append(logs["full_score"])
