@@ -72,7 +72,8 @@ class SoftGrid(L.LightningModule):
         self.W = nn.Parameter(
             torch.empty(
                 (self.n_thetas * self.n_rhos * self.n_feat,
-                 self.n_thetas * self.n_rhos * self.n_feat)
+                 self.n_thetas * self.n_rhos * self.n_feat),
+                dtype=torch.float32,
             ),
             requires_grad=True,
         )
@@ -81,7 +82,8 @@ class SoftGrid(L.LightningModule):
         nn.init.xavier_uniform_(self.W)
         self.b = nn.Parameter(
             torch.zeros(
-                self.n_thetas * self.n_rhos * self.n_feat
+                self.n_thetas * self.n_rhos * self.n_feat,
+                dtype=torch.float32,
             ),
             requires_grad=True,
         )
@@ -154,6 +156,9 @@ class SoftGrid(L.LightningModule):
             gauss_desc = torch.reshape(
                 gauss_desc, (batch_size, self.n_gauss * n_feat)
             )  # batch_size, self.n_thetas*self.n_rhos*n_feat
+            
+            # Ensure input tensor has the same dtype as weights
+            gauss_desc = gauss_desc.to(dtype=torch.float32)
 
             # convolution
             conv_desc = torch.matmul(gauss_desc, self.W) + self.b  # batch_size, self.n_thetas*self.n_rhos*n_feat
