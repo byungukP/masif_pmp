@@ -33,7 +33,7 @@ def filter_cluster(ensemble_dir, summary_name="Summary_clusters.txt", tol=0.05):
     filter the indices of "meaningful" clusters in the ensemble directory based on the frame number sampled during the simulation.
     """
     # Load the summary file
-    summary_file = os.join(ensemble_dir, summary_name)
+    summary_file = os.path.join(ensemble_dir, summary_name)
     summary_data = read_table_to_matrix(summary_file)
     cluster_n = summary_data.shape[0]
     total_frame_n = np.sum(summary_data[:,-2])
@@ -52,14 +52,14 @@ if __name__ == "__main__":
     params['ensemble_pdb_dir'] = masif_opts['ensemble_pdb_dir']
     # Get the list of PDB files in the directory
     PDB_CHAIN_ID = sys.argv[1]
-    cluster_dir = os.join(params['clone_dir'], PDB_CHAIN_ID, "DEFAULT_1")
+    cluster_dir = os.path.join(params['clone_dir'], PDB_CHAIN_ID, "DEFAULT_1")
     # Copy the PDB files to the data_preparation directory
     meainingful_clusters = filter_cluster(cluster_dir)
     for idx in meainingful_clusters:
         pdb_file = f"Center_{idx:d}.pdb"
-        shutil.copy(os.join(cluster_dir, pdb_file), os.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID, pdb_file))
+        shutil.copy(os.path.join(cluster_dir, pdb_file), os.path.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID, pdb_file))
     # Copy the Summary_clusters.txt for frame number filteration in the future
-    shutil.copy(os.join(cluster_dir, "Summary_clusters.txt"), os.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID, "Summary_clusters.txt"))
+    shutil.copy(os.path.join(cluster_dir, "Summary_clusters.txt"), os.path.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID, "Summary_clusters.txt"))
 
         # ply_chain_dir = masif_opts['ply_chain_dir']+pdb_id+"_"+chain_ids1+"/Cluster_"+str(i)+"/"+f"frame_{j:04d}/"
         # pdb_chain_dir = masif_opts['pdb_chain_dir']+pdb_id+"_"+chain_ids1+"/Cluster_"+str(i)+"/"+f"frame_{j:04d}/"
