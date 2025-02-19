@@ -27,7 +27,7 @@ from pmp_ibs.assignIBS import *
 
 """
 pdb_extract_and_triangulate.py script for PMP datasets
-all the extraction, trianulation, and precomputation steps are same with orginal script
+all the protonation, extraction, triangulation, and precomputation steps are same with orginal script
 except the iface determination
 Updated by ByungUk Park (Feb, 27, 2024)
 

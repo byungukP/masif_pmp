@@ -4,6 +4,9 @@ masif_opts = {}
 # Default directories
 masif_opts["raw_pdb_dir"] = "data_preparation/00-raw_pdbs/"
 masif_opts["pdb_chain_dir"] = "data_preparation/01-benchmark_pdbs/"
+masif_opts['htmd_dir'] = "data_preparation/01-pdbs_htmd/"
+masif_opts['clone_dir'] = "data_preparation/01-pdbs_clone/"
+masif_opts['ensemble_pdb_dir'] = "data_preparation/01-benchmark_pdbs_ensemble/"
 masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces/"
 masif_opts["tmp_dir"] = tempfile.gettempdir()
 masif_opts["ply_file_template"] = masif_opts["ply_chain_dir"] + "/{}_{}.ply"

@@ -1,0 +1,3 @@
+### source/conf_ensemble/
+Contains functions to run HTMD/CLoNe, read/copy pdb files of frames/centers from HTMD-generated trajectories clustered by CLoNe.
+
