@@ -16,17 +16,17 @@ def read_table_to_matrix(filename):
     Reads a structured text table and converts it into a numerical matrix.
     """
     data = []
-    
     with open(filename, 'r') as file:
         lines = file.readlines()
-    # Extract only relevant data lines (skip headers and separators)
-    for line in lines:
-        if re.match(r"^\|\s*\d+", line):  # Match rows that start with "| <number>"
-            values = re.findall(r"[-+]?\d*\.\d+|\d+", line)  # Extract numbers
-            data.append(list(map(float, values)))  # Convert to float
-    # Convert to numpy array: each row is a cluster center, each column is a feature, [:,0] = cluster center index (1-based)
+    # skip header and footer
+    for line in lines[4:-1]:
+        # Identify valid data rows (skip headers and separators)
+        if re.match(r"^|\s*\d+\s*-\s*\d+", line):  
+            # Extract numbers correctly (including negative, floating-point, and integer values)
+            values = re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", line)
+            # Convert to float or int appropriately
+            data.append([float(val) if '.' in val else int(val) for val in values])
     return np.array(data)
-
 
 def filter_cluster(ensemble_dir, summary_name="Summary_clusters.txt", tol=0.05):
     """
@@ -35,14 +35,13 @@ def filter_cluster(ensemble_dir, summary_name="Summary_clusters.txt", tol=0.05):
     # Load the summary file
     summary_file = os.path.join(ensemble_dir, summary_name)
     summary_data = read_table_to_matrix(summary_file)
-    print(summary_data, summary_data.shape)
     cluster_n = summary_data.shape[0]
     total_frame_n = np.sum(summary_data[:,-2])
     # Filter the clusters based on the frame number
     meaningful_clusters = []
     for i in range(cluster_n):
         if summary_data[i,-1]/total_frame_n >= tol:
-            meaningful_clusters.append(summary_data[i,0])
+            meaningful_clusters.append(int(summary_data[i,0]))
     return meaningful_clusters
 
 
