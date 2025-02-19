@@ -35,6 +35,7 @@ def filter_cluster(ensemble_dir, summary_name="Summary_clusters.txt", tol=0.05):
     # Load the summary file
     summary_file = os.path.join(ensemble_dir, summary_name)
     summary_data = read_table_to_matrix(summary_file)
+    print(summary_data, summary_data.shape)
     cluster_n = summary_data.shape[0]
     total_frame_n = np.sum(summary_data[:,-2])
     # Filter the clusters based on the frame number
