@@ -5,23 +5,23 @@ masif_matlab=$masif_root/source/matlab_libs/
 export PYTHONPATH=$PYTHONPATH:$masif_source
 export masif_matlab
 
-# if [ "$1" == "--file" ]
-# then
-# 	echo "Running masif site on $2"
-# 	PPI_PAIR_ID=$3
-# 	PDB_ID=$(echo $PPI_PAIR_ID| cut -d"_" -f1)
-# 	CHAIN1=$(echo $PPI_PAIR_ID| cut -d"_" -f2)
-# 	CHAIN2=$(echo $PPI_PAIR_ID| cut -d"_" -f3)
-# 	FILENAME=$2
-# 	mkdir -p data_preparation/00-raw_pdbs/
-# 	cp $FILENAME data_preparation/00-raw_pdbs/$PDB_ID\.pdb
-# else
-# 	PPI_PAIR_ID=$1
-# 	PDB_ID=$(echo $PPI_PAIR_ID| cut -d"_" -f1)
-# 	CHAIN1=$(echo $PPI_PAIR_ID| cut -d"_" -f2)
-# 	CHAIN2=$(echo $PPI_PAIR_ID| cut -d"_" -f3)
-# 	python -W ignore $masif_source/data_preparation/00-pdb_download.py $PPI_PAIR_ID
-# fi
+if [ "$1" == "--file" ]
+then
+	echo "Running masif site on $2"
+	PPI_PAIR_ID=$3
+	PDB_ID=$(echo $PPI_PAIR_ID| cut -d"_" -f1)
+	CHAIN1=$(echo $PPI_PAIR_ID| cut -d"_" -f2)
+	CHAIN2=$(echo $PPI_PAIR_ID| cut -d"_" -f3)
+	FILENAME=$2
+	mkdir -p data_preparation/00-raw_pdbs/
+	cp $FILENAME data_preparation/00-raw_pdbs/$PDB_ID\.pdb
+else
+	PPI_PAIR_ID=$1
+	PDB_ID=$(echo $PPI_PAIR_ID| cut -d"_" -f1)
+	CHAIN1=$(echo $PPI_PAIR_ID| cut -d"_" -f2)
+	CHAIN2=$(echo $PPI_PAIR_ID| cut -d"_" -f3)
+	# python -W ignore $masif_source/data_preparation/00-pdb_download.py $PPI_PAIR_ID
+fi
 
 # # $2 for taking csv_path as argument from cmd
 # if [ -z $CHAIN2 ]

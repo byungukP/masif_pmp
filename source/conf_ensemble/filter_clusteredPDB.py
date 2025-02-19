@@ -55,6 +55,9 @@ if __name__ == "__main__":
     cluster_dir = os.path.join(params['clone_dir'], PDB_CHAIN_ID, "DEFAULT_1")
     # Copy the PDB files to the data_preparation directory
     meainingful_clusters = filter_cluster(cluster_dir)
+    
+    if not os.path.exists(os.path.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID)):
+        os.makedirs(os.path.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID))
     for idx in meainingful_clusters:
         pdb_file = f"Center_{idx:d}.pdb"
         shutil.copy(os.path.join(cluster_dir, pdb_file), os.path.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID, pdb_file))
