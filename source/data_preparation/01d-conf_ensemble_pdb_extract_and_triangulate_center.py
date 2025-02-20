@@ -13,7 +13,8 @@ from default_config.masif_opts import masif_opts
 from triangulation.computeMSMS import computeMSMS
 from triangulation.fixmesh import fix_mesh
 import pymesh
-from input_output.extractPDB import editPDB, extractPDB
+from input_output.extractPDB import extractPDB
+from input_output.editPDB import editPDB
 from input_output.save_ply import save_ply
 from input_output.read_ply import read_ply
 from input_output.protonate import protonate
