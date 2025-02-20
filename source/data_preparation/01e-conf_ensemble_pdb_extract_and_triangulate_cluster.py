@@ -26,8 +26,8 @@ import pandas as pd
 from pmp_ibs.assignIBS import *
 
 """
-01d-conf_ensemble_pdb_extract_and_triangulate.py
-: script for HTMD-generated PDB_CHAIN structure
+01e-conf_ensemble_pdb_extract_and_triangulate_cluster.py
+: script for preprocessing HTMD-generated & CLoNe-clustered snapshots of PDB_CHAIN structure
 - PDB_CHAIN structure is already extracted and protonated for the HTMD simulation so that we can skip some steps
 - protonation state of charged residues (e.g. LYS, HIS, GLU) using HTMD system preparation tools same w/ the original script using Reduce
 - but, still use same workflow for extracting chains & protonation steps using reduce for consistency in data preparations

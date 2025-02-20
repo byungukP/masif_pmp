@@ -44,9 +44,18 @@ then
 
 	# no need for PDB protonation of clustered pdb files
 	# only need removing water & ions from the PDBs (extraction), precomputation of surface features & triangulation into mesh
-	python -W ignore $masif_source/data_preparation/01d-conf_ensemble_pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
-	python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute.py masif_site $PPI_PAIR_ID
-else
-	echo "No conformational ensemble provided. Using default."
-	python $masif_source/data_preparation/04-masif_precompute.py masif_site $PPI_PAIR_ID
+
+	if [ ! -d "/masif_docker/pmp_ensemble/data_preparation/01-benchmark_pdbs_ensemble/$PDB_ID\_$CHAIN1" ]		# remove the line for stand-alone container & git dev in future (for HTC)
+	# if [ ! -d "data_preparation/01-benchmark_pdbs_ensemble/$PDB_ID\_$CHAIN1" ]
+	then
+		echo "$PDB_ID\_$CHAIN1 RCSB structure detected."
+		python -W ignore $masif_source/data_preparation/01c-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
+		python $masif_source/data_preparation/04-masif_precompute.py masif_site $PPI_PAIR_ID
+	else
+		echo "$PDB_ID\_$CHAIN1 conformational ensemble detected."
+		python -W ignore $masif_source/data_preparation/01d-conf_ensemble_pdb_extract_and_triangulate_center.py $PDB_ID\_$CHAIN1
+		# python -W ignore $masif_source/data_preparation/01e-conf_ensemble_pdb_extract_and_triangulate_cluster.py $PDB_ID\_$CHAIN1
+		python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute_center.py masif_site $PPI_PAIR_ID
+		# python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute_cluster.py masif_site $PPI_PAIR_ID
+	fi
 fi
