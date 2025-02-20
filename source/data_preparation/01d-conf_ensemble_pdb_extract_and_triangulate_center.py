@@ -13,7 +13,7 @@ from default_config.masif_opts import masif_opts
 from triangulation.computeMSMS import computeMSMS
 from triangulation.fixmesh import fix_mesh
 import pymesh
-from input_output.extractPDB import extractPDB
+from input_output.extractPDB import editPDB, extractPDB
 from input_output.save_ply import save_ply
 from input_output.read_ply import read_ply
 from input_output.protonate import protonate
@@ -69,9 +69,8 @@ for center_pdb in center_pdb_list:
      ### Preprocessing Steps ###
      # can be modulated in the future
 
-    # remove water & ions from HTMD-generated pdb file
-    # when using PDBParser for HTMD-generated pdb files, all chain_ids1 are A dues to the preprocessing during HTMD prep
-    # extractPDB_htmd(pdb_filename, out_filename1+".pdb", chain_ids1)
+    # Edit the pdb file chain ids to be the same as the chain_ids1
+    editPDB(pdb_filename, chain_ids1)
 
     # protonate the pdb file
     tmp_dir= masif_opts['tmp_dir']
@@ -81,9 +80,8 @@ for center_pdb in center_pdb_list:
         
     # Extract chains of interest.
     # when using PDBParser for HTMD-generated pdb files, all chain_ids1 are A dues to the preprocessing during HTMD prep
-    # so, chain_ids1 does not match with the chain id of the HTMD-pdb file
     out_filename1 = tmp_dir+"/"+pdb_id+"_"+chain_ids1
-    extractPDB(pdb_filename, out_filename1+".pdb", chain_ids=None)
+    extractPDB(pdb_filename, out_filename1+".pdb", chain_ids1)
         
     # Compute MSMS of surface w/hydrogens, 
     try:
