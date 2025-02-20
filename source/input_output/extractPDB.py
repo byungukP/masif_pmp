@@ -1,6 +1,6 @@
 """
 extractPDB.py: Extract selected chains from a PDB and save the extracted chains to an output file. 
-Pablo Gainza - LPDI STI EPFL 2019
+adapted & updated from script by Pablo Gainza - LPDI STI EPFL 2019
 Released under an Apache License 2.0
 """
 from Bio.PDB import *
