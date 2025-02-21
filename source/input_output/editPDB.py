@@ -16,6 +16,24 @@ def check_chain_id(struct):
             set_trace()
             ValueError('\n      The input PDB has more than 3 chains (A, B, C).\n      HTMD-generated PDB should have A for single protein, B for water, C for ions. Please check the input PDB')
 
+def initialize_chain_id(struct):
+    # Initialize the chain id of the input PDB (HTMD-generated) to the default chain id befpre editting the chain id
+    # to avoid ValueError: change id because the id is already used for a sibling of this entity
+    # e.g., ValueError: Cannot change id from `A` to `B`. The id `B` is already used for a sibling of this entity
+    chains = Selection.unfold_entities(struct, "C")
+    default_chain_id_dic = {'A': 'PROA', 'B': 'SOL', 'C': 'ION'}
+    for chain in chains:
+        if chain.id in default_chain_id_dic.keys():
+            chain.id = default_chain_id_dic[chain.id]
+    return struct
+
+def remove_hoh_ion(struct):
+    # Remove HOH and ION from the input PDB (HTMD-generated)
+    chains = Selection.unfold_entities(struct, "C")
+    for chain in chains:
+        if chain.id in ['HOH', 'ION']:
+            struct[0].detach_child(chain.id)
+    return struct
 
 def editPDB(
     infilename, chain_id
@@ -27,12 +45,14 @@ def editPDB(
     parser = PDBParser(QUIET=True)
     struct = parser.get_structure(infilename, infilename)
     check_chain_id(struct)
+    struct = initialize_chain_id(struct)
+    struct = remove_hoh_ion(struct)
+    chains = Selection.unfold_entities(struct, "C")
 
-    for model in struct:
-        for chain in model:
-            # HTMD updates the chain id of: protein to 'A', HOH to 'B', Ion to 'C'
-            if chain.id == 'A':
-                chain.id = chain_id
+    for chain in chains:
+        # HTMD updates the chain id of: protein to 'A', HOH to 'B', Ion to 'C'
+        if chain.id == 'PROA':
+            chain.id = chain_id
     io = PDBIO()
     io.set_structure(struct)
     io.save(infilename)

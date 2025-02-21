@@ -70,7 +70,7 @@ for center_pdb in center_pdb_list:
      ### Preprocessing Steps ###
      # can be modulated in the future
 
-    # Edit the pdb file chain ids to be the same as the chain_ids1
+    # Edit the pdb file chain ids to be the same as the chain_ids1 (HOH, ions removed)
     editPDB(pdb_filename, chain_ids1)
 
     # protonate the pdb file
@@ -80,7 +80,6 @@ for center_pdb in center_pdb_list:
     pdb_filename = protonated_file
         
     # Extract chains of interest.
-    # when using PDBParser for HTMD-generated pdb files, all chain_ids1 are A dues to the preprocessing during HTMD prep
     out_filename1 = tmp_dir+"/"+pdb_id+"_"+chain_ids1
     extractPDB(pdb_filename, out_filename1+".pdb", chain_ids1)
         
