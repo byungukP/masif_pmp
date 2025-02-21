@@ -63,12 +63,32 @@ masif_opts["site"]["max_distance"] = 9.0  # Radius for the neural network.
 masif_opts["site"][
     "masif_precomputation_dir"
 ] = "data_preparation/04a-precomputation_9A/precomputation/"
-masif_opts["site"]["range_val_samples"] = 0.9  # 0.9 to 1.0
+masif_opts["site"]["range_val_samples"] = 0.1  # ratio for validation, 0.1 to 0.0
 masif_opts["site"]["model_dir"] = "nn_models/all_feat_3l/model_data/"
 masif_opts["site"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
 masif_opts["site"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"
 masif_opts["site"]["out_FPVec_dir"] = "output/all_feat_3l/FPVec/"
 masif_opts["site"]["feat_mask"] = [1.0] * 5
+
+# Neural network patch application specific parameters.
+masif_opts["ensemble"] = {}
+masif_opts["ensemble"]["training_list"] = "lists/pmp_train.txt"
+# masif_opts["ensemble"]["training_list"] = "lists/training_no_obsolete.txt"  # originially, "lists/training.txt"
+masif_opts["ensemble"]["testing_list"] = "lists/pmp_test.txt"
+# masif_opts["ensemble"]["testing_list"] = "lists/testing.txt"
+masif_opts["ensemble"]["max_shape_size"] = 100
+masif_opts["ensemble"]["n_conv_layers"] = 3
+masif_opts["ensemble"]["max_distance"] = 9.0  # Radius for the neural network.
+masif_opts["ensemble"][
+    "masif_precomputation_dir"
+] = "data_preparation/04a-precomputation_9A/precomputation/"
+masif_opts["ensemble"]["range_val_samples"] = 0.1  # ratio for validation, 0.1 to 0.0
+masif_opts["ensemble"]["data_augmentation"] = "naive"  # "naive" or "group"
+masif_opts["ensemble"]["model_dir"] = "nn_models/all_feat_3l/model_data/"
+masif_opts["ensemble"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
+masif_opts["ensemble"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"
+masif_opts["ensemble"]["out_FPVec_dir"] = "output/all_feat_3l/FPVec/"
+masif_opts["ensemble"]["feat_mask"] = [1.0] * 5
 
 # Neural network ligand application specific parameters.
 masif_opts["ligand"] = {}
