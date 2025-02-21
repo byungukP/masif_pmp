@@ -31,7 +31,7 @@ def remove_hoh_ion(struct):
     # Remove HOH and ION from the input PDB (HTMD-generated)
     chains = Selection.unfold_entities(struct, "C")
     for chain in chains:
-        if chain.id in ['HOH', 'ION']:
+        if chain.id in ['B', 'C']:                  # if chain.id in ['HOH', 'ION']:
             struct[0].detach_child(chain.id)
     return struct
 
@@ -45,13 +45,12 @@ def editPDB(
     parser = PDBParser(QUIET=True)
     struct = parser.get_structure(infilename, infilename)
     check_chain_id(struct)
-    struct = initialize_chain_id(struct)
+    # struct = initialize_chain_id(struct)
     struct = remove_hoh_ion(struct)
     chains = Selection.unfold_entities(struct, "C")
 
     for chain in chains:
-        # HTMD updates the chain id of: protein to 'A', HOH to 'B', Ion to 'C'
-        if chain.id == 'PROA':
+        if chain.id == 'A':
             chain.id = chain_id
     io = PDBIO()
     io.set_structure(struct)
