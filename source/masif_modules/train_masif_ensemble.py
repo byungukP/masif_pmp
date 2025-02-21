@@ -104,7 +104,6 @@ def train_masif_ensemble(
         else:
             print("Warning: {} from precomputation dir not in either training or testing list".format(pdb_id))
 
-
     # data augmentation setup
     if params["data_augmentation"] == "naive":
         train_dirs = naive_data_augmentation(
@@ -114,7 +113,6 @@ def train_masif_ensemble(
         train_dirs = train_dirs
     else:
         raise ValueError("data_augmentation for MaSIF-ensemble should be either 'naive' or 'group'")
-
 
     # train, valid split among train set
     np.random.shuffle(train_dirs)
