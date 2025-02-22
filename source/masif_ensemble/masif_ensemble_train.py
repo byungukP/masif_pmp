@@ -46,10 +46,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available()
 print(f"Using device: {device}")
 
 # Build the neural network model
-from masif_modules.MaSIF_ensemble_wLayers import MaSIF_ensemble
+from masif_modules.MaSIF_site_wLayers import MaSIF_site
 
 if "n_theta" in params:
-    model = MaSIF_ensemble(
+    model = MaSIF_site(
         max_rho=params["max_distance"],
         n_thetas=params["n_theta"],
         n_rhos=params["n_rho"],
@@ -58,7 +58,7 @@ if "n_theta" in params:
         n_conv_layers=params["n_conv_layers"],
     )
 else:
-    model = MaSIF_ensemble(
+    model = MaSIF_site(
         max_rho=params["max_distance"],
         n_thetas=4,
         n_rhos=3,
