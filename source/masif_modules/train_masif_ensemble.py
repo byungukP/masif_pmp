@@ -23,13 +23,13 @@ def pad_indices(indices, max_verts):
 
 def check_ensemble(precomp_pdb_dir):
     # check if the precomputed data is from ensemble or not
-    # return True if ensemble, False if not
+    # return True if ensemble, False if not or empty
+    if not os.listdir(precomp_pdb_dir):
+        return False
     for suddir in os.listdir(precomp_pdb_dir):
         if suddir.startswith("Center_"):
-            continue
-        else:
-            return False
-    return True
+            return True
+    return False
 
 def naive_data_augmentation(train_dirs, precomp_dir):
     # each representative center as completely independent data (i.e., random shuffle all the inputs and split into train & validation sets)

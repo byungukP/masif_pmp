@@ -3,7 +3,7 @@ masif_root=$(git rev-parse --show-toplevel)
 
 masif_source=$masif_root/source/
 masif_data=$masif_root/data/
-export PYTHONPATH=$PYTHONPATH:$masif_source:$masif_data/masif_site/
+export PYTHONPATH=$PYTHONPATH:$masif_source:$masif_data/masif_ensemble/
 
 echo "Training Start:"
 date
