@@ -27,6 +27,9 @@ masif_opts["feature_interpolation"] = True
 masif_opts["cv_test"] = False
 masif_opts["k_fold"] = 0
 
+# transfer learning
+masif_opts["transferLR"] = False
+
 # Coords params
 masif_opts["radius"] = 12.0
 
