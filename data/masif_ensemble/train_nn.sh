@@ -1,4 +1,3 @@
-# masif_root=/masif_pmp    # root_dir manually defined based on last WORKDIR in Dockerfile
 masif_root=$(git rev-parse --show-toplevel)
 
 masif_source=$masif_root/source/
