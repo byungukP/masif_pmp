@@ -11,9 +11,10 @@ import torch
 from torchinfo import summary
 
 """
-masif_site_predict.py: Evaluate one or multiple proteins on MaSIF-site. 
+masif_site_generate_vec.py
+: Generate fingerprint vectors for one or multiple proteins with pretrained MaSIF-site.
 ByungUk Park - UW-Madison 2024
-Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
+
 This file is part of MaSIF.
 Released under an Apache License 2.0
 """
@@ -28,12 +29,6 @@ params = masif_opts["site"]
 custom_params_file = sys.argv[1]
 custom_params = importlib.import_module(custom_params_file, package=None)
 custom_params = custom_params.custom_params
-
-# spec=importlib.util.spec_from_file_location("custom_params",custom_params_file)
-# foo = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(foo)
-# custom_params = foo.custom_params
-
 for key in custom_params:
     print("Setting {} to {} ".format(key, custom_params[key]))
     params[key] = custom_params[key]
@@ -94,8 +89,8 @@ model.count_number_parameters()
 summary(model)
 
 
-if not os.path.exists(params["out_pred_dir"]):
-    os.makedirs(params["out_pred_dir"])
+if not os.path.exists(params["out_FPVec_dir"]):
+    os.makedirs(params["out_FPVec_dir"])
 
 idx_count = 0
 for ppi_pair_id in ppi_pair_ids:
@@ -142,6 +137,10 @@ for ppi_pair_id in ppi_pair_ids:
 
         print("Total number of patches: {}".format(len(mask)))
 
+        # generate subdir
+        if not os.path.exists(params["out_FPVec_dir"] + "/" + pdb_chain_id):
+            os.makedirs(params["out_FPVec_dir"] + "/" + pdb_chain_id)
+
         tic = time.time()
 
         input_dict = {
@@ -158,22 +157,37 @@ for ppi_pair_id in ppi_pair_ids:
         input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
         with torch.no_grad():   # reduce memory consumption for gradient computations
-            logits = model(input_dict)
-        full_logits = torch.sigmoid(logits)
-        full_score_ = torch.squeeze(full_logits)[:, 0]
-        full_score = full_score_.detach().cpu().numpy() # (batch_size,)
+            fpvec_list_, feat_vec_list_ = model.gen_FPVec(input_dict)
+            # fpvec_list: n_conv_layers * (batch_size, n_gauss*n_feat),
+            # feat_vec_list: n_conv_layers * (batch_size, n_feat)
+
+        fpvec_list = [tensor.detach().cpu().numpy() for tensor in fpvec_list_]
+        feat_vec_list = [tensor.detach().cpu().numpy() for tensor in feat_vec_list_]
 
         toc = time.time()
         print(
-            "Total number of patches for which scores were computed: {}".format(
-                len(full_score)
+            "Total number of patches for which fingerprint vectors were computed: {}".format(
+                len(fpvec_list[0])
             )
         )
-        print("Inference time (real time, not actual GPU time): {:.3f}s \n".format(toc-tic))
-        np.save(
-            params["out_pred_dir"] + "/pred_" + pdbid + "_" + chains[ix] + ".npy",
-            full_score,
-        )
+        print("Calculation time (real time, not actual GPU time): {:.3f}s \n".format(toc-tic))
+
+        # save each fingerprint vector to a separate npy file
+        try:
+            len(fpvec_list) == len(feat_vec_list)
+        except:
+            raise ValueError("The number of fingerprint vectors and feature vectors must be the same.")
+
+        for i in range(len(fpvec_list)):
+            np.save(
+                params["out_FPVec_dir"] + "/" + pdb_chain_id + "/fpvec_l" + str(i+1) + ".npy",
+                fpvec_list[i],
+            )
+            np.save(
+                params["out_FPVec_dir"] + "/" + pdb_chain_id + "/featvec_l" + str(i+1) + ".npy",
+                feat_vec_list[i],
+            )
 
         # Clear GPU memory after processing each protein
         torch.cuda.empty_cache()
+

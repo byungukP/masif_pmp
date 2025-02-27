@@ -9,14 +9,14 @@ import torch
 import torch.nn as nn
 
 """
-masif_site_train.py: Entry function to train MaSIF-site.
+masif_ensemble_train.py: Entry function to train MaSIF-ensemble.
 ByungUk Park - UW-Madison 2024
 Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
 #Released under an Apache License 2.0
 
 """
 
-params = masif_opts["site"]
+params = masif_opts["ensemble"]
 
 # Load custom parameters if provided.
 if len(sys.argv) > 1:
@@ -99,8 +99,8 @@ if not os.path.exists(params["out_surf_dir"]):
     os.makedirs(params["out_surf_dir"])
 
 if not params["cv_test"]:
-    from masif_modules.train_masif_site import train_masif_site
-    train_masif_site(model, params, device, num_epochs=params['epoch_num'])
+    from masif_modules.train_masif_ensemble import train_masif_ensemble
+    train_masif_ensemble(model, params, device, num_epochs=params['epoch_num'])
 else:
-    from masif_modules.train_masif_site_kfold import train_masif_site_kfold
-    train_masif_site_kfold(model, params, device, num_epochs=params['epoch_num'])
+    from masif_modules.train_masif_ensemble_kfold import train_masif_ensemble_kfold
+    train_masif_ensemble_kfold(model, params, device, num_epochs=params['epoch_num'])

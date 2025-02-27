@@ -21,33 +21,46 @@ def pad_indices(indices, max_verts):
         )
     return padded_ix
 
+def check_ensemble(precomp_pdb_dir):
+    # check if the precomputed data is from ensemble or not
+    # return True if ensemble, False if not or empty
+    if not os.listdir(precomp_pdb_dir):
+        return False
+    for suddir in os.listdir(precomp_pdb_dir):
+        if suddir.startswith("Center_"):
+            return True
+    return False
 
-# # Run masif site on a protein, on a previously trained network.
-# def run_masif_site(
-#     params, model, rho_wrt_center, theta_wrt_center, input_feat, mask, indices
-# ):
-#     indices = pad_indices(indices, mask.shape[1])
-#     mask = np.expand_dims(mask, 2)
-#     input_dict = {
-#         model.rho_coords: rho_wrt_center,
-#         model.theta_coords: theta_wrt_center,
-#         model.input_feat: input_feat,
-#         model.mask: mask,
-#         model.indices_tensor: indices,
-#     }
+def naive_data_augmentation(train_dirs, precomp_dir):
+    # each representative center as completely independent data (i.e., random shuffle all the inputs and split into train & validation sets)
+    aug_train_dirs = []
+    for pdb_chain_id in train_dirs:
+        target_dir = f"{precomp_dir}/{pdb_chain_id}"
+        if check_ensemble(target_dir):
+            for suddir in os.listdir(target_dir):
+                aug_train_dirs.append(f"{pdb_chain_id}/{suddir}")
+        else:
+            aug_train_dirs.append(pdb_chain_id)
+    return aug_train_dirs
 
-#     logits = model(input_dict)
-#     score = model.session.run([model.full_score], feed_dict=feed_dict)
-#     return score
+# def group_data_augmentation(input_dict):
+#     # treat as a group the centers from same PDB_CHAIN_ID (i.e., random shuffle & split train/validation sets in terms of PDB_CHAIN_IDs)
+
+def updateID(aug_ppi_pair_id):
+    # update the pdb_chain_id to include the center_id if from ensemble
+    if '/' in aug_ppi_pair_id:
+        ppi_pair_id = aug_ppi_pair_id.split('/')[0]
+        center_id = aug_ppi_pair_id.split('/')[1].split('_')[1]
+        ensemble_id = f"{ppi_pair_id} c{center_id}"
+    else:
+        ppi_pair_id = aug_ppi_pair_id
+        center_id = None
+        ensemble_id = ppi_pair_id
+    return ppi_pair_id, center_id, ensemble_id
 
 
-# def compute_roc_auc(pos, neg):
-#     labels = np.concatenate([np.ones((len(pos))), np.zeros((len(neg)))])
-#     dist_pairs = np.concatenate([pos, neg])
-#     return metrics.roc_auc_score(labels, dist_pairs)
 
-
-def train_masif_site(
+def train_masif_ensemble(
     model,
     params,
     device,
@@ -90,6 +103,16 @@ def train_masif_site(
             test_dirs.append(pdb_id)
         else:
             print("Warning: {} from precomputation dir not in either training or testing list".format(pdb_id))
+
+    # data augmentation setup
+    if params["data_augmentation"] == "naive":
+        train_dirs = naive_data_augmentation(
+            train_dirs, params["masif_precomputation_dir"]
+        )       # ['1CX1_A/Center_1', '1CX1_A/Center_6', '1CX1_A/Center_7', '1AOD_A', ...]
+    elif params["data_augmentation"] == "group":
+        train_dirs = train_dirs
+    else:
+        raise ValueError("data_augmentation for MaSIF-ensemble should be either 'naive' or 'group'")
 
     # train, valid split among train set
     np.random.shuffle(train_dirs)
@@ -142,9 +165,12 @@ def train_masif_site(
         # np.random.shuffle(train_dirs)
         
         # train/valid loop: since each protein as batch
-        for ppi_pair_id in train_dirs:
+        for aug_ppi_pair_id in train_dirs:
             # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
-            mydir = params["masif_precomputation_dir"] + "/" + ppi_pair_id + "/"
+            mydir = params["masif_precomputation_dir"] + "/" + aug_ppi_pair_id + "/"
+            
+            # check whether the pdb_chain_id is from ensemble or not and update the pdb_chain_id accordingly
+            ppi_pair_id, center_id, ensemble_id = updateID(aug_ppi_pair_id)
             pdbid = ppi_pair_id.split("_")[0]
             chains1 = ppi_pair_id.split("_")[1]
             if len(ppi_pair_id.split("_")) > 2:
@@ -166,7 +192,7 @@ def train_masif_site(
                     or np.sum(iface_labels) > 0.75 * len(iface_labels)
                     or np.sum(iface_labels) < 30
                 ):
-                    skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
+                    skipped_pdb_list.append(f"{ensemble_id} {pid}")
                     continue
                 count_proteins += 1
 
@@ -220,22 +246,22 @@ def train_masif_site(
 
                 # Validation checkpoint
                 # search for val_dirs 1st since it's much faster with small search space of val_dirs
-                if ppi_pair_id in val_dirs:
-                    logfile.write("Validating on {} {}\n".format(ppi_pair_id, pid))
+                if aug_ppi_pair_id in val_dirs:
+                    logfile.write("Validating on {} {}\n".format(ensemble_id, pid))
                     # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
-                    print("\nValidating on {} {}\n".format(ppi_pair_id, pid))
+                    print("\nValidating on {} {}\n".format(ensemble_id, pid))
                     logs = model.validation_step(input_dict)
                     list_val_auc.append(logs["auc"])
 
                 # Perform training step
                 else:
-                    logfile.write("Training on {} {}\n".format(ppi_pair_id, pid))
+                    logfile.write("Training on {} {}\n".format(ensemble_id, pid))
                     # input_dict["keep_prob"] = 1.0
                     
                     # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
                     # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
-                    print("\nTraining on {} {}\n".format(ppi_pair_id, pid))
+                    print("\nTraining on {} {}\n".format(ensemble_id, pid))
                     logs = model.training_step(input_dict, optimizer)
                     list_training_auc.append(logs["auc"])
                 logfile.flush()

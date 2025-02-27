@@ -110,7 +110,7 @@ if 'compute_iface' in masif_opts and masif_opts['compute_iface']:
                         regular_mesh.faces, normals=vertex_normal, charges=vertex_charges,\
                         normalize_charges=True, hbond=vertex_hbond, hphob=vertex_hphobicity,\
                         iface=iface)
-
+    
 else:
     # Convert to ply and save.
     save_ply(out_filename1+".ply", regular_mesh.vertices,\
