@@ -97,4 +97,4 @@ for ppi_pair_id in ppi_pair_list:
         np.save(my_precomp_dir+pid+'_Z.npy', verts[pid][:,2])
 
 time_length = time.time() - tic
-print("04-masif_precompute.py t: {:.3f}s".format(str(time_length)))
+print("04-masif_precompute.py t: {:.3f}s".format(time_length))
