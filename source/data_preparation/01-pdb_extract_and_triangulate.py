@@ -125,4 +125,4 @@ shutil.copy(out_filename1+'.ply', masif_opts['ply_chain_dir'])
 shutil.copy(out_filename1+'.pdb', masif_opts['pdb_chain_dir']) 
 
 time_length = time.time() - tic
-print("extract, triangulate, precomputation t: {:.3f}s".format(str(time_length)))
+print("01-pdb_extract_and_triangulate.py t: {:.3f}s".format(str(time_length)))

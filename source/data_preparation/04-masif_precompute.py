@@ -38,6 +38,7 @@ total_shapes = 0
 total_ppi_pairs = 0
 np.random.seed(0)
 print('Reading data from input ply surface files.')
+tic = time.time()
 for ppi_pair_id in ppi_pair_list:
 
     all_list_desc = []
@@ -94,3 +95,6 @@ for ppi_pair_id in ppi_pair_list:
         np.save(my_precomp_dir+pid+'_X.npy', verts[pid][:,0])
         np.save(my_precomp_dir+pid+'_Y.npy', verts[pid][:,1])
         np.save(my_precomp_dir+pid+'_Z.npy', verts[pid][:,2])
+
+time_length = time.time() - tic
+print("04-masif_precompute.py t: {:.3f}s".format(str(time_length)))
