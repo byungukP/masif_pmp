@@ -7,6 +7,7 @@ from Bio.PDB import *
 import sys
 import importlib
 from IPython.core.debugger import set_trace
+import time
 
 # Local includes
 from default_config.masif_opts import masif_opts
@@ -28,7 +29,7 @@ if len(sys.argv) <= 1:
     print("A or AB are the chains to include in this surface.")
     sys.exit(1)
 
-
+tic = time.time()
 # Save the chains as separate files. 
 in_fields = sys.argv[1].split("_")
 pdb_id = in_fields[0]
@@ -122,3 +123,6 @@ if not os.path.exists(masif_opts['pdb_chain_dir']):
     os.makedirs(masif_opts['pdb_chain_dir'])
 shutil.copy(out_filename1+'.ply', masif_opts['ply_chain_dir']) 
 shutil.copy(out_filename1+'.pdb', masif_opts['pdb_chain_dir']) 
+
+time_length = time.time() - tic
+print("extract, triangulate, precomputation t: {}s".format(str(time_length)))
