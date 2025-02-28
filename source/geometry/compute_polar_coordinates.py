@@ -295,6 +295,7 @@ def output_patch_coords(subv, subf, subn, i, neigh_i, theta, rho):
 
 #@jit
 def call_mds(mds_obj, pair_dist):
+    pair_dist = np.asarray(pair_dist)
     return mds_obj.fit_transform(pair_dist)
 
 def compute_theta_all(D, vertices, faces, normals, idx, radius):
