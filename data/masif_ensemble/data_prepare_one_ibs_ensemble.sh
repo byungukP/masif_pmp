@@ -23,19 +23,9 @@ else
 	python -W ignore $masif_source/data_preparation/00-pdb_download.py $PPI_PAIR_ID
 fi
 
-# # $2 for taking csv_path as argument from cmd
-# if [ -z $CHAIN2 ]
-# then
-#     echo "Empty"
-#     python -W ignore $masif_source/data_preparation/01c-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
-# else
-#     python -W ignore $masif_source/data_preparation/01c-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
-#     python -W ignore $masif_source/data_preparation/01c-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN2
-# fi
-
 if [ "$2" == "--ensemble" ]
 then
-	echo "Running HTMD & CLoNe for conformational ensemble sampling."
+	# echo "Running HTMD & CLoNe for conformational ensemble sampling."
 	### python scripts for HTMD & CLoNe runs on the benchmark pdb file (extracted single chain pdb file, already protonated)
 	### then save the result files at data_preparation/01-benchmark_pdbs_htmd/, data_preparation/01-benchmark_pdbs_clone/
 	# python -W ignore $masif_source/conf_ensemble/runHTMD.py $PDB_ID\_$CHAIN1
