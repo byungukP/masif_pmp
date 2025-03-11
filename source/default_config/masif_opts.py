@@ -116,3 +116,7 @@ masif_opts["ligand"]["costfun"] = "dprime"
 masif_opts["ligand"]["model_dir"] = "nn_models/all_feat/"
 masif_opts["ligand"]["test_set_out_dir"] = "test_set_predictions/"
 
+if __name__ == "__main__":
+    import sys
+    key = sys.argv[1]  # Get the argument from Bash
+    print(masif_opts.get(key, "Key not found"))  # Print the value associated with the key
