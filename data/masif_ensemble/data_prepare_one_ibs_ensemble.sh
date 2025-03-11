@@ -35,8 +35,8 @@ then
 	# no need for PDB protonation of clustered pdb files
 	# only need removing water & ions from the PDBs (extraction), precomputation of surface features & triangulation into mesh
 
-	if [ ! -d "/masif_docker/pmp_ensemble/data_preparation/01-benchmark_pdbs_ensemble/${PDB_ID}_${CHAIN1}" ]		# remove the line for stand-alone container & git dev in future (for HTC)
-	# if [ ! -d "data_preparation/01-benchmark_pdbs_ensemble/${PDB_ID}_${CHAIN1}" ]
+	ensemble_pdb_dir=$(python $masif_source/default_config/masif_opts.py "ensemble_pdb_dir")
+	if [ ! -d "${ensemble_pdb_dir}/${PDB_ID}_${CHAIN1}" ]
 	then
 		echo "${PDB_ID}_${CHAIN1} RCSB structure detected."
 		python -W ignore $masif_source/data_preparation/01c-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
