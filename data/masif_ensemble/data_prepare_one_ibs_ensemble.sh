@@ -40,12 +40,12 @@ then
 	then
 		echo "${PDB_ID}_${CHAIN1} RCSB structure detected."
 		python -W ignore $masif_source/data_preparation/01c-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
-		python $masif_source/data_preparation/04-masif_precompute.py masif_site $PPI_PAIR_ID
+		python $masif_source/data_preparation/04-masif_precompute.py masif_ensemble $PPI_PAIR_ID
 	else
 		echo "${PDB_ID}_${CHAIN1} conformational ensemble detected."
 		python -W ignore $masif_source/data_preparation/01d-conf_ensemble_pdb_extract_and_triangulate_center.py $PDB_ID\_$CHAIN1
 		# python -W ignore $masif_source/data_preparation/01e-conf_ensemble_pdb_extract_and_triangulate_cluster.py $PDB_ID\_$CHAIN1
-		python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute_center.py masif_site $PDB_ID\_$CHAIN1
-		# python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute_cluster.py masif_site $PPI_PAIR_ID
+		python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute_center.py masif_ensemble $PDB_ID\_$CHAIN1
+		# python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute_cluster.py masif_ensemble $PPI_PAIR_ID
 	fi
 fi

@@ -24,13 +24,12 @@ if len(sys.argv) <= 1:
 
 masif_app = sys.argv[1]
 
-if masif_app == 'masif_ppi_search': 
-    params = masif_opts['ppi_search']
-elif masif_app == 'masif_site':
+if masif_app == 'masif_site':
     params = masif_opts['site']
     params['ply_chain_dir'] = masif_opts['ply_chain_dir']
-elif masif_app == 'masif_ligand':
-    params = masif_opts['ligand']
+elif masif_app == 'masif_ensemble':
+    params = masif_opts['ensemble']
+    params['ply_chain_dir'] = masif_opts['ply_chain_dir']
 
 ppi_pair_list = [sys.argv[2]]
 
