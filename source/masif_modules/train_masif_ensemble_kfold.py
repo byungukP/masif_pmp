@@ -135,6 +135,7 @@ def train_masif_ensemble_kfold(
 
     # Open training list + data augmentation
     training_list = open(params["training_list"]).readlines()
+    training_list = [x.rstrip() for x in training_list]
     ## data augmentation setup
     if params["data_augmentation"] == "naive":
         training_list = naive_data_augmentation(
