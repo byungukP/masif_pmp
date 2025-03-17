@@ -108,8 +108,8 @@ for ppi_pair_id in ppi_pair_ids:
 
         ground_truth = mymesh.get_attribute('vertex_iface')
         # debug flag
-        print(f"ground_truth: {ground_truth.shape}\n", ground_truth)
-        print(f"scores: {scores.shape}\n", scores)
+        # print(f"ground_truth: {ground_truth.shape}\n", ground_truth)
+        # print(f"scores: {scores.shape}\n", scores)
         
         # Compute ROC AUC for this protein. 
         try:
