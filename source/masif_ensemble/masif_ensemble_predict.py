@@ -24,15 +24,18 @@ def mask_input_feat(input_feat, mask):
     return np.delete(input_feat, mymask, axis=2)
 
 
-params = masif_opts["site"]
-custom_params_file = sys.argv[1]
-custom_params = importlib.import_module(custom_params_file, package=None)
-custom_params = custom_params.custom_params
+params = masif_opts["ensemble"]
 
-# spec=importlib.util.spec_from_file_location("custom_params",custom_params_file)
-# foo = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(foo)
-# custom_params = foo.custom_params
+# Load custom parameters if provided.
+if len(sys.argv) > 1:
+    custom_params_file = sys.argv[1]
+    spec=importlib.util.spec_from_file_location("custom_params",custom_params_file)
+    foo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(foo)
+    custom_params = foo.custom_params
+    for key in custom_params:
+        print("Setting {} to {} ".format(key, custom_params[key]))
+        params[key] = custom_params[key]
 
 for key in custom_params:
     print("Setting {} to {} ".format(key, custom_params[key]))
