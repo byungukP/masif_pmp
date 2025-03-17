@@ -204,9 +204,11 @@ def train_masif_ensemble_kfold(
             # np.random.shuffle(train_dirs)
 
             # Training loop: since each protein as batch
-            for ppi_pair_id in train_dirs:
+            for aug_ppi_pair_id in train_dirs:
                 # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
-                mydir = params["masif_precomputation_dir"] + "/" + ppi_pair_id + "/"
+                mydir = params["masif_precomputation_dir"] + "/" + aug_ppi_pair_id + "/"
+                # check whether the pdb_chain_id is from ensemble or not and update the pdb_chain_id accordingly
+                ppi_pair_id, center_id, ensemble_id = updateID(aug_ppi_pair_id)
                 pdbid = ppi_pair_id.split("_")[0]
                 chains1 = ppi_pair_id.split("_")[1]
                 if len(ppi_pair_id.split("_")) > 2:
@@ -228,7 +230,7 @@ def train_masif_ensemble_kfold(
                         or np.sum(iface_labels) > 0.75 * len(iface_labels)
                         or np.sum(iface_labels) < 30
                     ):
-                        skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
+                        skipped_pdb_list.append(f"{ensemble_id} {pid}")
                         continue
                     count_proteins += 1
 
@@ -275,18 +277,20 @@ def train_masif_ensemble_kfold(
                     input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
                     # Perform training step
-                    logfile.write("Training on {} {}\n".format(ppi_pair_id, pid))
+                    logfile.write("Training on {} {}\n".format(ensemble_id, pid))
                     # input_dict["keep_prob"] = 1.0
 
-                    print("\nTraining on {} {}\n".format(ppi_pair_id, pid))
+                    print("\nTraining on {} {}\n".format(ensemble_id, pid))
                     logs = model.training_step(input_dict, optimizer)
                     list_training_auc.append(logs["auc"])
                     logfile.flush()
 
             # Validation loop
-            for ppi_pair_id in val_dirs:
+            for aug_ppi_pair_id in val_dirs:
                 # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
-                mydir = params["masif_precomputation_dir"] + "/" + ppi_pair_id + "/"
+                mydir = params["masif_precomputation_dir"] + "/" + aug_ppi_pair_id + "/"
+                # check whether the pdb_chain_id is from ensemble or not and update the pdb_chain_id accordingly
+                ppi_pair_id, center_id, ensemble_id = updateID(aug_ppi_pair_id)
                 pdbid = ppi_pair_id.split("_")[0]
                 chains1 = ppi_pair_id.split("_")[1]
                 if len(ppi_pair_id.split("_")) > 2:
@@ -308,7 +312,7 @@ def train_masif_ensemble_kfold(
                         or np.sum(iface_labels) > 0.75 * len(iface_labels)
                         or np.sum(iface_labels) < 30
                     ):
-                        skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
+                        skipped_pdb_list.append(f"{ensemble_id} {pid}")
                         continue
                     count_proteins += 1
 
@@ -354,7 +358,7 @@ def train_masif_ensemble_kfold(
                     # move input tensors to the same device w/ parameter tensors of the model
                     input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
-                    logfile.write("Validating on {} {} ==> ".format(ppi_pair_id, pid))
+                    logfile.write("Validating on {} {} ==> ".format(ensemble_id, pid))
                     # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
 
                     logs = model.validation_step(input_dict)
