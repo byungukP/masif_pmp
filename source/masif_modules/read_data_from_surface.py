@@ -22,6 +22,27 @@ def read_data_from_surface(ply_fn, params):
     """
     mesh = pymesh.load_mesh(ply_fn)
 
+
+    # --- Mesh Quality Check ---
+    print("Checking mesh quality...")
+
+    # Check for degenerate faces (zero-area triangles)
+    face_vertices = mesh.vertices[mesh.faces]
+    v1, v2, v3 = face_vertices[:,0], face_vertices[:,1], face_vertices[:,2]
+    area = 0.5 * np.linalg.norm(np.cross(v2 - v1, v3 - v1), axis=1)
+    num_zero_area = np.isclose(area, 0).sum()
+
+    if num_zero_area > 0:
+        print(f"WARNING: {num_zero_area} degenerate (zero-area) faces detected.")
+
+    # Check for invalid vertices
+    invalid_vertices = np.isnan(mesh.vertices).any(axis=1) | np.isinf(mesh.vertices).any(axis=1)
+    num_invalid_vertices = invalid_vertices.sum()
+
+    if num_invalid_vertices > 0:
+        print(f"WARNING: {num_invalid_vertices} vertices contain NaN or Inf values.")
+
+
     # Normals: 
     n1 = mesh.get_attribute("vertex_nx")
     n2 = mesh.get_attribute("vertex_ny")
@@ -36,6 +57,23 @@ def read_data_from_surface(ply_fn, params):
     H = mesh.get_attribute("vertex_mean_curvature")
     mesh.add_attribute("vertex_gaussian_curvature")
     K = mesh.get_attribute("vertex_gaussian_curvature")
+
+    # --- Handle NaNs and Infs ---
+    H_invalid = np.isnan(H) | np.isinf(H)
+    K_invalid = np.isnan(K) | np.isinf(K)
+
+    num_H_invalid = H_invalid.sum()
+    num_K_invalid = K_invalid.sum()
+
+    if num_H_invalid > 0:
+        print(f"WARNING: {num_H_invalid} NaN/Inf values found in mean curvature (H). Replacing with 0.")
+        H[H_invalid] = 0.0
+
+    if num_K_invalid > 0:
+        print(f"WARNING: {num_K_invalid} NaN/Inf values found in Gaussian curvature (K). Replacing with 0.")
+        K[K_invalid] = 0.0
+
+    # Compute the shape index.
     elem = np.square(H) - K
     print("elem contains zero: {}, zero num: {}".format(np.isclose(elem, 0).any(), np.isclose(elem, 0).sum()))
     # In some cases this equation is less than zero, likely due to the method that computes the mean and gaussian curvature.
