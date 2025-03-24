@@ -46,11 +46,11 @@ def read_data_from_surface(ply_fn, params):
 
     if num_H_invalid > 0:
         print(f"WARNING: {num_H_invalid} NaN/Inf values found in mean curvature (H). Replacing with 0.")
-        H[H_invalid] = 0.0
+        # H[H_invalid] = 0.0
 
     if num_K_invalid > 0:
         print(f"WARNING: {num_K_invalid} NaN/Inf values found in Gaussian curvature (K). Replacing with 0.")
-        K[K_invalid] = 0.0
+        # K[K_invalid] = 0.0
 
     # Compute the shape index.
     elem = np.square(H) - K
