@@ -58,12 +58,11 @@ def fix_mesh(mesh, resolution, detail="normal"):
 
     # Step 6: Additional cleaning AFTER outer hull
     mesh, __ = pymesh.remove_duplicated_faces(mesh);
-    mesh, _ = pymesh.remove_degenerated_triangles(mesh, 200);
     mesh, __ = pymesh.remove_obtuse_triangles(mesh, 179.0, 5);
     mesh, __ = pymesh.remove_isolated_vertices(mesh);
     mesh, _ = pymesh.remove_duplicated_vertices(mesh, 0.001)
 
-    # Check for degenerate faces (zero-area triangles)
+    # Final check for degenerate faces (zero-area triangles)
     face_vertices = mesh.vertices[mesh.faces]
     v1, v2, v3 = face_vertices[:,0], face_vertices[:,1], face_vertices[:,2]
     area = 0.5 * np.linalg.norm(np.cross(v2 - v1, v3 - v1), axis=1)
@@ -71,8 +70,22 @@ def fix_mesh(mesh, resolution, detail="normal"):
 
     if num_zero_area > 0:
         print(f"WARNING: {num_zero_area} degenerate (zero-area) faces detected.")
+        print(f"Degenerate face indices: {np.where(np.isclose(area, 0))[0]}")
 
         r = pymesh.get_degenerated_faces(mesh)
         print(r)
+
+        print(mesh.faces)
+        print((mesh.faces).shape)
+        print(mesh.faces[r])
+        print(mesh.vertices[mesh.faces[r]])
+        print(area[r])
+
+        # # Remove degenerate triangles manually
+        # valid_faces = np.delete(mesh.faces, r, axis=0)
+        # valid_faces = mesh.faces[~np.isclose(area, 0)]
+        # mesh = pymesh.form_mesh(mesh.vertices, valid_faces)
+        # mesh, __ = pymesh.remove_isolated_vertices(mesh);
+        # mesh, _ = pymesh.remove_duplicated_vertices(mesh, 0.001)
 
     return mesh
