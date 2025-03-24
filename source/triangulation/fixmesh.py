@@ -63,9 +63,6 @@ def fix_mesh(mesh, resolution, detail="normal"):
     mesh, __ = pymesh.remove_isolated_vertices(mesh);
     mesh, _ = pymesh.remove_duplicated_vertices(mesh, 0.001)
 
-    # --- Mesh Quality Check ---
-    print("Checking mesh quality...")
-
     # Check for degenerate faces (zero-area triangles)
     face_vertices = mesh.vertices[mesh.faces]
     v1, v2, v3 = face_vertices[:,0], face_vertices[:,1], face_vertices[:,2]
@@ -75,5 +72,7 @@ def fix_mesh(mesh, resolution, detail="normal"):
     if num_zero_area > 0:
         print(f"WARNING: {num_zero_area} degenerate (zero-area) faces detected.")
 
+        r = pymesh.get_degenerated_faces(mesh)
+        print(r)
 
     return mesh
