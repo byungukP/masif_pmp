@@ -5,7 +5,7 @@ import pymesh
 """
 fixmesh.py: Regularize a protein surface mesh. 
 - based on code from the PyMESH documentation. 
-- updated for better remove degenerate vertices and triangles
+- added final manual check for degenerate triangles and their removal.
 """
 
 
@@ -65,28 +65,17 @@ def fix_mesh(mesh, resolution, detail="normal"):
     # Final check for degenerate faces (zero-area triangles)
     r = pymesh.get_degenerated_faces(mesh)
     if len(r) > 0:
-        print(f"WARNING: {len(r)} degenerate (zero-area) faces detected.")
-        print(r)
-
-        print("mesh.faces: ",mesh.faces)
-        print((mesh.faces).shape)
-        print("mesh.vertice: ",mesh.vertices)
-        print((mesh.vertices).shape)
+        # print(f"WARNING: {len(r)} degenerate (zero-area) faces detected.")
+        # print(r)
+        # print("mesh.faces: ",mesh.faces)
+        # print((mesh.faces).shape)
+        # print("mesh.vertice: ",mesh.vertices)
+        # print((mesh.vertices).shape)
 
         # Remove degenerate triangles manually
         valid_faces = np.delete(mesh.faces, r, axis=0)
         mesh = pymesh.form_mesh(mesh.vertices, valid_faces)
         mesh, __ = pymesh.remove_isolated_vertices(mesh);
         mesh, _ = pymesh.remove_duplicated_vertices(mesh, 0.001)
-
-
-        print("After manual removing")
-        r = pymesh.get_degenerated_faces(mesh)
-        print(r)
-        print("mesh.faces: ",mesh.faces)
-        print((mesh.faces).shape)
-        print("mesh.vertice: ",mesh.vertices)
-        print((mesh.vertices).shape)
-
 
     return mesh
