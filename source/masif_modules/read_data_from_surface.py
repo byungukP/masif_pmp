@@ -22,27 +22,6 @@ def read_data_from_surface(ply_fn, params):
     """
     mesh = pymesh.load_mesh(ply_fn)
 
-
-    # --- Mesh Quality Check ---
-    print("Checking mesh quality...")
-
-    # Check for degenerate faces (zero-area triangles)
-    face_vertices = mesh.vertices[mesh.faces]
-    v1, v2, v3 = face_vertices[:,0], face_vertices[:,1], face_vertices[:,2]
-    area = 0.5 * np.linalg.norm(np.cross(v2 - v1, v3 - v1), axis=1)
-    num_zero_area = np.isclose(area, 0).sum()
-
-    if num_zero_area > 0:
-        print(f"WARNING: {num_zero_area} degenerate (zero-area) faces detected.")
-
-    # Check for invalid vertices
-    invalid_vertices = np.isnan(mesh.vertices).any(axis=1) | np.isinf(mesh.vertices).any(axis=1)
-    num_invalid_vertices = invalid_vertices.sum()
-
-    if num_invalid_vertices > 0:
-        print(f"WARNING: {num_invalid_vertices} vertices contain NaN or Inf values.")
-
-
     # Normals: 
     n1 = mesh.get_attribute("vertex_nx")
     n2 = mesh.get_attribute("vertex_ny")
