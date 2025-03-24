@@ -37,42 +37,35 @@ def read_data_from_surface(ply_fn, params):
     mesh.add_attribute("vertex_gaussian_curvature")
     K = mesh.get_attribute("vertex_gaussian_curvature")
 
-    # --- Handle NaNs and Infs ---
+    # --- Check NaNs and Infs ---
     H_invalid = np.isnan(H) | np.isinf(H)
     K_invalid = np.isnan(K) | np.isinf(K)
-
     num_H_invalid = H_invalid.sum()
     num_K_invalid = K_invalid.sum()
 
     if num_H_invalid > 0:
         print(f"WARNING: {num_H_invalid} NaN/Inf values found in mean curvature (H). Replacing with 0.")
-        # H[H_invalid] = 0.0
-
     if num_K_invalid > 0:
         print(f"WARNING: {num_K_invalid} NaN/Inf values found in Gaussian curvature (K). Replacing with 0.")
-        # K[K_invalid] = 0.0
 
     # Compute the shape index.
     elem = np.square(H) - K
-    print("elem contains zero: {}, zero num: {}".format(np.isclose(elem, 0).any(), np.isclose(elem, 0).sum()))
     # In some cases this equation is less than zero, likely due to the method that computes the mean and gaussian curvature.
     # set to an epsilon.
     elem[elem<=0] = 1e-8 # what if elem=0 --> no numerical instability issue occured
     k1 = H + np.sqrt(elem)
     k2 = H - np.sqrt(elem)
 
-    ### degub flag for SI calculation
-    print("H contains nan: {}, nan num: {}".format(np.isnan(H).any(), np.isnan(H).sum()))
-    print("K contains nan: {}, nan num: {}".format(np.isnan(K).any(), np.isnan(K).sum()))
-    print("elem contains nan: {}, nan num: {}".format(np.isnan(elem).any(), np.isnan(elem).sum()))
-    print("k1 contains nan: {}, nan num: {}".format(np.isnan(k1).any(), np.isnan(k1).sum()))
-    print("k2 contains nan: {}, nan num: {}".format(np.isnan(k2).any(), np.isnan(k2).sum()))
+    # ### degub flag for SI calculation
+    # print("H contains nan: {}, nan num: {}".format(np.isnan(H).any(), np.isnan(H).sum()))
+    # print("K contains nan: {}, nan num: {}".format(np.isnan(K).any(), np.isnan(K).sum()))
+    # print("elem contains nan: {}, nan num: {}".format(np.isnan(elem).any(), np.isnan(elem).sum()))
+    # print("k1 contains nan: {}, nan num: {}".format(np.isnan(k1).any(), np.isnan(k1).sum()))
+    # print("k2 contains nan: {}, nan num: {}".format(np.isnan(k2).any(), np.isnan(k2).sum()))
 
     # Compute the shape index 
     si = (k1+k2)/(k1-k2)
-    print("(k1+k2)/(k1-k2) contains nan: {}, nan num: {}".format(np.isnan(si).any(), np.isnan(si).sum()))
     si = np.arctan(si)*(2/np.pi)
-    print("si contains nan: {}, nan num: {}\n".format(np.isnan(si).any(), np.isnan(si).sum()))
 
     # Normalize the charge.
     charge = mesh.get_attribute("vertex_charge")
