@@ -58,7 +58,7 @@ def fix_mesh(mesh, resolution, detail="normal"):
 
     # Step 6: Additional cleaning AFTER outer hull
     mesh, __ = pymesh.remove_duplicated_faces(mesh);
-    mesh, _ = pymesh.remove_degenerated_triangles(mesh, 100);
+    mesh, _ = pymesh.remove_degenerated_triangles(mesh, 200);
     mesh, __ = pymesh.remove_obtuse_triangles(mesh, 179.0, 5);
     mesh, __ = pymesh.remove_isolated_vertices(mesh);
     mesh, _ = pymesh.remove_duplicated_vertices(mesh, 0.001)
