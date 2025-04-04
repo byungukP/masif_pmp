@@ -74,9 +74,12 @@ def train_masif_site(
 
     data_dirs = os.listdir(params["masif_precomputation_dir"])
     np.random.shuffle(data_dirs)
-    data_dirs = data_dirs
-    n_val = len(data_dirs) // 10
-    val_dirs = set(data_dirs[(len(data_dirs) - n_val) :])
+    # data_dirs = data_dirs
+    # n_val = len(data_dirs) // 10
+    # val_dirs = set(data_dirs[(len(data_dirs) - n_val) :])
+
+    n_val = int(len(training_list) * params["range_val_samples"])
+    val_dirs = set(training_list[(len(training_list) - n_val) :])
     # Sets use hash lookups and hash functions, which makes searching for an item significantly faster compared to lists
 
     for num_iter in range(num_iterations):
