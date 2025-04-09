@@ -80,6 +80,8 @@ def train_masif_site(
 
     n_val = int(len(training_list) * params["range_val_samples"])
     val_dirs = set(training_list[(len(training_list) - n_val) :])
+    print("Number of validation samples: {}".format(n_val))
+    print(val_dirs)
     # Sets use hash lookups and hash functions, which makes searching for an item significantly faster compared to lists
 
     for num_iter in range(num_iterations):
