@@ -46,7 +46,7 @@ def filter_cluster(ensemble_dir, summary_name="Summary_clusters.txt", tol=0.05):
 
 
 if __name__ == "__main__":
-    params = masif_opts['site']
+    params = masif_opts['ensemble']
     params['pdb_chain_dir'] = masif_opts['pdb_chain_dir']
     params['clone_dir'] = masif_opts['clone_dir']
     params['ensemble_pdb_dir'] = masif_opts['ensemble_pdb_dir']
