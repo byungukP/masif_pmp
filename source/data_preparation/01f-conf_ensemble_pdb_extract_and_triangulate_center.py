@@ -23,8 +23,6 @@ from triangulation.computeCharges import computeCharges, assignChargesToNewMesh
 from triangulation.computeAPBS import computeAPBS
 from triangulation.compute_normal import compute_normal
 from sklearn.neighbors import KDTree
-import pandas as pd
-from pmp_ibs.assignIBS import *
 
 """
 01f-conf_ensemble_pdb_extract_and_triangulate_center.py
@@ -64,15 +62,15 @@ for center_pdb in center_pdb_list:
     pdb_filename = f"{pdb_dir}/{pdb_id}.pdb"
     shutil.copy(raw_pdb, pdb_filename)
        
-     ### Preprocessing Steps ###
-     # can be modulated in the future
+    ### Preprocessing Steps ###
+    # can be modulated in the future
 
     # Edit the pdb file chain ids to be the same as the chain_ids1 (HOH, ions removed) --> not helpful in case of full complex
     # editPDB(pdb_filename, chain_ids1)
 
     # protonate the pdb file
     tmp_dir= masif_opts['tmp_dir']
-    protonated_file = tmp_dir+"/"+pdb_id+"_"+chain_ids1+".pdb"
+    protonated_file = tmp_dir+"/"+pdb_id+".pdb"
     protonate(pdb_filename, protonated_file)
     pdb_filename = protonated_file
         
@@ -169,3 +167,6 @@ for center_pdb in center_pdb_list:
 # Clean up the raw pdb center directory
 if os.path.isdir(pdb_dir):
     shutil.rmtree(pdb_dir)
+
+# flag
+print(pdb_filename)
