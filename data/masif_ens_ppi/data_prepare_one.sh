@@ -22,12 +22,24 @@ else
 	python -W ignore $masif_source/data_preparation/00-pdb_download.py $PPI_PAIR_ID
 fi
 
-if [ -z $CHAIN2 ]
+# representative cluster filter
+python -W ignore $masif_source/conf_ensemble/filter_clusteredPDB.py $PDB_ID
+
+ensemble_pdb_dir=$(python $masif_source/default_config/masif_opts.py "ensemble_pdb_dir")
+if [ ! -d "${ensemble_pdb_dir}/${PDB_ID}" ]
 then
-    echo "Empty"
-    python -W ignore $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
+	echo -e "\n${PDB_ID}_${CHAIN1} RCSB structure detected."
+	if [ -z $CHAIN2 ]
+	then
+	    echo "Empty"
+	    python -W ignore $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
+	else
+	    python -W ignore $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
+	    python -W ignore $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN2
+	fi
+	python $masif_source/data_preparation/04-masif_precompute.py masif_site $PPI_PAIR_ID
 else
-    python -W ignore $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
-    python -W ignore $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN2
+	echo -e "\n${PDB_ID}_${CHAIN1} conformational ensemble detected."
+	python -W ignore $masif_source/data_preparation/01f-conf_ensemble_pdb_extract_and_triangulate_center.py $PDB_ID\_$CHAIN1
+	python $masif_source/data_preparation/04d-conf_ensemble_masif_precompute_center.py masif_ensemble $PDB_ID\_$CHAIN1
 fi
-python $masif_source/data_preparation/04-masif_precompute.py masif_site $PPI_PAIR_ID
