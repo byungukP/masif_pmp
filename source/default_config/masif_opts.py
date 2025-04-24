@@ -60,9 +60,7 @@ masif_opts["ppi_search"]["sc_w"] = 0.25
 # Neural network patch application specific parameters.
 masif_opts["site"] = {}
 masif_opts["site"]["training_list"] = "lists/pmp_train.txt"
-# masif_opts["site"]["training_list"] = "lists/training_no_obsolete.txt"  # originially, "lists/training.txt"
 masif_opts["site"]["testing_list"] = "lists/pmp_test.txt"
-# masif_opts["site"]["testing_list"] = "lists/testing.txt"
 masif_opts["site"]["max_shape_size"] = 100
 masif_opts["site"]["n_conv_layers"] = 3
 masif_opts["site"]["max_distance"] = 9.0  # Radius for the neural network.
@@ -79,9 +77,7 @@ masif_opts["site"]["feat_mask"] = [1.0] * 5
 # Neural network patch application specific parameters.
 masif_opts["ensemble"] = {}
 masif_opts["ensemble"]["training_list"] = "lists/pmp_train.txt"
-# masif_opts["ensemble"]["training_list"] = "lists/training_no_obsolete.txt"  # originially, "lists/training.txt"
 masif_opts["ensemble"]["testing_list"] = "lists/pmp_test.txt"
-# masif_opts["ensemble"]["testing_list"] = "lists/testing.txt"
 masif_opts["ensemble"]["max_shape_size"] = 100
 masif_opts["ensemble"]["n_conv_layers"] = 3
 masif_opts["ensemble"]["max_distance"] = 9.0  # Radius for the neural network.
