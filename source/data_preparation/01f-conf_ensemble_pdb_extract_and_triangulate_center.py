@@ -164,6 +164,8 @@ for center_pdb in center_pdb_list:
     # Clean up the tmp pdb file
     if os.path.isfile(pdb_filename):
         os.remove(pdb_filename)
-    # Clean up the raw pdb center directory
-    if os.path.isdir(pdb_dir):
-        shutil.rmtree(pdb_dir)
+
+
+# Clean up the raw pdb center directory
+if os.path.isdir(pdb_dir):
+    shutil.rmtree(pdb_dir)
