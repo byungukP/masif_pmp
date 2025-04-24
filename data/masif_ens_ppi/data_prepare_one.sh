@@ -40,8 +40,8 @@ then
 	python $masif_source/data_preparation/04-masif_precompute.py masif_site $PPI_PAIR_ID
 else
 	echo -e "\n${PDB_ID}_${CHAIN1} conformational ensemble detected."
-	python -W ignore $masif_source/data_preparation/01f-conf_ensemble_pdb_extract_and_triangulate_center.py $PDB_ID\_$CHAIN1
-	python $masif_source/data_preparation/04d-conf_ensemble_masif_precompute_center.py masif_ensemble $PDB_ID\_$CHAIN1
+	python -W ignore $masif_source/data_preparation/01e-conf_ensemble_pdb_extract_and_triangulate_center_complex.py $PDB_ID\_$CHAIN1
+	python $masif_source/data_preparation/04c-conf_ensemble_masif_precompute_center.py masif_ensemble $PDB_ID\_$CHAIN1
 
 	# loop for centers of PDB_CHAIN_ID w/ 01, 04.py
 	# for # OR bash script that do the loop for input PDB_CHAIN_ID

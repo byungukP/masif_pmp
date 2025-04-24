@@ -167,6 +167,3 @@ for center_pdb in center_pdb_list:
 # Clean up the raw pdb center directory
 if os.path.isdir(pdb_dir):
     shutil.rmtree(pdb_dir)
-
-# flag
-print(pdb_filename)
