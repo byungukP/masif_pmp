@@ -77,7 +77,7 @@ for center_pdb in center_pdb_list:
     # Extract chains of interest.
     out_filename1 = tmp_dir+"/"+pdb_id+"_"+chain_ids1
     extractPDB(pdb_filename, out_filename1+".pdb", chain_ids1)
-    ### might need edits to match chain_ids1 and chain_id in the HTMD-generated PDB file
+    ### need step that matchs chain_id in the HTMD-generated PDB file to chain_ids1
         
     # Compute MSMS of surface w/hydrogens, 
     try:

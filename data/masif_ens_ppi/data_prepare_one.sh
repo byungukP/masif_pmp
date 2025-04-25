@@ -22,7 +22,7 @@ else
 	python -W ignore $masif_source/data_preparation/00-pdb_download.py $PPI_PAIR_ID
 fi
 
-# representative cluster filter
+# representative cluster filter w/ ptn complex trajectory
 python -W ignore $masif_source/conf_ensemble/filter_clusteredPDB.py $PDB_ID
 
 ensemble_pdb_dir=$(python $masif_source/default_config/masif_opts.py "ensemble_pdb_dir")
