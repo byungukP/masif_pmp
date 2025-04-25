@@ -120,7 +120,7 @@ if __name__ == "__main__":
         # restore the chain_ids from the original PDB file & remove ions and waters
         restore_chain_ids(os.path.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID, pdb_file),
                           os.path.join(params['raw_pdb_dir'], f"{PDB_ID}.pdb"),
-                          remove_ions_and_waters=True,  # remove ions and waters since their chain_ids may overlap with protein chains
+                          remove_ions_waters=True,  # remove ions and waters since their chain_ids may overlap with protein chains
                           )
     # Copy the Summary_clusters.txt for frame number filteration in the future
     shutil.copy(os.path.join(cluster_dir, "Summary_clusters.txt"), os.path.join(params['ensemble_pdb_dir'], PDB_CHAIN_ID, "Summary_clusters.txt"))
