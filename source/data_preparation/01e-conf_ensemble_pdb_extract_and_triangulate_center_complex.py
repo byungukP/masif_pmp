@@ -65,9 +65,6 @@ for center_pdb in center_pdb_list:
     ### Preprocessing Steps ###
     # can be modulated in the future
 
-    # Edit the pdb file chain ids to be the same as the chain_ids1 (HOH, ions removed) --> not helpful in case of full complex
-    # editPDB(pdb_filename, chain_ids1)
-
     # protonate the pdb file
     tmp_dir= masif_opts['tmp_dir']
     protonated_file = tmp_dir+"/"+pdb_id+".pdb"
