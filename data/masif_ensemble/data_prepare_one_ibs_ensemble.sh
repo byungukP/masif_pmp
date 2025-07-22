@@ -39,7 +39,7 @@ then
 	if [ ! -d "${ensemble_pdb_dir}/${PDB_ID}_${CHAIN1}" ]
 	then
 		echo -e "\n${PDB_ID}_${CHAIN1} RCSB structure detected."
-		python -W ignore $masif_source/data_preparation/01c-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
+		python -W ignore $masif_source/data_preparation/01-pdb_extract_and_triangulate.py $PDB_ID\_$CHAIN1
 		python $masif_source/data_preparation/04-masif_precompute.py masif_ensemble $PPI_PAIR_ID
 	else
 		echo -e "\n${PDB_ID}_${CHAIN1} conformational ensemble detected."
