@@ -77,8 +77,6 @@ elif os.path.exists(params["model_dir"] + "model.pt"):
     print('Reading pre-trained network')
     model.load_state_dict(torch.load(params["model_dir"]+'model.pt'))
 
-
-
 ### Transfer Learning
 if params["transferLR"]:
     # Freeze all layers in the model except the final FC block

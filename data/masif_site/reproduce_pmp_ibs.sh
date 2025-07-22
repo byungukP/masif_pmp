@@ -1,8 +1,8 @@
 #!/bin/bash
-cat lists/pmp_full_list.txt | while read line 
+cat lists/pmp_test.txt | while read line 
 do
-    ./data_prepare_one_ibs.sh $line\_
+    ./data_prepare_one.sh $line\_
 done
 
-./predict_site.sh -l lists/pmp_full_list.txt
-./color_site.sh -l lists/pmp_full_list.txt
+./predict_site.sh -l lists/pmp_test.txt
+./color_site.sh -l lists/pmp_test.txt
