@@ -23,13 +23,6 @@ masif_opts["compute_ibs"] = True
 masif_opts["mesh_res"] = 1.0
 masif_opts["feature_interpolation"] = True
 
-# k-fold CV test
-masif_opts["cv_test"] = False
-masif_opts["k_fold"] = 0
-
-# transfer learning
-masif_opts["transferLR"] = False
-
 # Coords params
 masif_opts["radius"] = 12.0
 
@@ -49,6 +42,11 @@ masif_opts["site"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
 masif_opts["site"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"
 masif_opts["site"]["out_FPVec_dir"] = "output/all_feat_3l/FPVec/"
 masif_opts["site"]["feat_mask"] = [1.0] * 5
+# k-fold CV test
+masif_opts["site"]["cv_test"] = False
+masif_opts["site"]["k_fold"] = 0
+# transfer learning
+masif_opts["site"]["transferLR"] = False
 
 # Neural network patch application specific parameters.
 masif_opts["ensemble"] = {}
@@ -67,6 +65,11 @@ masif_opts["ensemble"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
 masif_opts["ensemble"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"
 masif_opts["ensemble"]["out_FPVec_dir"] = "output/all_feat_3l/FPVec/"
 masif_opts["ensemble"]["feat_mask"] = [1.0] * 5
+# k-fold CV test
+masif_opts["ensemble"]["cv_test"] = False
+masif_opts["ensemble"]["k_fold"] = 0
+# transfer learning
+masif_opts["ensemble"]["transferLR"] = False
 
 
 if __name__ == "__main__":
