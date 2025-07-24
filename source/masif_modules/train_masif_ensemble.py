@@ -5,7 +5,6 @@ from torchinfo import summary
 from sklearn import metrics
 import numpy as np
 from IPython.core.debugger import set_trace
-# from sklearn.metrics import accuracy_score, roc_auc_score
 
 # Apply mask to input_feat
 def mask_input_feat(input_feat, mask):
@@ -46,18 +45,60 @@ def naive_data_augmentation(train_dirs, precomp_dir):
 # def group_data_augmentation(input_dict):
 #     # treat as a group the centers from same PDB_CHAIN_ID (i.e., random shuffle & split train/validation sets in terms of PDB_CHAIN_IDs)
 
-def updateID(aug_ppi_pair_id):
+def updateID(aug_pdb_chain_id):
     # update the pdb_chain_id to include the center_id if from ensemble
-    if '/' in aug_ppi_pair_id:
-        ppi_pair_id = aug_ppi_pair_id.split('/')[0]
-        center_id = aug_ppi_pair_id.split('/')[1].split('_')[1]
-        ensemble_id = f"{ppi_pair_id} c{center_id}"
+    if '/' in aug_pdb_chain_id:
+        pdb_chain_id = aug_pdb_chain_id.split('/')[0]
+        center_id = aug_pdb_chain_id.split('/')[1].split('_')[1]
+        ensemble_id = f"{pdb_chain_id} c{center_id}"
     else:
-        ppi_pair_id = aug_ppi_pair_id
+        pdb_chain_id = aug_pdb_chain_id
         center_id = None
-        ensemble_id = ppi_pair_id
-    return ppi_pair_id, center_id, ensemble_id
+        ensemble_id = pdb_chain_id
+    return pdb_chain_id, center_id, ensemble_id
 
+def load_data(mydir, pid, params, for_training=True):
+    iface_labels = np.load(mydir + pid + "_iface_labels.npy")
+    rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
+    theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
+    input_feat = np.load(mydir + pid + "_input_feat.npy")
+    if np.sum(params["feat_mask"]) < 5:
+        input_feat = mask_input_feat(input_feat, params["feat_mask"])
+    mask = np.load(mydir + pid + "_mask.npy")
+    mask = np.expand_dims(mask, 2)
+    indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
+    # since some patches may have less than max shape size (100) for patch representation but all the matrix are generated based on max shape size for computational reason,
+    # need padding for matrix of indice list --> pad_indices()
+    indices = pad_indices(indices, mask.shape[1])
+    tmp = np.zeros((len(iface_labels), 2))
+    for i in range(len(iface_labels)):
+        if iface_labels[i] == 1:
+            tmp[i, 0] = 1
+        else:
+            tmp[i, 1] = 1
+    iface_labels_dc = tmp
+    pos_labels = np.where(iface_labels == 1)[0]
+    neg_labels = np.where(iface_labels == 0)[0]
+
+    if for_training:
+        # Scramble neg idx, and only get as many as pos_labels to balance the training.
+        np.random.shuffle(neg_labels)
+        np.random.shuffle(pos_labels)
+        n = min(len(pos_labels), len(neg_labels))
+        neg_labels = neg_labels[:n]
+        pos_labels = pos_labels[:n]
+
+    input_dict = {
+        "rho_coords": torch.tensor(rho_wrt_center, dtype=torch.float32),
+        "theta_coords": torch.tensor(theta_wrt_center, dtype=torch.float32),
+        "input_feat": torch.tensor(input_feat, dtype=torch.float32),
+        "mask": torch.tensor(mask, dtype=torch.float32),
+        "labels": torch.tensor(iface_labels_dc, dtype=torch.int32),
+        "pos_idx": torch.tensor(pos_labels, dtype=torch.int32),
+        "neg_idx": torch.tensor(neg_labels, dtype=torch.int32),
+        "indices_tensor": torch.tensor(indices, dtype=torch.int32),
+    }
+    return input_dict
 
 
 def train_masif_ensemble(
@@ -165,176 +206,79 @@ def train_masif_ensemble(
         # np.random.shuffle(train_dirs)
         
         # train/valid loop: since each protein as batch
-        for aug_ppi_pair_id in train_dirs:
+        for aug_pdb_chain_id in train_dirs:
             # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
-            mydir = params["masif_precomputation_dir"] + "/" + aug_ppi_pair_id + "/"
+            mydir = params["masif_precomputation_dir"] + "/" + aug_pdb_chain_id + "/"
             
             # check whether the pdb_chain_id is from ensemble or not and update the pdb_chain_id accordingly
-            ppi_pair_id, center_id, ensemble_id = updateID(aug_ppi_pair_id)
-            pdbid = ppi_pair_id.split("_")[0]
-            chains1 = ppi_pair_id.split("_")[1]
-            if len(ppi_pair_id.split("_")) > 2:
-                chains2 = ppi_pair_id.split("_")[2]
-            else: 
-                chains2 = ''
-            pids = []   # might need to use pids for handling representative confs from dynamic ensemble from unbiased htmd
-            if pdbid + "_" + chains1 in training_list:
-                pids.append("p1")
-            if pdbid + "_" + chains2 in training_list:
-                pids.append("p2")
-            for pid in pids:    # each pid representing different conf among ensemble --> thus, multiple trainings (var updates) w/ diff conf from same pdb_chain_id
-                try:
-                    iface_labels = np.load(mydir + pid + "_iface_labels.npy")
-                except:
-                    continue
-                if (
-                    len(iface_labels) > 8000
-                    or np.sum(iface_labels) > 0.75 * len(iface_labels)
-                    or np.sum(iface_labels) < 30
-                ):
-                    skipped_pdb_list.append(f"{ensemble_id} {pid}")
-                    continue
-                count_proteins += 1
+            pdb_chain_id, center_id, ensemble_id = updateID(aug_pdb_chain_id)
+            pdbid = pdb_chain_id.split("_")[0]
+            chain = pdb_chain_id.split("_")[1]
+            pid = "p1"
+            try:
+                iface_labels = np.load(mydir + pid + "_iface_labels.npy")
+            except:
+                continue
+            if (
+                len(iface_labels) > 8000
+                or np.sum(iface_labels) > 0.75 * len(iface_labels)
+                or np.sum(iface_labels) < 30
+            ):
+                skipped_pdb_list.append(f"{ensemble_id} {pid}")
+                continue
+            count_proteins += 1
 
-                rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
-                theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
-                input_feat = np.load(mydir + pid + "_input_feat.npy")
-                if np.sum(params["feat_mask"]) < 5:
-                    input_feat = mask_input_feat(input_feat, params["feat_mask"])
-                mask = np.load(mydir + pid + "_mask.npy")
-                mask = np.expand_dims(mask, 2)
-                indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
-                # since some patches may have less than max shape size (100) for patch representation but all the matrix are generated based on max shape size for computational reason,
-                # need padding for matrix of indice list --> pad_indices()
-                indices = pad_indices(indices, mask.shape[1])
-                tmp = np.zeros((len(iface_labels), 2))
-                for i in range(len(iface_labels)):
-                    if iface_labels[i] == 1:
-                        tmp[i, 0] = 1
-                    else:
-                        tmp[i, 1] = 1
-                iface_labels_dc = tmp
-                logfile.flush()
-                pos_labels = np.where(iface_labels == 1)[0]
-                neg_labels = np.where(iface_labels == 0)[0]
-                np.random.shuffle(neg_labels)
-                np.random.shuffle(pos_labels)
-                # Scramble neg idx, and only get as many as pos_labels to balance the training.
-                """
-                skipping if for n_conv_layers == 1
-                check original source code if have to test w/ n_conv_layers == 1
-                """
-                # if params["n_conv_layers"] == 1:
-                if params["n_conv_layers"] > 1:
-                    n = min(len(pos_labels), len(neg_labels))
-                    neg_labels = neg_labels[:n]
-                    pos_labels = pos_labels[:n]
+            input_dict = load_data(mydir, pid, params, for_training=True)
+            input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
-                # then, save as input_dict
-                input_dict = {
-                    "rho_coords": torch.tensor(rho_wrt_center, dtype=torch.float32),
-                    "theta_coords": torch.tensor(theta_wrt_center, dtype=torch.float32),
-                    "input_feat": torch.tensor(input_feat, dtype=torch.float32),
-                    "mask": torch.tensor(mask, dtype=torch.float32),
-                    "labels": torch.tensor(iface_labels_dc, dtype=torch.int32),
-                    "pos_idx": torch.tensor(pos_labels, dtype=torch.int32),
-                    "neg_idx": torch.tensor(neg_labels, dtype=torch.int32),
-                    "indices_tensor": torch.tensor(indices, dtype=torch.int32),
-                }
-                # move input tensors to the same device w/ parameter tensors of the model
-                input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
+            # Validation checkpoint
+            # search for val_dirs 1st since it's much faster with small search space of val_dirs
+            if aug_pdb_chain_id in val_dirs:
+                logfile.write("Validating on {} {}\n".format(ensemble_id, pid))
+                print("\nValidating on {} {}\n".format(ensemble_id, pid))
+                logs = model.validation_step(input_dict)
+                list_val_auc.append(logs["auc"])
 
-                # Validation checkpoint
-                # search for val_dirs 1st since it's much faster with small search space of val_dirs
-                if aug_ppi_pair_id in val_dirs:
-                    logfile.write("Validating on {} {}\n".format(ensemble_id, pid))
-                    # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
-
-                    print("\nValidating on {} {}\n".format(ensemble_id, pid))
-                    logs = model.validation_step(input_dict)
-                    list_val_auc.append(logs["auc"])
-
-                # Perform training step
-                else:
-                    logfile.write("Training on {} {}\n".format(ensemble_id, pid))
-                    # input_dict["keep_prob"] = 1.0
-                    
-                    # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
-                    # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
-                    print("\nTraining on {} {}\n".format(ensemble_id, pid))
-                    logs = model.training_step(input_dict, optimizer)
-                    list_training_auc.append(logs["auc"])
-                logfile.flush()
+            # Perform training step
+            else:
+                logfile.write("Training on {} {}\n".format(ensemble_id, pid))                    
+                # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
+                # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
+                print("\nTraining on {} {}\n".format(ensemble_id, pid))
+                logs = model.training_step(input_dict, optimizer)
+                list_training_auc.append(logs["auc"])
+            logfile.flush()
 
         # Run testing cycle
-        for ppi_pair_id in test_dirs:
-            mydir = params["masif_precomputation_dir"] + "/" + ppi_pair_id + "/"
-            pdbid = ppi_pair_id.split("_")[0]
-            chains1 = ppi_pair_id.split("_")[1]
-            if len(ppi_pair_id.split("_")) > 2:
-                chains2 = ppi_pair_id.split("_")[2]
-            else: 
-                chains2 = ''
-            pids = []   # might need to use pids for handling representative confs from dynamic ensemble from unbiased htmd
-            if pdbid + "_" + chains1 in testing_list:
-                pids.append("p1")
-            if pdbid + "_" + chains2 in testing_list:
-                pids.append("p2")
-            for pid in pids:
-                try:
-                    iface_labels = np.load(mydir + pid + "_iface_labels.npy")
-                except:
-                    continue
-                if (
-                    len(iface_labels) > 20000
-                    or np.sum(iface_labels) > 0.75 * len(iface_labels)
-                    or np.sum(iface_labels) < 30
-                ):
-                    skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
-                    continue
-                count_proteins += 1
+        for pdb_chain_id in test_dirs:
+            mydir = params["masif_precomputation_dir"] + "/" + pdb_chain_id + "/"
+            pdbid = pdb_chain_id.split("_")[0]
+            chain = pdb_chain_id.split("_")[1]
+            pid = "p1"
+            try:
+                iface_labels = np.load(mydir + pid + "_iface_labels.npy")
+            except:
+                continue
+            if (
+                len(iface_labels) > 20000
+                or np.sum(iface_labels) > 0.75 * len(iface_labels)
+                or np.sum(iface_labels) < 30
+            ):
+                skipped_pdb_list.append(f"{pdb_chain_id} {pid}")
+                continue
+            count_proteins += 1
 
-                rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
-                theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
-                input_feat = np.load(mydir + pid + "_input_feat.npy")
-                if np.sum(params["feat_mask"]) < 5:
-                    input_feat = mask_input_feat(input_feat, params["feat_mask"])
-                mask = np.load(mydir + pid + "_mask.npy")
-                mask = np.expand_dims(mask, 2)
-                indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
-                indices = pad_indices(indices, mask.shape[1])
-                tmp = np.zeros((len(iface_labels), 2))
-                for i in range(len(iface_labels)):
-                    if iface_labels[i] == 1:
-                        tmp[i, 0] = 1
-                    else:
-                        tmp[i, 1] = 1
-                iface_labels_dc = tmp
-                logfile.flush()
-                pos_labels = np.where(iface_labels == 1)[0]
-                neg_labels = np.where(iface_labels == 0)[0]
-
-                input_dict = {
-                    "rho_coords": torch.tensor(rho_wrt_center, dtype=torch.float32),
-                    "theta_coords": torch.tensor(theta_wrt_center, dtype=torch.float32),
-                    "input_feat": torch.tensor(input_feat, dtype=torch.float32),
-                    "mask": torch.tensor(mask, dtype=torch.float32),
-                    "labels": torch.tensor(iface_labels_dc, dtype=torch.int32),
-                    "pos_idx": torch.tensor(pos_labels, dtype=torch.int32),
-                    "neg_idx": torch.tensor(neg_labels, dtype=torch.int32),
-                    "indices_tensor": torch.tensor(indices, dtype=torch.int32),
-                }
-                # move input tensors to the same device w/ parameter tensors of the model
-                input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
+            input_dict = load_data(mydir, pid, params, for_training=False)
+            input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
                 
-                logfile.write("Testing on {} {}\n".format(ppi_pair_id, pid))
-                print("\nTesting on {} {}\n".format(ppi_pair_id, pid))
-                logs = model.test_step(input_dict)
-                list_test_auc.append(logs["auc"])
-                list_test_names.append((ppi_pair_id, pid))
-                all_test_labels.append(iface_labels)
-                all_test_scores.append(logs["full_score"])
-                logfile.flush()
+            logfile.write("Testing on {} {}\n".format(pdb_chain_id, pid))
+            print("\nTesting on {} {}\n".format(pdb_chain_id, pid))
+            logs = model.test_step(input_dict)
+            list_test_auc.append(logs["auc"])
+            list_test_names.append((pdb_chain_id, pid))
+            all_test_labels.append(iface_labels)
+            all_test_scores.append(logs["full_score"])
+            logfile.flush()
 
         # Summary of epoch
         outstr = "Epoch ran on {} proteins\n".format(count_proteins)
