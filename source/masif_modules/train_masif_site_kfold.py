@@ -22,35 +22,49 @@ def pad_indices(indices, max_verts):
         )
     return padded_ix
 
+def load_data(mydir, pid, params, for_training=True):
+    iface_labels = np.load(mydir + pid + "_iface_labels.npy")
+    rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
+    theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
+    input_feat = np.load(mydir + pid + "_input_feat.npy")
+    if np.sum(params["feat_mask"]) < 5:
+        input_feat = mask_input_feat(input_feat, params["feat_mask"])
+    mask = np.load(mydir + pid + "_mask.npy")
+    mask = np.expand_dims(mask, 2)
+    indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
+    # since some patches may have less than max shape size (100) for patch representation but all the matrix are generated based on max shape size for computational reason,
+    # need padding for matrix of indice list --> pad_indices()
+    indices = pad_indices(indices, mask.shape[1])
+    tmp = np.zeros((len(iface_labels), 2))
+    for i in range(len(iface_labels)):
+        if iface_labels[i] == 1:
+            tmp[i, 0] = 1
+        else:
+            tmp[i, 1] = 1
+    iface_labels_dc = tmp
+    pos_labels = np.where(iface_labels == 1)[0]
+    neg_labels = np.where(iface_labels == 0)[0]
 
-# Run masif site on a protein, on a previously trained network.
-# def run_masif_site(
-#     params, model, rho_wrt_center, theta_wrt_center, input_feat, mask, indices
-# ):
-#     indices = pad_indices(indices, mask.shape[1])
-#     mask = np.expand_dims(mask, 2)
-#     feed_dict = {
-#         model.rho_coords: rho_wrt_center,
-#         model.theta_coords: theta_wrt_center,
-#         model.input_feat: input_feat,
-#         model.mask: mask,
-#         model.indices_tensor: indices,
-#     }
+    if for_training:
+        # Scramble neg idx, and only get as many as pos_labels to balance the training.
+        np.random.shuffle(neg_labels)
+        np.random.shuffle(pos_labels)
+        n = min(len(pos_labels), len(neg_labels))
+        neg_labels = neg_labels[:n]
+        pos_labels = pos_labels[:n]
 
-#     logits = model(input_dict)
-#     score = model.session.run([model.full_score], feed_dict=feed_dict)
-#     return score
+    input_dict = {
+        "rho_coords": torch.tensor(rho_wrt_center, dtype=torch.float32),
+        "theta_coords": torch.tensor(theta_wrt_center, dtype=torch.float32),
+        "input_feat": torch.tensor(input_feat, dtype=torch.float32),
+        "mask": torch.tensor(mask, dtype=torch.float32),
+        "labels": torch.tensor(iface_labels_dc, dtype=torch.int32),
+        "pos_idx": torch.tensor(pos_labels, dtype=torch.int32),
+        "neg_idx": torch.tensor(neg_labels, dtype=torch.int32),
+        "indices_tensor": torch.tensor(indices, dtype=torch.int32),
+    }
+    return input_dict
 
-
-def compute_roc_auc(pos, neg):
-    labels = np.concatenate([np.ones((len(pos))), np.zeros((len(neg)))])
-    dist_pairs = np.concatenate([pos, neg])
-    return metrics.roc_auc_score(labels, dist_pairs)
-
-def reset_weights(model):
-    for layer in model.children():
-       if hasattr(layer, 'reset_parameters'):
-           layer.reset_parameters()
 
 from masif_modules.MaSIF_site_wLayers import MaSIF_site
 
@@ -123,7 +137,6 @@ def train_masif_site_kfold(
         val_dirs = training_list[test_idx]
 
         # re-instantiate model & optimizer for each split
-        # reset_weights(model)    # not working
         model = build_model(params)
         print("new model w/ new optimizer built for split {}\n".format(split_count))
         model.to(device)
@@ -155,167 +168,67 @@ def train_masif_site_kfold(
             """
             # np.random.shuffle(train_dirs)
 
-            # Training loop: since each protein as batch
-            for ppi_pair_id in train_dirs:
+            # Training loop
+            for pdb_chain_id in train_dirs:
                 # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
-                mydir = params["masif_precomputation_dir"] + "/" + ppi_pair_id + "/"
-                pdbid = ppi_pair_id.split("_")[0]
-                chains1 = ppi_pair_id.split("_")[1]
-                if len(ppi_pair_id.split("_")) > 2:
-                    chains2 = ppi_pair_id.split("_")[2]
-                else: 
-                    chains2 = ''
-                pids = []   # might need to use pids for handling representative confs from dynamic ensemble from unbiased htmd
-                if pdbid + "_" + chains1 in training_list:
-                    pids.append("p1")
-                if pdbid + "_" + chains2 in training_list:
-                    pids.append("p2")
-                for pid in pids:    # each pid representing different conf among ensemble --> thus, multiple trainings (var updates) w/ diff conf from same pdb_chain_id
-                    try:
-                        iface_labels = np.load(mydir + pid + "_iface_labels.npy")
-                    except:
-                        continue
-                    if (
-                        len(iface_labels) > 8000
-                        or np.sum(iface_labels) > 0.75 * len(iface_labels)
-                        or np.sum(iface_labels) < 30
-                    ):
-                        skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
-                        continue
-                    count_proteins += 1
+                mydir = params["masif_precomputation_dir"] + "/" + pdb_chain_id + "/"
+                pdbid = pdb_chain_id.split("_")[0]
+                chain = pdb_chain_id.split("_")[1]
+                pid = 'p1'
+                try:
+                    iface_labels = np.load(mydir + pid + "_iface_labels.npy")
+                except:
+                    continue
+                if (
+                    len(iface_labels) > 8000
+                    or np.sum(iface_labels) > 0.75 * len(iface_labels)
+                    or np.sum(iface_labels) < 30
+                ):
+                    skipped_pdb_list.append(f"{pdb_chain_id} {pid}")
+                    continue
+                count_proteins += 1
 
-                    rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
-                    theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
-                    input_feat = np.load(mydir + pid + "_input_feat.npy")
-                    if np.sum(params["feat_mask"]) < 5:
-                        input_feat = mask_input_feat(input_feat, params["feat_mask"])
-                    mask = np.load(mydir + pid + "_mask.npy")
-                    mask = np.expand_dims(mask, 2)
-                    indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
-                    indices = pad_indices(indices, mask.shape[1])
-                    tmp = np.zeros((len(iface_labels), 2))
-                    for i in range(len(iface_labels)):
-                        if iface_labels[i] == 1:
-                            tmp[i, 0] = 1
-                        else:
-                            tmp[i, 1] = 1
-                    iface_labels_dc = tmp
-                    logfile.flush()
-                    pos_labels = np.where(iface_labels == 1)[0]
-                    neg_labels = np.where(iface_labels == 0)[0]
-                    np.random.shuffle(neg_labels)
-                    np.random.shuffle(pos_labels)
-                    # Scramble neg idx, and only get as many as pos_labels to balance the training.
-                    # if params["n_conv_layers"] == 1:
-                    if params["n_conv_layers"] > 1:
-                        n = min(len(pos_labels), len(neg_labels))
-                        neg_labels = neg_labels[:n]
-                        pos_labels = pos_labels[:n]
+                input_dict = load_data(mydir, pid, params, for_training=True)
+                # move input tensors to the same device w/ parameter tensors of the model
+                input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
-                    # then, save as input_dict
-                    input_dict = {
-                        "rho_coords": torch.tensor(rho_wrt_center),
-                        "theta_coords": torch.tensor(theta_wrt_center),
-                        "input_feat": torch.tensor(input_feat),
-                        "mask": torch.tensor(mask),
-                        "labels": torch.tensor(iface_labels_dc),
-                        "pos_idx": torch.tensor(pos_labels),
-                        "neg_idx": torch.tensor(neg_labels),
-                        "indices_tensor": torch.tensor(indices),
-                    }
-                    # move input tensors to the same device w/ parameter tensors of the model
-                    input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
-
-                    # Perform training step
-                    logfile.write("Training on {} {}\n".format(ppi_pair_id, pid))
-                    # input_dict["keep_prob"] = 1.0
-
-                    print("\nTraining on {} {}\n".format(ppi_pair_id, pid))
-                    logs = model.training_step(input_dict, optimizer)
-                    list_training_auc.append(logs["auc"])
-                    logfile.flush()
+                # Perform training step
+                logfile.write("Training on {} {}\n".format(pdb_chain_id, pid))
+                print("\nTraining on {} {}\n".format(pdb_chain_id, pid))
+                logs = model.training_step(input_dict, optimizer)
+                list_training_auc.append(logs["auc"])
+                logfile.flush()
 
             # Validation loop
-            for ppi_pair_id in val_dirs:
+            for pdb_chain_id in val_dirs:
                 # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
-                mydir = params["masif_precomputation_dir"] + "/" + ppi_pair_id + "/"
-                pdbid = ppi_pair_id.split("_")[0]
-                chains1 = ppi_pair_id.split("_")[1]
-                if len(ppi_pair_id.split("_")) > 2:
-                    chains2 = ppi_pair_id.split("_")[2]
-                else: 
-                    chains2 = ''
-                pids = []   # might need to use pids for handling representative confs from dynamic ensemble from unbiased htmd
-                if pdbid + "_" + chains1 in training_list:
-                    pids.append("p1")
-                if pdbid + "_" + chains2 in training_list:
-                    pids.append("p2")
-                for pid in pids:    # each pid representing different conf among ensemble --> thus, multiple trainings (var updates) w/ diff conf from same pdb_chain_id
-                    try:
-                        iface_labels = np.load(mydir + pid + "_iface_labels.npy")
-                    except:
-                        continue
-                    if (
-                        len(iface_labels) > 8000
-                        or np.sum(iface_labels) > 0.75 * len(iface_labels)
-                        or np.sum(iface_labels) < 30
-                    ):
-                        skipped_pdb_list.append(f"{ppi_pair_id} {pid}")
-                        continue
-                    count_proteins += 1
+                mydir = params["masif_precomputation_dir"] + "/" + pdb_chain_id + "/"
+                pdbid = pdb_chain_id.split("_")[0]
+                chain = pdb_chain_id.split("_")[1]
+                pid = 'p1'
+                try:
+                    iface_labels = np.load(mydir + pid + "_iface_labels.npy")
+                except:
+                    continue
+                if (
+                    len(iface_labels) > 8000
+                    or np.sum(iface_labels) > 0.75 * len(iface_labels)
+                    or np.sum(iface_labels) < 30
+                ):
+                    skipped_pdb_list.append(f"{pdb_chain_id} {pid}")
+                    continue
+                count_proteins += 1
 
-                    rho_wrt_center = np.load(mydir + pid + "_rho_wrt_center.npy")
-                    theta_wrt_center = np.load(mydir + pid + "_theta_wrt_center.npy")
-                    input_feat = np.load(mydir + pid + "_input_feat.npy")
-                    if np.sum(params["feat_mask"]) < 5:
-                        input_feat = mask_input_feat(input_feat, params["feat_mask"])
-                    mask = np.load(mydir + pid + "_mask.npy")
-                    mask = np.expand_dims(mask, 2)
-                    indices = np.load(mydir + pid + "_list_indices.npy", allow_pickle=True, encoding="latin1")
-                    indices = pad_indices(indices, mask.shape[1])
-                    tmp = np.zeros((len(iface_labels), 2))
-                    for i in range(len(iface_labels)):
-                        if iface_labels[i] == 1:
-                            tmp[i, 0] = 1
-                        else:
-                            tmp[i, 1] = 1
-                    iface_labels_dc = tmp
-                    logfile.flush()
-                    pos_labels = np.where(iface_labels == 1)[0]
-                    neg_labels = np.where(iface_labels == 0)[0]
-                    np.random.shuffle(neg_labels)
-                    np.random.shuffle(pos_labels)
-                    # Scramble neg idx, and only get as many as pos_labels to balance the training.
-                    # if params["n_conv_layers"] == 1:
-                    if params["n_conv_layers"] > 1:
-                        n = min(len(pos_labels), len(neg_labels))
-                        neg_labels = neg_labels[:n]
-                        pos_labels = pos_labels[:n]
+                input_dict = load_data(mydir, pid, params, for_training=True)
+                input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
 
-                    # then, save as input_dict
-                    input_dict = {
-                        "rho_coords": torch.tensor(rho_wrt_center),
-                        "theta_coords": torch.tensor(theta_wrt_center),
-                        "input_feat": torch.tensor(input_feat),
-                        "mask": torch.tensor(mask),
-                        "labels": torch.tensor(iface_labels_dc),
-                        "pos_idx": torch.tensor(pos_labels),
-                        "neg_idx": torch.tensor(neg_labels),
-                        "indices_tensor": torch.tensor(indices),
-                    }
-                    # move input tensors to the same device w/ parameter tensors of the model
-                    input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
-
-                    logfile.write("Validating on {} {} ==> ".format(ppi_pair_id, pid))
-                    # input_dict["keep_prob"] = 1.0   # not sure of the purpose of keep_prob, remove later if unnecessary
-
-                    logs = model.validation_step(input_dict)
-                    logfile.write("Per protein AUC: {:.4f}\n".format(logs["auc"]))
-                    list_val_auc.append(logs["auc"])
-                    all_val_labels.append(iface_labels)
-                    all_val_scores.append(logs["full_score"])
-
-                    logfile.flush()
+                logfile.write("Validating on {} {} ==> ".format(pdb_chain_id, pid))
+                logs = model.validation_step(input_dict)
+                logfile.write("Per protein AUC: {:.4f}\n".format(logs["auc"]))
+                list_val_auc.append(logs["auc"])
+                all_val_labels.append(iface_labels)
+                all_val_scores.append(logs["full_score"])
+                logfile.flush()
 
             # Run testing cycle. --> not in this code, but might be added later
             # focus on running 5-CV with this code, prediction test w/ predict_site.sh later

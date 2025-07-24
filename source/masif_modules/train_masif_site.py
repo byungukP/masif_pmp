@@ -159,7 +159,7 @@ def train_masif_site(
         """
         # np.random.shuffle(train_dirs)
         
-        # train/valid loop: since each protein as batch
+        # train/valid loop
         for pdb_chain_id in train_dirs:
             # load all the preprocessed_data (e.g. input feat, labels, label_indices, mask, indices, etc.)
             mydir = params["masif_precomputation_dir"] + "/" + pdb_chain_id + "/"
@@ -187,16 +187,13 @@ def train_masif_site(
             # search for val_dirs 1st since it's much faster with small search space of val_dirs
             if pdb_chain_id in val_dirs:
                 logfile.write("Validating on {} {}\n".format(pdb_chain_id, pid))
-
                 print("\nValidating on {} {}\n".format(pdb_chain_id, pid))
                 logs = model.validation_step(input_dict)
                 list_val_auc.append(logs["auc"])
 
             # Perform training step
             else:
-                logfile.write("Training on {} {}\n".format(pdb_chain_id, pid))
-                # input_dict["keep_prob"] = 1.0
-                    
+                logfile.write("Training on {} {}\n".format(pdb_chain_id, pid))                    
                 # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
                 # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
                 print("\nTraining on {} {}\n".format(pdb_chain_id, pid))
