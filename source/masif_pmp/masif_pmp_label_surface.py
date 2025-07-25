@@ -8,14 +8,14 @@ import numpy as np
 from default_config.masif_opts import masif_opts
 
 """
-masif_site_label_surface.py: Color a protein ply surface file by the MaSIF-site interface score.
+masif_pmp_label_surface.py: Color a protein ply surface file by the MaSIF-pmp interface score.
 Pablo Gainza - LPDI STI EPFL 2019
 This file is part of MaSIF.
 Released under an Apache License 2.0
 """
 
 
-params = masif_opts["site"]
+params = masif_opts["pmp"]
 custom_params_file = sys.argv[1]
 custom_params = importlib.import_module(custom_params_file, package=None)
 custom_params = custom_params.custom_params

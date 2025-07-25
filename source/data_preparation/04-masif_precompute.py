@@ -18,14 +18,14 @@ from masif_modules.read_data_from_surface import read_data_from_surface, compute
 print(sys.argv[2])
 
 if len(sys.argv) <= 1:
-    print("Usage: {config} "+sys.argv[0]+" {masif_ppi_search | masif_site} PDBID_A")
+    print("Usage: {config} "+sys.argv[0]+" {masif_pmp | masif_ensemble} PDBID_A")
     print("A or AB are the chains to include in this surface.")
     sys.exit(1)
 
 masif_app = sys.argv[1]
 
-if masif_app == 'masif_site':
-    params = masif_opts['site']
+if masif_app == 'masif_pmp':
+    params = masif_opts['pmp']
     params['ply_chain_dir'] = masif_opts['ply_chain_dir']
 elif masif_app == 'masif_ensemble':
     params = masif_opts['ensemble']

@@ -9,14 +9,14 @@ import torch
 import torch.nn as nn
 
 """
-masif_site_train.py: Entry function to train MaSIF-site.
+masif_pmp_train.py: Entry function to train MaSIF-pmp.
 ByungUk Park - UW-Madison 2024
 Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
 #Released under an Apache License 2.0
 
 """
 
-params = masif_opts["site"]
+params = masif_opts["pmp"]
 
 # Load custom parameters if provided.
 if len(sys.argv) > 1:

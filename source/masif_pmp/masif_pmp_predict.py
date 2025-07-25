@@ -11,7 +11,7 @@ import torch
 from torchinfo import summary
 
 """
-masif_site_predict.py: Evaluate one or multiple proteins on MaSIF-site. 
+masif_pmp_predict.py: Evaluate one or multiple proteins on MaSIF-pmp. 
 ByungUk Park - UW-Madison 2024
 Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
 This file is part of MaSIF.
@@ -24,7 +24,7 @@ def mask_input_feat(input_feat, mask):
     return np.delete(input_feat, mymask, axis=2)
 
 
-params = masif_opts["site"]
+params = masif_opts["pmp"]
 custom_params_file = sys.argv[1]
 custom_params = importlib.import_module(custom_params_file, package=None)
 custom_params = custom_params.custom_params
