@@ -82,7 +82,6 @@ def train_masif_site(
 
     """
 
-    best_test_auc = 0
     best_val_auc = 0
     out_dir = params["model_dir"]
     logfile = open(out_dir + "log.txt", "w")
@@ -256,12 +255,10 @@ def train_masif_site(
         logfile.write(outstr + "\n")
         print(outstr)
 
-        # save model (check whether to save model based on val_auc or test_auc, default is val_auc)
-        # if np.mean(list_test_auc) > best_test_auc:
+        # save model
         if np.mean(list_val_auc) > best_val_auc:
             logfile.write(">>> Saving model.\n")
             print(">>> Saving model.\n")
-            # best_test_auc = np.mean(list_test_auc)
             best_val_auc = np.mean(list_val_auc)
             output_model = out_dir + "model.pt"
             torch.save(model.state_dict(), output_model)
