@@ -292,12 +292,11 @@ class MaSIF_site(L.LightningModule):
         input_dict,
         optimizer
     ):
-        # input = input_dict
         # Forward pass (self() ~ self.forward())
         logits = self(input_dict)
-        print("labels shape: {}".format(self.labels.shape))
-        print("pos_idx shape: {}".format(self.pos_idx.shape))
-        print("neg_idx shape: {}".format(self.neg_idx.shape))
+        # print("labels shape: {}".format(self.labels.shape))
+        # print("pos_idx shape: {}".format(self.pos_idx.shape))
+        # print("neg_idx shape: {}".format(self.neg_idx.shape))
 
         eval_labels = torch.cat(
             [
@@ -306,7 +305,7 @@ class MaSIF_site(L.LightningModule):
             ],
             dim=0,
         )   # 2*pos_idx(=neg_idx), n_labels
-        print("eval_labels shape: {}".format(eval_labels.shape))
+        # print("eval_labels shape: {}".format(eval_labels.shape))
 
         eval_logits = torch.cat(
             [
@@ -355,7 +354,6 @@ class MaSIF_site(L.LightningModule):
                 }
 
     def validation_step(self, input_dict):
-        # input = input_dict
         return self._shared_eval(input_dict)
 
     def test_step(self, input_dict):

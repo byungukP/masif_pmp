@@ -14,7 +14,7 @@ ByungUk Park UW-Madison, 2024
 class SoftGrid(L.LightningModule):
 
     """
-    Gaussian Kernel layer (GDL layer)
+    Soft Grid layer (system of learnable Gaussian kernels)
 
     - define learnable soft grid w/ n_rho * n_theta gaussians kernels defined in a local geodesic polar system
     - the parameters of the Gaussians are learnable on their own
