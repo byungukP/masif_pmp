@@ -15,6 +15,7 @@ Updated from MaSIF by Pablo Gainza - LPDI STI EPFL 2019
 #Released under an Apache License 2.0
 
 """
+torch.cuda.empty_cache()
 
 params = masif_opts["pmp"]
 
