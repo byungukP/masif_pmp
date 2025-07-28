@@ -3,10 +3,8 @@ import numpy as np
 from sklearn.neighbors import KDTree
 
 """
-assignIBS.py: Wrapper function to compute hydrogen bond potential (free electrons/protons) in the surface
-Pablo Gainza - LPDI STI EPFL 2019
-This file is part of MaSIF.
-Released under an Apache License 2.0
+assignIBS.py: Functions to compute and assign IBS labels of the surface points
+ByungUk Park UW-Madison, 2024
 """
 
 
