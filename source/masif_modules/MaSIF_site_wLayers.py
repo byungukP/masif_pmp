@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import lightning as L
+from torch.cuda.amp import GradScaler, autocast
 from torchmetrics.functional import auroc
 import numpy as np
 # from sklearn import metrics
@@ -96,6 +97,9 @@ class MaSIF_site(L.LightningModule):
         self.n_feat = int(sum(feat_mask))
         self.n_labels = 2
         self.n_conv_layers = n_conv_layers
+
+        # enabling mixed precision (AMP)
+        self.scaler = GradScaler()
 
         torch.manual_seed(0)
         
@@ -287,52 +291,116 @@ class MaSIF_site(L.LightningModule):
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-3)
 
+    # def training_step(
+    #     self,
+    #     input_dict,
+    #     optimizer
+    # ):
+    #     # Forward pass (self() ~ self.forward())
+    #     logits = self(input_dict)
+    #     # print("labels shape: {}".format(self.labels.shape))
+    #     # print("pos_idx shape: {}".format(self.pos_idx.shape))
+    #     # print("neg_idx shape: {}".format(self.neg_idx.shape))
+
+    #     eval_labels = torch.cat(
+    #         [
+    #             self.labels[self.pos_idx],
+    #             self.labels[self.neg_idx],
+    #         ],
+    #         dim=0,
+    #     )   # 2*pos_idx(=neg_idx), n_labels
+    #     # print("eval_labels shape: {}".format(eval_labels.shape))
+
+    #     eval_logits = torch.cat(
+    #         [
+    #             logits[self.pos_idx],
+    #             logits[self.neg_idx],
+    #         ],
+    #         dim=0,
+    #     )   # 2*pos_idx(=neg_idx), n_labels
+    #     # print("eval_logits shape: {}".format(eval_logits.shape))
+
+    #     # Compute the loss
+    #     loss = F.binary_cross_entropy_with_logits(
+    #         eval_logits, eval_labels.float()
+    #     )
+    #     # eval_logits and eval_scores are reordered according to pos and neg_idx.
+    #     eval_logits = torch.sigmoid(eval_logits)
+    #     eval_score = torch.squeeze(eval_logits)[:, 0]   # 2*pos_idx(=neg_idx),
+
+    #     full_logits = torch.sigmoid(logits)
+    #     full_score = torch.squeeze(full_logits)[:, 0]   # batch_size(=total mesh vertices num),
+
+    #     # Compute gradients wrt trainable_variables (or weights)
+    #     optimizer.zero_grad()
+    #     loss.backward()
+
+    #     # Update weights
+    #     optimizer.step()
+        
+    #     # Update metrics
+    #     auc = auroc(
+    #         eval_score,
+    #         eval_labels[:, 0].long(),
+    #         task="binary"
+    #     )
+    #     print(f"loss: {loss.item()}")
+    #     print(f"eval_logits: {eval_logits.shape}")
+    #     print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
+    #     print(f"full_logits: {logits.shape}")
+    #     print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
+    #     print(f"auc: {auc.item()}\n")
+    #     return {
+    #                 "loss": loss.item(),
+    #                 "eval_score": eval_score.detach().cpu().numpy(),
+    #                 "full_score": full_score.detach().cpu().numpy(),
+    #                 "auc": auc.item()
+    #             }
+
     def training_step(
         self,
         input_dict,
         optimizer
     ):
+        optimizer.zero_grad()
+
+        # Forward + loss inside autocast context
         # Forward pass (self() ~ self.forward())
-        logits = self(input_dict)
-        # print("labels shape: {}".format(self.labels.shape))
-        # print("pos_idx shape: {}".format(self.pos_idx.shape))
-        # print("neg_idx shape: {}".format(self.neg_idx.shape))
+        with autocast():
+            logits = self(input_dict)
+            eval_labels = torch.cat(
+                [
+                    self.labels[self.pos_idx],
+                    self.labels[self.neg_idx],
+                ],
+                dim=0,
+            )   # 2*pos_idx(=neg_idx), n_labels
+            # print("eval_labels shape: {}".format(eval_labels.shape))
 
-        eval_labels = torch.cat(
-            [
-                self.labels[self.pos_idx],
-                self.labels[self.neg_idx],
-            ],
-            dim=0,
-        )   # 2*pos_idx(=neg_idx), n_labels
-        # print("eval_labels shape: {}".format(eval_labels.shape))
+            eval_logits = torch.cat(
+                [
+                    logits[self.pos_idx],
+                    logits[self.neg_idx],
+                ],
+                dim=0,
+            )   # 2*pos_idx(=neg_idx), n_labels
+            # print("eval_logits shape: {}".format(eval_logits.shape))
 
-        eval_logits = torch.cat(
-            [
-                logits[self.pos_idx],
-                logits[self.neg_idx],
-            ],
-            dim=0,
-        )   # 2*pos_idx(=neg_idx), n_labels
-        # print("eval_logits shape: {}".format(eval_logits.shape))
+            # Compute the loss
+            loss = F.binary_cross_entropy_with_logits(
+                eval_logits, eval_labels.float()
+            )
+        # Backward and optimizer step using GradScaler
+        self.scaler.scale(loss).backward()
+        self.scaler.step(optimizer)
+        self.scaler.update()
 
-        # Compute the loss
-        loss = F.binary_cross_entropy_with_logits(
-            eval_logits, eval_labels.float()
-        )
         # eval_logits and eval_scores are reordered according to pos and neg_idx.
         eval_logits = torch.sigmoid(eval_logits)
         eval_score = torch.squeeze(eval_logits)[:, 0]   # 2*pos_idx(=neg_idx),
 
         full_logits = torch.sigmoid(logits)
         full_score = torch.squeeze(full_logits)[:, 0]   # batch_size(=total mesh vertices num),
-
-        # Compute gradients wrt trainable_variables (or weights) --> might have to consider using L2 normalization to prevent numerical instabilities or exploding/vanishing gradients
-        optimizer.zero_grad()
-        loss.backward()
-
-        # Update weights
-        optimizer.step()
         
         # Update metrics
         auc = auroc(
@@ -340,12 +408,12 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
-        print(f"loss: {loss.item()}")
-        print(f"eval_logits: {eval_logits.shape}")
-        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
-        print(f"full_logits: {logits.shape}")
-        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
-        print(f"auc: {auc.item()}\n")
+        # print(f"loss: {loss.item()}")
+        # print(f"eval_logits: {eval_logits.shape}")
+        # print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
+        # print(f"full_logits: {logits.shape}")
+        # print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
+        # print(f"auc: {auc.item()}\n")
         return {
                     "loss": loss.item(),
                     "eval_score": eval_score.detach().cpu().numpy(),
