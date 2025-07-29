@@ -180,11 +180,11 @@ for ppi_pair_id in ppi_pair_ids:
 
         for i in range(len(fpvec_list)):
             np.save(
-                params["out_FPVec_dir"] + "/" + pdb_chain_id + "/fpvec_l" + str(i+1) + ".npy",
+                params["out_FPVec_dir"] + "/" + pdb_chain_id + "/60d_fp_l" + str(i+1) + ".npy",
                 fpvec_list[i],
             )
             np.save(
-                params["out_FPVec_dir"] + "/" + pdb_chain_id + "/featvec_l" + str(i+1) + ".npy",
+                params["out_FPVec_dir"] + "/" + pdb_chain_id + "/5d_fp_l" + str(i+1) + ".npy",
                 feat_vec_list[i],
             )
 
