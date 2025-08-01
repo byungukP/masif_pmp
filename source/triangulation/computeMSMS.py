@@ -28,7 +28,7 @@ def computeMSMS(pdb_file,  protonate=True):
     p2 = Popen(args, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p2.communicate()
 
-    vertices, faces, normals, names = read_msms(file_base)  # {vertices xyz coord},shape=(vert_num,3) / {vert1, 2, 3_index}, shape=(face_num,3),{vert_normal xyz vec},shape=(vert_num,3) / atom_id in format (e.g.B_125_x_ASN_ND2_Green),shape=(vert_num,)
+    vertices, faces, normals, names = read_msms(file_base)  # {vertices xyz coord},shape=(vert_num,3) / {vert1, 2, 3_index}, shape=(face_num,3) / {vert_normal xyz vec},shape=(vert_num,3) / atom_id in format (e.g.B_125_x_ASN_ND2_Green),shape=(vert_num,)
     areas = {}
     ses_file = open(file_base+".area")
     next(ses_file) # ignore header line
