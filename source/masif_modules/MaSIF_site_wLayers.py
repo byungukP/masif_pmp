@@ -235,7 +235,7 @@ class MaSIF_site(L.LightningModule):
 
         # third convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
         if self.n_conv_layers > 2:
-            # Rebuild a patch based on the output of the first layer
+            # Rebuild a patch based on the output of the second layer
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
 
             global_desc = self.soft_grid_l3(
@@ -255,13 +255,12 @@ class MaSIF_site(L.LightningModule):
         # W_conv_l4, b_conv_l4 shape looks werid, different from prev W_conv & b_conv
             # never used l4 though since n_conv_layers = 3
         if self.n_conv_layers > 3:
-            # Rebuild a patch based on the output of the first layer
+            # Rebuild a patch based on the output of the third layer
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
 
             # global_desc = torch.gather(
             #     global_desc, 1, self.indices_tensor
             # )  # batch_size, max_verts, n_gauss (nope, n_feat)
-            print("ConvL4 input global_desc shape: {}".format(global_desc.shape))
 
             global_desc = self.soft_grid_l4(
                 global_desc,
@@ -269,18 +268,12 @@ class MaSIF_site(L.LightningModule):
                 self.theta_coords,
                 self.mask
             )   # batch_size, n_gauss*n_feat
-            print("ConvL4 output global_desc shape: {}".format(global_desc.shape))
             batch_size = global_desc.shape[0]
             global_desc = torch.reshape(
                 global_desc,
-                [
-                    batch_size,
-                    self.n_thetas * self.n_rhos,
-                    self.n_thetas * self.n_rhos,
-                ],
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
             )
-            global_desc = torch.max(global_desc, dim=2)[0]
-            global_desc_shape = global_desc.shape
+            global_desc = torch.mean(global_desc, dim=2)
 
         # refine global desc with MLP
         # final_MLP = FC4, FC2
@@ -291,71 +284,6 @@ class MaSIF_site(L.LightningModule):
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-3)
 
-    # def training_step(
-    #     self,
-    #     input_dict,
-    #     optimizer
-    # ):
-    #     # Forward pass (self() ~ self.forward())
-    #     logits = self(input_dict)
-    #     # print("labels shape: {}".format(self.labels.shape))
-    #     # print("pos_idx shape: {}".format(self.pos_idx.shape))
-    #     # print("neg_idx shape: {}".format(self.neg_idx.shape))
-
-    #     eval_labels = torch.cat(
-    #         [
-    #             self.labels[self.pos_idx],
-    #             self.labels[self.neg_idx],
-    #         ],
-    #         dim=0,
-    #     )   # 2*pos_idx(=neg_idx), n_labels
-    #     # print("eval_labels shape: {}".format(eval_labels.shape))
-
-    #     eval_logits = torch.cat(
-    #         [
-    #             logits[self.pos_idx],
-    #             logits[self.neg_idx],
-    #         ],
-    #         dim=0,
-    #     )   # 2*pos_idx(=neg_idx), n_labels
-    #     # print("eval_logits shape: {}".format(eval_logits.shape))
-
-    #     # Compute the loss
-    #     loss = F.binary_cross_entropy_with_logits(
-    #         eval_logits, eval_labels.float()
-    #     )
-    #     # eval_logits and eval_scores are reordered according to pos and neg_idx.
-    #     eval_logits = torch.sigmoid(eval_logits)
-    #     eval_score = torch.squeeze(eval_logits)[:, 0]   # 2*pos_idx(=neg_idx),
-
-    #     full_logits = torch.sigmoid(logits)
-    #     full_score = torch.squeeze(full_logits)[:, 0]   # batch_size(=total mesh vertices num),
-
-    #     # Compute gradients wrt trainable_variables (or weights)
-    #     optimizer.zero_grad()
-    #     loss.backward()
-
-    #     # Update weights
-    #     optimizer.step()
-        
-    #     # Update metrics
-    #     auc = auroc(
-    #         eval_score,
-    #         eval_labels[:, 0].long(),
-    #         task="binary"
-    #     )
-    #     print(f"loss: {loss.item()}")
-    #     print(f"eval_logits: {eval_logits.shape}")
-    #     print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
-    #     print(f"full_logits: {logits.shape}")
-    #     print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
-    #     print(f"auc: {auc.item()}\n")
-    #     return {
-    #                 "loss": loss.item(),
-    #                 "eval_score": eval_score.detach().cpu().numpy(),
-    #                 "full_score": full_score.detach().cpu().numpy(),
-    #                 "auc": auc.item()
-    #             }
 
     def training_step(
         self,
@@ -519,7 +447,7 @@ class MaSIF_site(L.LightningModule):
 
         # additional GDL layers: simple convolutions
         # second convolutional layer. input: batch_size, n_feat, output: batch_size, n_feat
-        if self.n_conv_layers > 1:           
+        if self.n_conv_layers > 1:
             # Rebuild a patch based on the output of the first layer
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
 
