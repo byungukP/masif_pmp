@@ -80,14 +80,47 @@ elif os.path.exists(params["model_dir"] + "model.pt"):
 
 ### Transfer Learning
 if params["transferLR"]:
-    # Freeze all layers in the model except the final FC block
-    for param in model.parameters():
-        param.requires_grad = False
+    print("Applying transfer learning")
+    
+    ## tflr option 1
+    # # Freeze all layers in the model except the final FC block
+    # for param in model.parameters():
+    #     param.requires_grad = False
 
-    # Replace the final fully connected layer with a new one for our specific task
-    # FC128 FC64 FC4 FC2
-    from masif_modules.masif_layers import Final_MLPBlock_transferLR
-    model.final_MLPBlock = Final_MLPBlock_transferLR(model.n_thetas, model.n_feat, model.n_labels)
+    # # Replace the final fully connected layer with a new one for our specific task
+    # # FC128 FC64 FC4 FC2
+    # from masif_modules.masif_layers import Final_MLPBlock_transferLR
+    # model.final_MLPBlock = Final_MLPBlock_transferLR(model.n_thetas, model.n_feat, model.n_labels)
+
+    ## tflr option 2
+    # additional soft grid conv layers
+    for name, param in model.named_parameters():
+        if not name.startswith("tflr_soft_grid"):
+            param.requires_grad = False
+
+    from masif_modules.masif_layers import SoftGrid
+    initial_coords = model.compute_initial_coordinates()
+    mu_rho_initial = np.expand_dims(initial_coords[:, 0], 0).astype("float32")
+    mu_theta_initial = np.expand_dims(initial_coords[:, 1], 0).astype("float32")
+
+    model.tflr_soft_grid = nn.ModuleList([
+        SoftGrid(
+            model.n_thetas,
+            model.n_rhos,
+            mu_rho_initial,
+            model.sigma_rho_init,
+            mu_theta_initial,
+            model.sigma_theta_init,
+            model.n_feat,
+            name=f"transfer_l{i+1}",
+        )
+        for i in range(3)  # 3 new convolutional layers
+    ])
+
+    # initialize final_MLPBlock
+    from masif_modules.masif_layers import Final_MLPBlock
+    model.final_MLPBlock = Final_MLPBlock(model.n_thetas, model.n_feat, model.n_labels)
+
     model.to(device)
 
 

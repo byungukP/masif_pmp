@@ -184,7 +184,6 @@ class MaSIF_site(L.LightningModule):
         self.neg_idx = input_dict["neg_idx"]                # batch_size/2
         self.labels = input_dict["labels"]                  # batch_size, n_labels
         self.indices_tensor = input_dict["indices_tensor"]  # batch_size, max_verts (< 30)
-        # self.keep_prob = input_dict["keep_prob"], dtype=tf.float32)  # scalar
 
         global_desc = []
 
@@ -275,6 +274,25 @@ class MaSIF_site(L.LightningModule):
             )
             global_desc = torch.mean(global_desc, dim=2)
 
+        # Additional SoftGrid layers for transfer learning
+        if hasattr(self, "tflr_soft_grid"):
+            for i, softgrid in enumerate(self.tflr_soft_grid):
+                global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+
+                global_desc = softgrid(
+                    global_desc,
+                    self.rho_coords,
+                    self.theta_coords,
+                    self.mask
+                )   # batch_size, n_gauss*n_feat
+
+                batch_size = global_desc.shape[0]
+                global_desc = torch.reshape(
+                    global_desc,
+                    [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+                )
+                global_desc = torch.mean(global_desc, dim=2)
+
         # refine global desc with MLP
         # final_MLP = FC4, FC2
         logits = self.final_MLPBlock(global_desc)
@@ -357,8 +375,8 @@ class MaSIF_site(L.LightningModule):
 
     def _shared_eval(self, input_dict):
         logits = self(input_dict)
-        print(f"logits: {logits.shape}")
-        print(f"self.labels: {self.labels.shape}")
+        # print(f"logits: {logits.shape}")
+        # print(f"self.labels: {self.labels.shape}")
         eval_labels = torch.cat(
             [
                 self.labels[self.pos_idx],
@@ -383,7 +401,7 @@ class MaSIF_site(L.LightningModule):
 
         full_logits = torch.sigmoid(logits)
         full_score = torch.squeeze(full_logits)[:, 0]
-        print(f"full_score: {full_score.shape}")
+        # print(f"full_score: {full_score.shape}")
         
         # Update metrics
         auc = auroc(
@@ -391,10 +409,10 @@ class MaSIF_site(L.LightningModule):
             eval_labels[:, 0].long(),
             task="binary"
         )
-        print(f"loss: {loss.item()}")
-        print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
-        print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
-        print(f"auc: {auc.item()}\n")
+        # print(f"loss: {loss.item()}")
+        # print(f"eval_score.detach().cpu().numpy(): {eval_score.detach().cpu().numpy().shape}")
+        # print(f"full_score.detach().cpu().numpy(): {full_score.detach().cpu().numpy().shape}")
+        # print(f"auc: {auc.item()}\n")
         return {
                     "loss": loss.item(),
                     "eval_score": eval_score.detach().cpu().numpy(),
