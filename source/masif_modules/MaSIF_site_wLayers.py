@@ -166,6 +166,33 @@ class MaSIF_site(L.LightningModule):
                 name="l4",
             )
 
+        ### conv layer num opt: conv_l_5, conv_l_6
+        ### remove after opt
+
+        if n_conv_layers > 4:
+            self.soft_grid_l5 = SoftGrid(
+                n_thetas,
+                n_rhos,
+                mu_rho_initial,
+                self.sigma_rho_init,
+                mu_theta_initial,
+                self.sigma_theta_init,
+                self.n_feat,
+                name="l5",
+            )
+
+        if n_conv_layers > 5:
+            self.soft_grid_l6 = SoftGrid(
+                n_thetas,
+                n_rhos,
+                mu_rho_initial,
+                self.sigma_rho_init,
+                mu_theta_initial,
+                self.sigma_theta_init,
+                self.n_feat,
+                name="l6",
+            )
+
         # final_MLP = FC4, FC2
         self.final_MLPBlock = Final_MLPBlock(self.n_thetas, self.n_feat, self.n_labels)
 
@@ -273,6 +300,42 @@ class MaSIF_site(L.LightningModule):
                 [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
             )
             global_desc = torch.mean(global_desc, dim=2)
+
+        ### conv layer num opt: conv_l_5, conv_l_6
+        ### remove after opt
+
+        # conv_l5
+        if self.n_conv_layers > 4:
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+            global_desc = self.soft_grid_l5(
+                global_desc,
+                self.rho_coords,
+                self.theta_coords,
+                self.mask
+            )   # batch_size, n_gauss*n_feat
+            batch_size = global_desc.shape[0]
+            global_desc = torch.reshape(
+                global_desc,
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+            )
+            global_desc = torch.mean(global_desc, dim=2)        
+        # conv_l6
+        if self.n_conv_layers > 5:
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+            global_desc = self.soft_grid_l6(
+                global_desc,
+                self.rho_coords,
+                self.theta_coords,
+                self.mask
+            )   # batch_size, n_gauss*n_feat
+            batch_size = global_desc.shape[0]
+            global_desc = torch.reshape(
+                global_desc,
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+            )
+            global_desc = torch.mean(global_desc, dim=2) 
+
+        ########################################################
 
         # Additional SoftGrid layers for transfer learning
         if hasattr(self, "tflr_soft_grid"):
