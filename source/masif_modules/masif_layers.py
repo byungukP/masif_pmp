@@ -89,6 +89,8 @@ class SoftGrid(L.LightningModule):
         )
         #     name="b_conv_{}".format(name)
         # )
+        self.ln = nn.LayerNorm(self.n_thetas * self.n_rhos * self.n_feat)
+
 
     def forward(
             self,
@@ -167,6 +169,7 @@ class SoftGrid(L.LightningModule):
         # (gaussian-wise) angular max pooling
         all_conv_desc = torch.stack(all_conv_desc)  # n_rotations, batch_size, self.n_thetas*self.n_rhos*n_feat
         conv_desc = torch.max(all_conv_desc, 0)[0]  # batch_size, self.n_thetas*self.n_rhos*n_feat
+        conv_desc = self.ln(conv_desc)              # nn.LayerNorm(n_thetas * n_rhos * n_feat)
         conv_desc = nn.ReLU()(conv_desc)
         return conv_desc
 
@@ -179,12 +182,14 @@ class Init_MLPBlock(L.LightningModule):
     def __init__(self, n_thetas, n_rhos, n_feat):
         super().__init__()
         self.FC12 = nn.Linear(n_thetas * n_rhos * n_feat, n_thetas * n_rhos)
+        self.norm1 = nn.LayerNorm(n_thetas * n_rhos)
         self.FC5 = nn.Linear(n_thetas * n_rhos, n_feat)
+        self.norm2 = nn.LayerNorm(n_feat)
         self.relu = nn.ReLU()
 
     def forward(self, inputs):
-        desc = self.relu(self.FC12(inputs))
-        return self.relu(self.FC5(desc))
+        desc = self.relu(self.norm1(self.FC12(inputs)))
+        return self.relu(self.norm2(self.FC5(desc)))
 
 class Final_MLPBlock(L.LightningModule):
     """
@@ -194,11 +199,12 @@ class Final_MLPBlock(L.LightningModule):
     def __init__(self, n_thetas, n_feat, n_labels):
         super().__init__()
         self.FC4 = nn.Linear(n_feat, n_thetas)
+        self.norm1 = nn.LayerNorm(n_thetas)
         self.FC2 = nn.Linear(n_thetas, n_labels)
         self.relu = nn.ReLU()
 
     def forward(self, inputs):
-        desc = self.relu(self.FC4(inputs))
+        desc = self.relu(self.norm1(self.FC4(inputs)))
         return self.FC2(desc)
 
 class Final_MLPBlock_transferLR(L.LightningModule):
