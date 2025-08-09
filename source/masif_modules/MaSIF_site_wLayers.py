@@ -166,9 +166,6 @@ class MaSIF_site(L.LightningModule):
                 name="l4",
             )
 
-        ### conv layer num opt: conv_l_5, conv_l_6
-        ### remove after opt
-
         if n_conv_layers > 4:
             self.soft_grid_l5 = SoftGrid(
                 n_thetas,
@@ -301,9 +298,6 @@ class MaSIF_site(L.LightningModule):
             )
             global_desc = torch.mean(global_desc, dim=2)
 
-        ### conv layer num opt: conv_l_5, conv_l_6
-        ### remove after opt
-
         # conv_l5
         if self.n_conv_layers > 4:
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
@@ -334,8 +328,6 @@ class MaSIF_site(L.LightningModule):
                 [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
             )
             global_desc = torch.mean(global_desc, dim=2) 
-
-        ########################################################
 
         # Additional SoftGrid layers for transfer learning
         if hasattr(self, "tflr_soft_grid"):
