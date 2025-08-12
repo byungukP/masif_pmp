@@ -190,6 +190,18 @@ class MaSIF_site(L.LightningModule):
                 name="l6",
             )
 
+        if n_conv_layers > 6:
+            self.soft_grid_l7 = SoftGrid(
+                n_thetas,
+                n_rhos,
+                mu_rho_initial,
+                self.sigma_rho_init,
+                mu_theta_initial,
+                self.sigma_theta_init,
+                self.n_feat,
+                name="l7",
+            )
+
         # final_MLP = FC4, FC2
         self.final_MLPBlock = Final_MLPBlock(self.n_thetas, self.n_feat, self.n_labels)
 
@@ -317,6 +329,21 @@ class MaSIF_site(L.LightningModule):
         if self.n_conv_layers > 5:
             global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
             global_desc = self.soft_grid_l6(
+                global_desc,
+                self.rho_coords,
+                self.theta_coords,
+                self.mask
+            )   # batch_size, n_gauss*n_feat
+            batch_size = global_desc.shape[0]
+            global_desc = torch.reshape(
+                global_desc,
+                [batch_size, self.n_feat, self.n_thetas * self.n_rhos],
+            )
+            global_desc = torch.mean(global_desc, dim=2)
+        # conv_l7
+        if self.n_conv_layers > 6:
+            global_desc = global_desc[self.indices_tensor]  # batch_size, max_verts, n_feat
+            global_desc = self.soft_grid_l7(
                 global_desc,
                 self.rho_coords,
                 self.theta_coords,
