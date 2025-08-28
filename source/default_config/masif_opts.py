@@ -37,10 +37,10 @@ masif_opts["pmp"][
     "masif_precomputation_dir"
 ] = "data_preparation/04a-precomputation_9A/precomputation/"
 masif_opts["pmp"]["range_val_samples"] = 0.1  # ratio for validation, 0.1 to 0.0
-masif_opts["pmp"]["model_dir"] = "nn_models/all_feat_5l/model_data/"
-masif_opts["pmp"]["out_pred_dir"] = "output/all_feat_5l/pred_data/"
-masif_opts["pmp"]["out_surf_dir"] = "output/all_feat_5l/pred_surfaces/"
-masif_opts["pmp"]["out_FPVec_dir"] = "output/all_feat_5l/FPVec/"
+masif_opts["pmp"]["model_dir"] = "nn_models/all_feat_3l/model_data/"
+masif_opts["pmp"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
+masif_opts["pmp"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"
+masif_opts["pmp"]["out_FPVec_dir"] = "output/all_feat_3l/FPVec/"
 masif_opts["pmp"]["feat_mask"] = [1.0] * 5
 # k-fold CV test
 masif_opts["pmp"]["cv_test"] = False
@@ -60,10 +60,10 @@ masif_opts["ensemble"][
 ] = "data_preparation/04a-precomputation_9A/precomputation/"
 masif_opts["ensemble"]["range_val_samples"] = 0.1  # ratio for validation, 0.1 to 0.0
 masif_opts["ensemble"]["data_augmentation"] = "naive"  # "naive" or "group"
-masif_opts["ensemble"]["model_dir"] = "nn_models/all_feat_5l/model_data/"
-masif_opts["ensemble"]["out_pred_dir"] = "output/all_feat_5l/pred_data/"
-masif_opts["ensemble"]["out_surf_dir"] = "output/all_feat_5l/pred_surfaces/"
-masif_opts["ensemble"]["out_FPVec_dir"] = "output/all_feat_5l/FPVec/"
+masif_opts["ensemble"]["model_dir"] = "nn_models/all_feat_3l/model_data/"
+masif_opts["ensemble"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
+masif_opts["ensemble"]["out_surf_dir"] = "output/all_feat_3l/pred_surfaces/"
+masif_opts["ensemble"]["out_FPVec_dir"] = "output/all_feat_3l/FPVec/"
 masif_opts["ensemble"]["feat_mask"] = [1.0] * 5
 # k-fold CV test
 masif_opts["ensemble"]["cv_test"] = False
