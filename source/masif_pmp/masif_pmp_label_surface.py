@@ -110,7 +110,7 @@ for ppi_pair_id in ppi_pair_ids:
 
         ## binary classification w/ threshold
         if params["threshold"] is not None:
-            thresh = np.float(params["threshold"])
+            thresh = float(params["threshold"])
             scores[scores >= thresh] = 1.0
             scores[scores < thresh] = 0.0
 
