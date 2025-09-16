@@ -107,6 +107,13 @@ for ppi_pair_id in ppi_pair_ids:
         except: 
             print("No ROC AUC computed for protein (possibly, no ground truth defined in input)") 
 
+
+        ## binary classification w/ threshold
+        if params["threshold"] is not None:
+            thresh = np.float(params["threshold"])
+            scores[scores >= thresh] = 1.0
+            scores[scores < thresh] = 0.0
+
         mymesh.remove_attribute("vertex_iface")
         mymesh.add_attribute("iface")
         mymesh.set_attribute("iface", scores)    # originally, scores[0]

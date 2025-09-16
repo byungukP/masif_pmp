@@ -47,6 +47,8 @@ masif_opts["pmp"]["cv_test"] = False
 masif_opts["pmp"]["k_fold"] = 0
 # transfer learning
 masif_opts["pmp"]["transferLR"] = False
+# thresholding for binary classification
+masif_opts["pmp"]["threshold"] = None        # default: None (for no thresholding)
 
 # Neural network patch application specific parameters.
 masif_opts["ensemble"] = {}
