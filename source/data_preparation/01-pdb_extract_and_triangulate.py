@@ -113,15 +113,15 @@ if not os.path.exists(csv_path):
 # iface = np.zeros(len(regular_mesh.vertices))
 
 if 'compute_ibs' in masif_opts and masif_opts['compute_ibs']:
-    # 1. load csv file and save info as array (if loading whole csv every time takes too much time --> save as hash table or npy file and use it as input)
+    # load csv file and save info as array (if loading whole csv every time takes too much time --> save as hash table or npy file and use it as input)
     pmp_df = pd.read_csv(csv_path)
-    # ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
-    # 2. crosscheck btw chain_id, resid_number, resname from pmp_dataset.csv and PDBParser attributes
-    # if crosscheck_residue(pdb_filename, pmp_df, ibs_res_ix):
-    iface_ = computeIBS(names1, pmp_df, pdb_id, chain_ids1)
-    # 3. match IBS res_ix to vertices index (vix) of old mesh by using chain_id, resid_id, resid_name
-        # iface_ = computeIBS(names1, ibs_res_ix)
-    # 4. assign IBS_label on vertices of regularized mesh (nearest neighbor)
+
+    # compute iface baesd on IBS type in dataset: "boolean" or "score"
+    if (not 'annotation_type' in masif_opts) and (not masif_opts['annotation_type'] in ['boolean', 'score']):
+        print("IBS annotation type of dataset not defined")
+        sys.exit(1)
+    iface_ = computeIBS(names1, pmp_df, pdb_id, chain_ids1, type = masif_opts['annotation_type'])
+    # assign IBS_label on vertices of regularized mesh (nearest neighbor)
     iface = assignIBSToNewMesh(regular_mesh.vertices, vertices1,\
                                    iface_)
     # Convert to ply and save.

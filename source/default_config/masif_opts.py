@@ -10,15 +10,18 @@ masif_opts['ensemble_pdb_dir'] = "data_preparation/01-benchmark_pdbs_ensemble/"
 masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces/"
 masif_opts["tmp_dir"] = tempfile.gettempdir()
 masif_opts["ply_file_template"] = masif_opts["ply_chain_dir"] + "/{}_{}.ply"
+
+# IBS labels
+masif_opts["compute_ibs"] = True
 # Path to PMP dataset csv file
 masif_opts["pmp_dataset"] = "/masif_pmp/data/masif_pmp/lists/pmp_dataset.csv"
+masif_opts["annotation_type"] = "boolean"          # "boolean" or "score"
 
 # Surface features
 masif_opts["use_hbond"] = True
 masif_opts["use_hphob"] = True
 masif_opts["use_apbs"] = True
-masif_opts["compute_iface"] = True
-masif_opts["compute_ibs"] = True
+
 # Mesh resolution. Everything gets very slow if it is lower than 1.0
 masif_opts["mesh_res"] = 1.0
 masif_opts["feature_interpolation"] = True

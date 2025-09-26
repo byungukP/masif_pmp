@@ -10,34 +10,42 @@ ByungUk Park UW-Madison, 2024
 
 def generate_IBSresix(pmp_df, pdb_id, chain_ids1):
     # parsing IBS residues of target pdb based on pdb_id, chain_id, IBS label
-    pmp_df["cathpdb"] = pmp_df["cathpdb"].str.upper()
-    cond1 = pmp_df["cathpdb"].str[:4] == pdb_id
-    cond2 = pmp_df["chain_id"] == chain_ids1
-    cond3 = pmp_df["IBS"] == True
-    ibs_df = pmp_df[cond1 & cond2 & cond3]
+    cond = pmp_df["IBS"] == True
+    ibs_df = pmp_df[cond]
     ibs_res_ix = np.array(ibs_df["residue_number"])
     return ibs_res_ix
 
 
 # names from msms vertices, pmp_df from dataset.csv
 
-def computeIBS(names, pmp_df, pdb_id, chain_ids1):
-    pmp_df["cathpdb"] = pmp_df["cathpdb"].str.upper()
-    ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
-    # print("IBS resid_num from pmp dataset:",ibs_res_ix)
+def computeIBS(names, pmp_df, pdb_id, chain_ids1, type):
     iface = np.zeros(len(names))
+    pmp_df["cathpdb"] = pmp_df["cathpdb"].str.upper()
     # parse data of target pdb_chain
     pdb_id_match = pmp_df["cathpdb"].str[:4] == pdb_id
     chain_id_match = pmp_df["chain_id"] == chain_ids1
     pdb_df = pmp_df[pdb_id_match & chain_id_match]
-    for vix, name in enumerate(names):
-        fields = name.split('_')
-        chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
-        if res_id in ibs_res_ix:
-            if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # pdb_id, chain_ids1, resname
-                iface[vix] = 1.0
-    # print("iface IBS label num (old_mesh):",np.sum(iface))
-    return iface
+
+    if type == "boolean":
+        ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
+        for vix, name in enumerate(names):
+            fields = name.split('_')
+            chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
+            if res_id in ibs_res_ix:
+                if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # pdb_id, chain_ids1, resname
+                    iface[vix] = 1.0
+        return iface
+
+    elif type == "score":
+        for vix, name in enumerate(names):
+            fields = name.split('_')
+            chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
+            cond = pdb_df["residue_number"] == res_id
+            if np.sum(cond) == 1:
+                if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # pdb_id, chain_ids1, resname
+                    iface[vix] = pdb_df[cond]["IBS"].values[0]
+        return iface
+
 
 
 def crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):
