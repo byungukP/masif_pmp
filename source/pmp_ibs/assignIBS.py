@@ -18,7 +18,7 @@ def generate_IBSresix(pmp_df, pdb_id, chain_ids1):
 
 # names from msms vertices, pmp_df from dataset.csv
 
-def computeIBS(names, pmp_df, pdb_id, chain_ids1, type):
+def computeIBS(names, pmp_df, pdb_id, chain_ids1, type="boolean"):
     iface = np.zeros(len(names))
     pmp_df["cathpdb"] = pmp_df["cathpdb"].str.upper()
     # parse data of target pdb_chain
