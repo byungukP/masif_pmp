@@ -28,12 +28,12 @@ def computeIBS(names, pmp_df, pdb_id, chain_ids1, type="boolean"):
 
     print("pdb_df: ", pdb_df)
     if type == "boolean":
-        ibs_res_ix = generate_IBSresix(pmp_df, pdb_id, chain_ids1)
+        ibs_res_ix = generate_IBSresix(pdb_df, pdb_id, chain_ids1)
+        print("ibs_res_ix: ", ibs_res_ix)
         for vix, name in enumerate(names):
             fields = name.split('_')
             chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
             if res_id in ibs_res_ix:
-                print("ibs_res_ix: ", ibs_res_ix)
                 if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # pdb_id, chain_ids1, resname
                     iface[vix] = 1.0
         return iface
