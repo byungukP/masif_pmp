@@ -49,6 +49,7 @@ def computeIBS(names, pmp_df, pdb_id, chain_ids1, type="boolean"):
 
 
 def crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):
+    print(pdb_df[pdb_df["residue_number"] == res_id]["cathpdb"].values)
     data_pdb = pdb_df[pdb_df["residue_number"] == res_id]["cathpdb"].values[0][:4]
     data_chain = pdb_df[pdb_df["residue_number"] == res_id]["chain_id"].values[0]
     data_resname = pdb_df[pdb_df["residue_number"] == res_id]["residue_name"].values[0]
