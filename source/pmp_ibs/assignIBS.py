@@ -32,6 +32,7 @@ def computeIBS(names, pmp_df, pdb_id, chain_ids1, type="boolean"):
             fields = name.split('_')
             chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
             if res_id in ibs_res_ix:
+                print("ibs_res_ix: ", ibs_res_ix)
                 if crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):    # pdb_id, chain_ids1, resname
                     iface[vix] = 1.0
         return iface
@@ -49,6 +50,7 @@ def computeIBS(names, pmp_df, pdb_id, chain_ids1, type="boolean"):
 
 
 def crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):
+    print()
     print(pdb_df[pdb_df["residue_number"] == res_id]["cathpdb"].values)
     data_pdb = pdb_df[pdb_df["residue_number"] == res_id]["cathpdb"].values[0][:4]
     data_chain = pdb_df[pdb_df["residue_number"] == res_id]["chain_id"].values[0]
