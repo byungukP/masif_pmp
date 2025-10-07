@@ -26,10 +26,8 @@ def computeIBS(names, pmp_df, pdb_id, chain_ids1, type="boolean"):
     chain_id_match = pmp_df["chain_id"] == chain_ids1
     pdb_df = pmp_df[pdb_id_match & chain_id_match]
 
-    print("pdb_df: ", pdb_df)
     if type == "boolean":
         ibs_res_ix = generate_IBSresix(pdb_df, pdb_id, chain_ids1)
-        print("ibs_res_ix: ", ibs_res_ix)
         for vix, name in enumerate(names):
             fields = name.split('_')
             chain_id, res_id, resname, atomname = fields[0], int(fields[1]), fields[3], fields[4]
@@ -51,8 +49,6 @@ def computeIBS(names, pmp_df, pdb_id, chain_ids1, type="boolean"):
 
 
 def crosscheck(pdb_df, pdb_id, res_id, chain_ids1, resname):
-    print(pdb_df, pdb_id, res_id, chain_ids1, resname)
-    print(pdb_df[pdb_df["residue_number"] == res_id]["cathpdb"].values)
     data_pdb = pdb_df[pdb_df["residue_number"] == res_id]["cathpdb"].values[0][:4]
     data_chain = pdb_df[pdb_df["residue_number"] == res_id]["chain_id"].values[0]
     data_resname = pdb_df[pdb_df["residue_number"] == res_id]["residue_name"].values[0]
