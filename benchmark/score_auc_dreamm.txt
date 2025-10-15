@@ -1,0 +1,133 @@
+1COY
+1COY_A ROC AUC: 0.48728076047663677
+Total number of residues 402
+ground truth res num: 1.0
+1COY_A ROC AUC per res: 0.48625
+
+1FFJ
+1FFJ_A ROC AUC: 0.8118126178218491
+Total number of residues 59
+ground truth res num: 27.0
+1FFJ_A ROC AUC per res: 0.7453703703703703
+
+1JSS
+1JSS_A ROC AUC: 0.5640513086045662
+Total number of residues 186
+ground truth res num: 28.0
+1JSS_A ROC AUC per res: 0.5797920433996384
+
+1LN1
+1LN1_A ROC AUC: 0.5871559633027523
+Total number of residues 193
+ground truth res num: 34.0
+1LN1_A ROC AUC per res: 0.6764705882352942
+
+1S6X
+1S6X_A ROC AUC: 0.5013173302107728
+Total number of residues 33
+ground truth res num: 7.0
+1S6X_A ROC AUC per res: 0.7307692307692308
+
+1TQN
+1TQN_A ROC AUC: 0.6405367231638418
+Total number of residues 414
+ground truth res num: 28.0
+1TQN_A ROC AUC per res: 0.6964285714285714
+
+1XQ8
+1XQ8_A ROC AUC: 0.6068894916668841
+Total number of residues 140
+ground truth res num: 44.0
+1XQ8_A ROC AUC per res: 0.5909090909090908
+
+2A1L
+2A1L_A ROC AUC: 0.9957025083318717
+Total number of residues 250
+ground truth res num: 2.0
+2A1L_A ROC AUC per res: 0.9858870967741936
+
+2DDR
+2DDR_A ROC AUC: 1.0
+Total number of residues 229
+ground truth res num: 2.0
+2DDR_A ROC AUC per res: 0.9911504424778761
+
+2RSG
+2RSG_A ROC AUC: 0.7060007363661257
+Total number of residues 92
+ground truth res num: 23.0
+2RSG_A ROC AUC per res: 0.6739130434782609
+
+3AKM
+3AKM_A ROC AUC: 0.4877586206896552
+Total number of residues 129
+ground truth res num: 2.0
+3AKM_A ROC AUC per res: 0.7381889763779528
+
+3FSN
+3FSN_A ROC AUC: 0.7612407975369138
+Total number of residues 432
+ground truth res num: 16.0
+3FSN_A ROC AUC per res: 0.8040865384615384
+
+3JW8
+3JW8_A ROC AUC: 0.7229289034774016
+Total number of residues 250
+ground truth res num: 8.0
+3JW8_A ROC AUC per res: 0.737603305785124
+
+3NPE
+3NPE_A ROC AUC: 0.5468341638315026
+Total number of residues 440
+ground truth res num: 40.0
+3NPE_A ROC AUC per res: 0.5637218045112782
+
+3RZN
+3RZN_A ROC AUC: 0.9823827350803788
+Total number of residues 193
+ground truth res num: 3.0
+3RZN_A ROC AUC per res: 0.9789473684210526
+
+3W7R
+3W7R_A ROC AUC: 0.5528672476519579
+Total number of residues 296
+ground truth res num: 42.0
+3W7R_A ROC AUC per res: 0.5912855260681348
+
+4OVU
+4OVU_A ROC AUC: 0.5454653463003775
+Total number of residues 881
+ground truth res num: 39.0
+4OVU_A ROC AUC per res: 0.5709636013569267
+
+5BZZ
+5BZZ_A ROC AUC: 0.5609383561248797
+Total number of residues 267
+ground truth res num: 19.0
+5BZZ_A ROC AUC per res: 0.5728989813242785
+
+5HXW
+5HXW_A ROC AUC: 0.5644035151077403
+Total number of residues 377
+ground truth res num: 11.0
+5HXW_A ROC AUC per res: 0.5745156482861401
+
+5ONF
+5ONF_A ROC AUC: 0.8214465718013889
+Total number of residues 128
+ground truth res num: 13.0
+5ONF_A ROC AUC per res: 0.7678929765886288
+
+6BFG
+6BFG_A ROC AUC: 0.5670950414204436
+Total number of residues 319
+ground truth res num: 41.0
+6BFG_A ROC AUC per res: 0.6057641691524829
+
+Number of proteins: 21
+Median AUC per res: 0.6764705882352942
+ROC AUC for all points : 0.654
+ROC AUC for all residues: 0.680
+Median AUC per protein at the residue level: 0.676
+0.5871559633027523
+Median AUC per protein at the point level: 0.587

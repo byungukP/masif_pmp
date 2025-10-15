@@ -1,0 +1,133 @@
+1COY
+1COY_A MCC: 0.0
+Total number of residues 402
+ground truth res num: 1.0
+1COY_A MCC per res: 0.0
+
+1FFJ
+1FFJ_A MCC: 0.6336490601976638
+Total number of residues 59
+ground truth res num: 27.0
+1FFJ_A MCC per res: 0.4896086960017624
+
+1JSS
+1JSS_A MCC: 0.2524263896574202
+Total number of residues 186
+ground truth res num: 28.0
+1JSS_A MCC per res: 0.2812821333457371
+
+1LN1
+1LN1_A MCC: 0.3826674905929878
+Total number of residues 194
+ground truth res num: 34.0
+1LN1_A MCC per res: 0.5566003248010438
+
+1S6X
+1S6X_A MCC: 0.002036788389272968
+Total number of residues 33
+ground truth res num: 6.0
+1S6X_A MCC per res: 0.3563483225498992
+
+1TQN
+1TQN_A MCC: 0.5145612694477129
+Total number of residues 415
+ground truth res num: 27.0
+1TQN_A MCC per res: 0.6254857500299171
+
+1XQ8
+1XQ8_A MCC: 0.20227535356319196
+Total number of residues 140
+ground truth res num: 44.0
+1XQ8_A MCC per res: 0.21393318723205854
+
+2A1L
+2A1L_A MCC: 0.8270090490388096
+Total number of residues 250
+ground truth res num: 2.0
+2A1L_A MCC per res: 0.43994134506405985
+
+2DDR
+2DDR_A MCC: 1.0
+Total number of residues 228
+ground truth res num: 2.0
+2DDR_A MCC per res: 0.5722181649673349
+
+2RSG
+2RSG_A MCC: 0.47935989356487857
+Total number of residues 92
+ground truth res num: 23.0
+2RSG_A MCC per res: 0.42470599286468796
+
+3AKM
+3AKM_A MCC: 0.0
+Total number of residues 129
+ground truth res num: 2.0
+3AKM_A MCC per res: 0.3395341876261198
+
+3FSN
+3FSN_A MCC: 0.6501814035371903
+Total number of residues 433
+ground truth res num: 16.0
+3FSN_A MCC per res: 0.590724982555789
+
+3JW8
+3JW8_A MCC: 0.4540285338944329
+Total number of residues 250
+ground truth res num: 10.0
+3JW8_A MCC per res: 0.4537452481828552
+
+3NPE
+3NPE_A MCC: 0.19136548584720053
+Total number of residues 439
+ground truth res num: 41.0
+3NPE_A MCC per res: 0.16450953226949716
+
+3RZN
+3RZN_A MCC: 0.5066366759512355
+Total number of residues 193
+ground truth res num: 3.0
+3RZN_A MCC per res: 0.5111203568033228
+
+3W7R
+3W7R_A MCC: 0.2600846350219214
+Total number of residues 296
+ground truth res num: 40.0
+3W7R_A MCC per res: 0.30881026066143474
+
+4OVU
+4OVU_A MCC: 0.17616674752181968
+Total number of residues 878
+ground truth res num: 40.0
+4OVU_A MCC per res: 0.21524234804976802
+
+5BZZ
+5BZZ_A MCC: 0.27699437959480394
+Total number of residues 268
+ground truth res num: 19.0
+5BZZ_A MCC per res: 0.25301504472185204
+
+5HXW
+5HXW_A MCC: 0.14617793252822764
+Total number of residues 379
+ground truth res num: 11.0
+5HXW_A MCC per res: 0.13272490002742038
+
+5ONF
+5ONF_A MCC: 0.5524035248363836
+Total number of residues 129
+ground truth res num: 13.0
+5ONF_A MCC per res: 0.3859383609209164
+
+6BFG
+6BFG_A MCC: 0.23305736454891557
+Total number of residues 319
+ground truth res num: 42.0
+6BFG_A MCC per res: 0.29373738060880733
+
+Number of proteins: 21
+Median MCC per res: 0.3563483225498992
+MCC for all points : 0.366
+MCC for all residues: 0.373
+Median MCC per protein at the residue level: 0.356
+0.27699437959480394
+Median MCC per protein at the point level: 0.277

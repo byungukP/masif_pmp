@@ -1,0 +1,281 @@
+Setting training_list to lists/pmp_train.txt 
+Setting testing_list to lists/pmp_test.txt 
+Setting max_shape_size to 100 
+Setting max_distance to 9.0 
+Setting masif_precomputation_dir to /masif_docker/data_preparation/04a-precomputation_9A/precomputation/ 
+Setting range_val_samples to 0.1 
+Setting model_dir to /masif_docker/nn_models/basic/all_feat_3l/model_data/ 
+Setting feat_mask to [1.0, 1.0, 1.0, 1.0, 1.0] 
+Setting n_conv_layers to 3 
+Setting out_pred_dir to /masif_docker/output/basic/all_feat_3l/pred_data/ 
+Setting out_surf_dir to /masif_docker/output/basic/all_feat_3l/pred_surfaces/ 
+Setting epoch_num to 50 
+Setting cv_test to False 
+Setting k_fold to 0 
+Setting transferLR to False 
+Using device: cuda:0
+initial polar coords shape: (12, 2)
+Restoring model from: /masif_docker/nn_models/basic/all_feat_3l/model_data/model.pt
+
+ROC AUC score for protein 1A25_B : 0.97 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1A25_B.ply
+ROC AUC score for protein 1A2A_E : 0.83 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1A2A_E.ply
+ROC AUC score for protein 1AEI_B : 0.82 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1AEI_B.ply
+ROC AUC score for protein 1AII_A : 0.74 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1AII_A.ply
+ROC AUC score for protein 1AXN_A : 0.84 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1AXN_A.ply
+ROC AUC score for protein 1AYP_B : 0.91 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1AYP_B.ply
+ROC AUC score for protein 1C1J_C : 0.90 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1C1J_C.ply
+ROC AUC score for protein 1CJY_A : 0.97 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1CJY_A.ply
+ROC AUC score for protein 1DYO_B : 0.72 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1DYO_B.ply
+ROC AUC score for protein 1FE5_A : 0.82 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1FE5_A.ply
+ROC AUC score for protein 1GD5_A : 0.78 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1GD5_A.ply
+ROC AUC score for protein 1J0W_A : 0.73 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1J0W_A.ply
+ROC AUC score for protein 1JSS_A : 0.79 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1JSS_A.ply
+ROC AUC score for protein 1K12_A : 0.89 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1K12_A.ply
+ROC AUC score for protein 1K42_A : 0.83 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1K42_A.ply
+ROC AUC score for protein 1KVW_A : 0.79 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1KVW_A.ply
+ROC AUC score for protein 1LN1_A : 0.75 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1LN1_A.ply
+ROC AUC score for protein 1LNS_A : 0.82 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1LNS_A.ply
+ROC AUC score for protein 1M8S_A : 0.81 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1M8S_A.ply
+ROC AUC score for protein 1MKS_A : 0.78 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1MKS_A.ply
+ROC AUC score for protein 1NI2_A : 0.87 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1NI2_A.ply
+ROC AUC score for protein 1OZY_A : 0.54 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1OZY_A.ply
+ROC AUC score for protein 1PTR_A : 0.91 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1PTR_A.ply
+ROC AUC score for protein 1QLL_B : 0.95 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1QLL_B.ply
+ROC AUC score for protein 1R79_A : 0.87 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1R79_A.ply
+ROC AUC score for protein 1SAV_A : 0.77 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1SAV_A.ply
+ROC AUC score for protein 1SHW_B : 0.77 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1SHW_B.ply
+ROC AUC score for protein 1TVG_A : 0.89 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1TVG_A.ply
+ROC AUC score for protein 1U29_A : 0.83 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1U29_A.ply
+ROC AUC score for protein 1UWW_A : 0.54 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1UWW_A.ply
+ROC AUC score for protein 1UXZ_A : 0.88 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1UXZ_A.ply
+ROC AUC score for protein 1V5P_A : 0.62 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1V5P_A.ply
+ROC AUC score for protein 1WI1_A : 0.90 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1WI1_A.ply
+ROC AUC score for protein 1XFS_B : 0.87 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1XFS_B.ply
+ROC AUC score for protein 1XUV_A : 0.81 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1XUV_A.ply
+ROC AUC score for protein 1XX6_B : 0.69 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1XX6_B.ply
+ROC AUC score for protein 1Y6P_B : 0.79 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1Y6P_B.ply
+ROC AUC score for protein 1Y75_B : 0.94 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1Y75_B.ply
+ROC AUC score for protein 1Z94_C : 0.90 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/1Z94_C.ply
+ROC AUC score for protein 2ADZ_A : 0.27 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2ADZ_A.ply
+ROC AUC score for protein 2B9V_J : 0.78 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2B9V_J.ply
+ROC AUC score for protein 2CAY_A : 0.71 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2CAY_A.ply
+ROC AUC score for protein 2CDO_B : 0.71 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2CDO_B.ply
+ROC AUC score for protein 2COA_A : 0.61 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2COA_A.ply
+ROC AUC score for protein 2CSK_A : 0.88 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2CSK_A.ply
+ROC AUC score for protein 2D4R_A : 0.93 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2D4R_A.ply
+ROC AUC score for protein 2D4R_B : 0.95 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2D4R_B.ply
+ROC AUC score for protein 2D9Z_A : 0.68 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2D9Z_A.ply
+ROC AUC score for protein 2DLW_A : 0.94 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2DLW_A.ply
+ROC AUC score for protein 2ENJ_A : 0.35 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2ENJ_A.ply
+ROC AUC score for protein 2ENQ_A : 0.59 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2ENQ_A.ply
+ROC AUC score for protein 2LE1_A : 0.82 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2LE1_A.ply
+ROC AUC score for protein 2LIO_A : 0.86 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2LIO_A.ply
+ROC AUC score for protein 2MOU_A : 0.72 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2MOU_A.ply
+ROC AUC score for protein 2N4B_A : 0.94 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2N4B_A.ply
+ROC AUC score for protein 2NN5_A : 0.54 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2NN5_A.ply
+ROC AUC score for protein 2O55_A : 0.77 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2O55_A.ply
+ROC AUC score for protein 2OSH_A : 0.70 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2OSH_A.ply
+ROC AUC score for protein 2OTD_A : 0.65 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2OTD_A.ply
+ROC AUC score for protein 2QKM_C : 0.67 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2QKM_C.ply
+ROC AUC score for protein 2QPV_A : 0.64 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2QPV_A.ply
+ROC AUC score for protein 2RGN_B : 0.72 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2RGN_B.ply
+ROC AUC score for protein 2RSG_A : 0.82 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2RSG_A.ply
+ROC AUC score for protein 2UZP_B : 0.98 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2UZP_B.ply
+ROC AUC score for protein 2W1U_C : 0.90 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2W1U_C.ply
+ROC AUC score for protein 2W1W_A : 0.93 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2W1W_A.ply
+ROC AUC score for protein 2W3J_A : 0.91 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2W3J_A.ply
+ROC AUC score for protein 2WAO_A : 0.58 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2WAO_A.ply
+ROC AUC score for protein 2WZE_A : 0.66 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2WZE_A.ply
+ROC AUC score for protein 2ZEW_A : 0.83 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/2ZEW_A.ply
+ROC AUC score for protein 3BJI_B : 0.67 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3BJI_B.ply
+ROC AUC score for protein 3C7H_A : 0.71 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3C7H_A.ply
+ROC AUC score for protein 3DYT_A : 0.55 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3DYT_A.ply
+ROC AUC score for protein 3EB7_A : 0.55 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3EB7_A.ply
+ROC AUC score for protein 3F08_A : 0.87 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3F08_A.ply
+ROC AUC score for protein 3G9W_A : 0.72 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3G9W_A.ply
+ROC AUC score for protein 3GYO_A : 0.78 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3GYO_A.ply
+ROC AUC score for protein 3HPB_A : 0.54 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3HPB_A.ply
+ROC AUC score for protein 3HQC_A : 0.58 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3HQC_A.ply
+ROC AUC score for protein 3JXS_B : 0.53 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3JXS_B.ply
+ROC AUC score for protein 3KS5_B : 0.77 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3KS5_B.ply
+ROC AUC score for protein 3LPF_B : 0.47 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3LPF_B.ply
+ROC AUC score for protein 3ML4_A : 0.72 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3ML4_A.ply
+ROC AUC score for protein 3NJ1_A : 0.85 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3NJ1_A.ply
+ROC AUC score for protein 3NO3_A : 0.72 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3NO3_A.ply
+ROC AUC score for protein 3ODX_B : 0.56 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3ODX_B.ply
+ROC AUC score for protein 3OSH_A : 0.85 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3OSH_A.ply
+ROC AUC score for protein 3P6B_A : 0.67 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3P6B_A.ply
+ROC AUC score for protein 3PP2_B : 0.82 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3PP2_B.ply
+ROC AUC score for protein 3PU2_E : 0.92 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3PU2_E.ply
+ROC AUC score for protein 3QRZ_C : 0.78 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3QRZ_C.ply
+ROC AUC score for protein 3QVQ_D : 0.91 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3QVQ_D.ply
+ROC AUC score for protein 3QWM_A : 0.68 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3QWM_A.ply
+ROC AUC score for protein 3SKV_B : 0.60 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3SKV_B.ply
+ROC AUC score for protein 3TFM_A : 0.79 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3TFM_A.ply
+ROC AUC score for protein 3UX7_B : 0.87 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3UX7_B.ply
+ROC AUC score for protein 3VC0_A : 0.74 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/3VC0_A.ply
+ROC AUC score for protein 4A42_B : 0.68 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4A42_B.ply
+ROC AUC score for protein 4A6F_B : 0.78 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4A6F_B.ply
+ROC AUC score for protein 4BBK_A : 0.63 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4BBK_A.ply
+ROC AUC score for protein 4BDV_B : 0.86 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4BDV_B.ply
+ROC AUC score for protein 4BFR_A : 0.99 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4BFR_A.ply
+ROC AUC score for protein 4BGD_A : 0.55 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4BGD_A.ply
+ROC AUC score for protein 4BKC_B : 0.88 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4BKC_B.ply
+ROC AUC score for protein 4CU9_B : 0.67 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4CU9_B.ply
+ROC AUC score for protein 4D0N_B : 0.75 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4D0N_B.ply
+ROC AUC score for protein 4DSC_B : 0.90 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4DSC_B.ply
+ROC AUC score for protein 4DX9_5 : 0.62 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4DX9_5.ply
+ROC AUC score for protein 4EVF_A : 0.71 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4EVF_A.ply
+ROC AUC score for protein 4FHJ_A : 0.68 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4FHJ_A.ply
+ROC AUC score for protein 4FPW_A : 0.84 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4FPW_A.ply
+ROC AUC score for protein 4FPW_B : 0.70 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4FPW_B.ply
+ROC AUC score for protein 4IFS_A : 0.70 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4IFS_A.ply
+ROC AUC score for protein 4JKM_B : 0.63 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4JKM_B.ply
+ROC AUC score for protein 4KAX_B : 0.81 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4KAX_B.ply
+ROC AUC score for protein 4LPL_A : 0.42 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4LPL_A.ply
+ROC AUC score for protein 4MGS_A : 0.64 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4MGS_A.ply
+ROC AUC score for protein 4MJJ_A : 0.80 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4MJJ_A.ply
+ROC AUC score for protein 4NPK_A : 0.97 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4NPK_A.ply
+ROC AUC score for protein 4OEC_C : 0.79 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4OEC_C.ply
+ROC AUC score for protein 4ON3_B : 0.92 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4ON3_B.ply
+ROC AUC score for protein 4OYU_A : 0.89 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4OYU_A.ply
+ROC AUC score for protein 4WJ7_C : 0.79 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4WJ7_C.ply
+ROC AUC score for protein 4Y1T_A : 1.00 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/4Y1T_A.ply
+ROC AUC score for protein 5B4X_C : 0.66 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/5B4X_C.ply
+ROC AUC score for protein 5BRL_B : 0.55 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/5BRL_B.ply
+ROC AUC score for protein 5F7U_A : 0.60 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/5F7U_A.ply
+ROC AUC score for protein 5HE2_A : 0.90 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/5HE2_A.ply
+ROC AUC score for protein 5LCW_L : 0.60 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/5LCW_L.ply
+ROC AUC score for protein 7PTD_A : 0.74 
+Successfully saved file /masif_docker/output/basic/all_feat_3l/pred_surfaces/7PTD_A.ply
+Computed the ROC AUC for 130 proteins
+Median ROC AUC score: 0.780624867322768
