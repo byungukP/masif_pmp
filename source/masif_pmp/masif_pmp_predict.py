@@ -5,7 +5,7 @@ import numpy as np
 from IPython.core.debugger import set_trace
 import sys
 import importlib
-from masif_modules.train_masif_site import pad_indices
+from masif_modules.train_masif_pmp import pad_indices
 from default_config.masif_opts import masif_opts
 import torch
 from torchinfo import summary

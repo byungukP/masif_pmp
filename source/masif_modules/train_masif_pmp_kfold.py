@@ -127,7 +127,7 @@ def train_masif_pmp_kfold(
         split_count += 1
         
         logfile.write("\nStarting split {}\n".format(split_count))
-        print("\nStarting split {}\n".format(split_count))
+        print("\nStarting split {}".format(split_count))
 
         print('train: {}\ntest: {}\ntrain_num: {}, test_num: {}\n'.format(
             training_list[train_idx], training_list[test_idx], len(train_idx), len(test_idx)
@@ -157,7 +157,7 @@ def train_masif_pmp_kfold(
             all_val_scores = []
 
             logfile.write("\nStarting epoch {}\n".format(epoch +1))
-            print("\nStarting epoch {}\n".format(epoch + 1))
+            print("\nStarting epoch {}".format(epoch + 1))
             tic = time.time()
 
             """
@@ -194,7 +194,7 @@ def train_masif_pmp_kfold(
 
                 # Perform training step
                 logfile.write("Training on {} {}\n".format(pdb_chain_id, pid))
-                print("\nTraining on {} {}\n".format(pdb_chain_id, pid))
+                print("Training on {} {}".format(pdb_chain_id, pid))
                 logs = model.training_step(input_dict, optimizer)
                 list_training_auc.append(logs["auc"])
                 logfile.flush()
@@ -225,6 +225,7 @@ def train_masif_pmp_kfold(
                 logfile.write("Validating on {} {} ==> ".format(pdb_chain_id, pid))
                 logs = model.validation_step(input_dict)
                 logfile.write("Per protein AUC: {:.4f}\n".format(logs["auc"]))
+                print("Validating on {} {} ==> Per protein AUC: {:.4f}".format(pdb_chain_id, pid, logs["auc"]))
                 list_val_auc.append(logs["auc"])
                 all_val_labels.append(iface_labels)
                 all_val_scores.append(logs["full_score"])

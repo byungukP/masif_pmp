@@ -126,7 +126,7 @@ def train_masif_pmp(
         list_val_auc = []
 
         logfile.write("\nStarting epoch {}\n".format(epoch +1))
-        print("\nStarting epoch {}\n".format(epoch + 1))
+        print("\nStarting epoch {}".format(epoch + 1))
         tic = time.time()
 
         list_test_auc = []
@@ -172,7 +172,7 @@ def train_masif_pmp(
             # search for val_dirs 1st since it's much faster with small search space of val_dirs
             if pdb_chain_id in val_dirs:
                 logfile.write("Validating on {} {}\n".format(pdb_chain_id, pid))
-                print("\nValidating on {} {}\n".format(pdb_chain_id, pid))
+                print("Validating on {} {}".format(pdb_chain_id, pid))
                 logs = model.validation_step(input_dict)
                 list_val_auc.append(logs["auc"])
 
@@ -181,7 +181,7 @@ def train_masif_pmp(
                 logfile.write("Training on {} {}\n".format(pdb_chain_id, pid))                    
                 # Adam optimizer as default, look into Masif_site_wLayers.py later if want to test different opt
                 # learning rate: 1e-3 as default, look into Masif_site_wLayers.py later if want to test different lr
-                print("\nTraining on {} {}\n".format(pdb_chain_id, pid))
+                print("Training on {} {}".format(pdb_chain_id, pid))
                 logs = model.training_step(input_dict, optimizer)
                 list_training_auc.append(logs["auc"])
             logfile.flush()
@@ -209,7 +209,7 @@ def train_masif_pmp(
             input_dict = {key: tensor.to(device) for key, tensor in input_dict.items()}
                 
             logfile.write("Testing on {} {}\n".format(pdb_chain_id, pid))
-            print("\nTesting on {} {}\n".format(pdb_chain_id, pid))
+            print("Testing on {} {}".format(pdb_chain_id, pid))
             logs = model.test_step(input_dict)
             list_test_auc.append(logs["auc"])
             list_test_names.append((pdb_chain_id, pid))
@@ -242,7 +242,7 @@ def train_masif_pmp(
         # save model
         if np.mean(list_val_auc) > best_val_auc:
             logfile.write(">>> Saving model.\n")
-            print(">>> Saving model.\n")
+            print(">>> Saving model.")
             best_val_auc = np.mean(list_val_auc)
             output_model = out_dir + "model.pt"
             torch.save(model.state_dict(), output_model)
