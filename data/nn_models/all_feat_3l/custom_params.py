@@ -1,8 +1,15 @@
 custom_params = {}
+custom_params["training_list"] = "lists/pmp_train.txt"
+custom_params["testing_list"] = "lists/pmp_test.txt"
 custom_params["range_val_samples"] = 0.1
+custom_params["max_shape_size"] = 100                       # max number of vertices from surface patch that are used for patchwise-CNN training
+custom_params["max_distance"] = 9.0                         # Radius for the neural network.
 custom_params['model_dir'] = 'nn_models/all_feat_3l/model_data/'
-custom_params['feat_mask'] = [1.0, 1.0, 1.0, 1.0, 1.0]  # shape index, ddc, hbond, pb, hphob
+custom_params['feat_mask'] = [1.0, 1.0, 1.0, 1.0, 1.0]      # shape index, ddc, hbond, elec, hphob
 custom_params['n_conv_layers'] = 3
 custom_params['out_pred_dir'] = 'output/all_feat_3l/pred_data/'
 custom_params['out_surf_dir'] = 'output/all_feat_3l/pred_surfaces/'
 custom_params['epoch_num'] = 50
+custom_params["cv_test"] = False
+custom_params["k_fold"] = 0
+custom_params["transferLR"] = False

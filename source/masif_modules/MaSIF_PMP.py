@@ -13,7 +13,7 @@ class MaSIF_PMP(L.LightningModule):
 
     """
     The neural network model. PyTorch v2.1.2
-    ByungUk Park UW-Madison, 2025
+    ByungUk Park, UW-Madison, 2025
 
     """
 

@@ -6,7 +6,7 @@ import numpy as np
 
 """
 Layers used for the MaSIF neural network model. PyTorch version
-ByungUk Park UW-Madison, 2025
+ByungUk Park, UW-Madison, 2025
 """
 
 
