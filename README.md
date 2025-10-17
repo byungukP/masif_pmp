@@ -58,12 +58,12 @@ export PDB2PQR_BIN=/path/to/pdb2pqr.py
 Then, clone the repository and navigate to the project directory:
 ```sh
 git clone https://github.com/byungukP/masif_pmp.git
-cd data
+cd masif_pmp/
 ```
 
 ## Usage
-The `/masif-pmp/data/` directory contains scripts for training and prediction using MaSIF-PMP, while `/masif-pmp/source/` includes the model source code.
-The `/masif-pmp/analysis/` and `/masif-pmp/benchmark/` directories contain scripts and datasets for reproducing the results presented in the [MaSIF-PMP](https://doi.org/10.1101/2025.10.14.682447) study.
+The `masif-pmp/data/` directory contains scripts for training and prediction using MaSIF-PMP, while `masif-pmp/source/` includes the model source code.
+The `masif-pmp/analysis/` and `masif-pmp/benchmark/` directories contain scripts and datasets for reproducing the results presented in the [MaSIF-PMP](https://doi.org/10.1101/2025.10.14.682447) study.
 
 
 ### Model Parameters
@@ -71,31 +71,53 @@ The `/masif-pmp/analysis/` and `/masif-pmp/benchmark/` directories contain scrip
 Users can adjust these parameters as needed for their specific purposes.
 A detailed description of each parameter is provided in the subsections below.
 
-### Prediction
-The input can be provided as either a single PDB chain ID (*e.g.*, the perforin C2 domain, PDB ID 4Y1T, chain A → 4Y1T_A) or as a list of IDs in a .txt file.
-After data preprocessing, the model takes the processed input and generates predictions for the corresponding protein surface.
+### Data Preprocessing
+MaSIF-PMP takes as input numerical arrays representing patch information, surface features, and polar coordinates that are preprocessed from protein surface files.
+Therefore, data preprocessing must be performed before executing training or prediction.
+You can generate mesh files and precompute the corresponding input feature arrays from either a protein structure obtained from the RCSB PDB or a custom structure.
 
+The argument `PDB_CHAIN` specifies the PDB ID and chain, separated by an underscore
+(*e.g.*, perforin C2 domain, PDB ID 4Y1T, chain A → 4Y1T_A).
 
 ```sh
 cd data
 
-# For a single PDB_CHAIN ID
+# For a protein structure downloaded from the PDB
 ./data_prepare_one.sh PDB_CHAIN
+
+# For a custom protein structure
+# Update the path as appropriate
+./data_prepare_one.sh --file /path/to/custom_structure.pdb PDB_CHAIN
+```
+
+To preprocess a list of proteins, create a text file containing the desired PDB_CHAIN IDs,
+edit `data_prepare_all.sh` to use this file as input, and run:
+
+```sh
+./data_prepare_all.sh
+```
+
+By default, as defined in [masif_opts.py](source/default_config/masif_opts.py), all preprocessed and precomputed files are saved under `data/data_preparation/`:
+- Raw PDB files downloaded from the RCSB PDB (or custom `.pdb` files): `data/data_preparation/00-raw_pdbs/`
+- Extracted chain PDB files: `data/data_preparation/01-benchmark_pdbs/`
+- Mesh files (optionally colored by ground-truth IBS labels if `masif_opts["compute_ibs"] = True`): `data/data_preparation/01-benchmark_surfaces/`
+- Precomputed input features: `data/data_preparation/04a-precomputation_9A/precomputation/`
+
+
+### Prediction
+The input can be provided as either a single PDB chain ID or as a list of IDs in a .txt file.
+After data preprocessing, the model takes the processed input and generates predictions for the corresponding protein surface.
+
+
+```sh
+# For a single PDB_CHAIN ID
 ./predict_ibs.sh PDB_CHAIN
 ./color_ibs.sh PDB_CHAIN
 
 # For multiple PDB_CHAIN IDs
-# Edit data_prepare_all.sh to use your id_list.txt file as input
-./data_prepare_all.sh
-./predict_ibs.sh -l id_list.txt
-./color_ibs.sh -l id_list.txt
+./predict_ibs.sh -l lists/id_list.txt
+./color_ibs.sh -l lists/id_list.txt
 ```
-
-By default, as specified in [masif_opts.py](source/default_config/masif_opts.py), all preprocessed and precomputed files are saved under `data/data_preparation/`:
-- Raw PDB files downloaded from the RCSB PDB: `data/data_preparation/00-raw_pdbs/`
-- Extracted chain PDB files: `data/data_preparation/01-benchmark_pdbs/`
-- Mesh files (optionally colored by ground-truth IBS labels if `masif_opts["compute_ibs"] = True`): `data/data_preparation/01-benchmark_surfaces/`
-- Precomputed input features: `data/data_preparation/04a-precomputation_9A/precomputation/`
 
 Prediction scores and mesh files colored by the predicted scores are saved in:
 - `data/output/all_feat_3l/pred_data/` (prediction scores)
