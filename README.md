@@ -3,14 +3,27 @@
 MaSIF-PMP is a method for predicting membrane-binding interfaces — referred to as interfacial binding sites (IBSs) — of proteins, based on spatially varying geometric and chemical features computed across protein surfaces. It is built upon the prior framework [MaSIF](https://github.com/LPDI-EPFL/masif), which uses molecular surface fingerprints to predict protein–protein interactions. This project includes code adapted from the original MaSIF implementation, licensed under the Apache 2.0.
 
 ## Quick try
-The easiest way of try out MaSIF-PMP is through a docker container.
-```sh
+The easiest way of try out MaSIF-PMP is through the prebuilt Docker container:
+```text
+docker pull byungukp/masif_pmp:main
+```
+
+Start an interactive session:
+```text
 docker run -it byungukp/masif_pmp:main
 ```
 To fully utilize the GPU for model retraining and mount a local directory into the container:
-```sh
-docker run -it --gpus all -v ${LOCAL_DIR_PATH}:${MOUNT_PATH} -w /masif_pmp --rm byungukp/masif_pmp:main
+```text
+docker run -it --gpus all -v ${LOCAL_DIR_PATH}:${MOUNT_PATH} \
+               --rm byungukp/masif_pmp:main
 ```
+
+After starting an interactive session, update the repository to ensure you have the latest version (in case the Docker image is not up to date), and go into the MaSIF-PMP data directory:
+```text
+root@99eb41f87063:/masif_pmp# git pull
+root@99eb41f87063:/masif_pmp# cd data
+```
+
 
 ## System Information & Software Prerequisites
 MaSIF-PMP has been tested on Linux/amd64, Ubuntu 20.04, CUDA 12.1.1, and cuDNN 8.9.0. The following software and libraries are required to perform data preprocessing, training, and inferences. Versions in parentheses indicate those used during testing.
