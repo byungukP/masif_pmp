@@ -1,6 +1,8 @@
 # MaSIF-PMP
 
-MaSIF-PMP is a method for predicting membrane-binding interfaces — referred to as interfacial binding sites (IBSs) — of proteins, based on spatially varying geometric and chemical features computed across protein surfaces. It is built upon the prior framework [MaSIF](https://github.com/LPDI-EPFL/masif), which uses molecular surface fingerprints to predict protein–protein interactions. This project includes code adapted from the original MaSIF implementation, licensed under the Apache 2.0.
+MaSIF-PMP is a method for predicting membrane-binding interfaces — referred to as interfacial binding sites (IBSs) — of proteins, based on spatially varying geometric and chemical features computed across protein surfaces. It is built upon the prior framework [MaSIF](https://github.com/LPDI-EPFL/masif), which uses molecular surface fingerprints to predict protein–protein interactions. This project includes code adapted from the original MaSIF implementation, licensed under the Apache 2.0. This repository contains the code and resources for reproducing the experiments presented in:
+
+B. Park and R. C. Van Lehn*. (2025). Decoding protein-membrane binding interfaces from surface-fingerprint-based geometric deep learning and molecular dynamics simulations. *bioRxiv*. https://doi.org/10.1101/2025.10.14.682447.
 
 ## Quick try
 The easiest way of try out MaSIF-PMP is through the prebuilt Docker container:
@@ -61,9 +63,8 @@ cd data
 
 ## Usage
 The `/masif-pmp/data/` directory contains scripts for training and prediction using MaSIF-PMP, while `/masif-pmp/source/` includes the model source code.
-The `/masif-pmp/analysis/` and `/masif-pmp/benchmark/` directories contain scripts and files for reproducing the results presented in:
+The `/masif-pmp/analysis/` and `/masif-pmp/benchmark/` directories contain scripts and datasets for reproducing the results presented in the [MaSIF-PMP](https://doi.org/10.1101/2025.10.14.682447) study.
 
-B. Park and R. C. Van Lehn*. (2025). Decoding protein-membrane binding interfaces from surface-fingerprint-based geometric deep learning and molecular dynamics simulations. *bioRxiv*. https://doi.org/10.1101/2025.10.14.682447. 
 
 ### Model Parameters
 [masif_opts.py](source/default_config/masif_opts.py) defines the parameters used for data preprocessing, training, and prediction.
