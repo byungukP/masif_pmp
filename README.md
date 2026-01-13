@@ -62,8 +62,8 @@ cd masif_pmp/
 ```
 
 ## Usage
-The `masif-pmp/data/` directory contains scripts for training and prediction using MaSIF-PMP, while `masif-pmp/source/` includes the model source code.
-The `masif-pmp/analysis/` and `masif-pmp/benchmark/` directories contain scripts and datasets for reproducing the results presented in the [MaSIF-PMP](https://doi.org/10.1101/2025.10.14.682447) study.
+The `masif_pmp/data/` directory contains scripts for training and prediction using MaSIF-PMP, while `masif_pmp/source/` includes the model source code.
+The `masif_pmp/analysis/` and `masif_pmp/benchmark/` directories contain scripts and datasets for reproducing the results presented in the [MaSIF-PMP](https://doi.org/10.1101/2025.10.14.682447) study.
 
 
 ### Model Parameters
