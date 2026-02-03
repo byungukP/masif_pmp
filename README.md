@@ -2,7 +2,7 @@
 
 MaSIF-PMP is a method for predicting membrane-binding interfaces — referred to as interfacial binding sites (IBSs) — of proteins, based on spatially varying geometric and chemical features computed across protein surfaces. It is built upon the prior framework [MaSIF](https://github.com/LPDI-EPFL/masif), which uses molecular surface fingerprints to predict protein–protein interactions. This project includes code adapted from the original MaSIF implementation, licensed under the Apache 2.0. This repository contains the code and resources for reproducing the experiments presented in:
 
-B. Park and R. C. Van Lehn*. (2025). Decoding protein-membrane binding interfaces from surface-fingerprint-based geometric deep learning and molecular dynamics simulations. J. Chem. Inf. Model. https://doi.org/10.1021/acs.jcim.5c02566.
+B. Park and R. C. Van Lehn*. (2026). Decoding protein-membrane binding interfaces from surface-fingerprint-based geometric deep learning and molecular dynamics simulations. J. Chem. Inf. Model. https://doi.org/10.1021/acs.jcim.5c02566.
 
 ## Quick try
 The easiest way of try out MaSIF-PMP is through the prebuilt Docker container:
